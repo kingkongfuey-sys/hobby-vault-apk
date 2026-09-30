@@ -27,13 +27,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Capacitor
+      - name: Install Capacitor and plugins
         run: npm install
 
       - name: Generate the Android project
         run: npx cap add android
 
-      - name: Swap in our back-button code
+      - name: Register plugins (export, share, back button)
+        run: npx cap sync android
+
+      - name: Swap in our MainActivity
         run: |
           cp android-extra/MainActivity.java \
              android/app/src/main/java/com/hobbyvault/app/MainActivity.java
@@ -52,6 +55,16 @@ jobs:
           # Delete Capacitor's adaptive-icon XMLs so Android uses our PNGs
           find android/app/src/main/res -name "ic_launcher.xml" -delete
           find android/app/src/main/res -name "ic_launcher_round.xml" -delete
+
+      - name: Use the fixed signing key (lets new builds update over old ones)
+        run: |
+          if [ -f android-extra/debug.keystore ]; then
+            mkdir -p ~/.android
+            cp android-extra/debug.keystore ~/.android/debug.keystore
+            echo "Using fixed signing key"
+          else
+            echo "No android-extra/debug.keystore yet - this APK gets a random key and cannot update an existing install"
+          fi
 
       - name: Build the APK
         run: |
