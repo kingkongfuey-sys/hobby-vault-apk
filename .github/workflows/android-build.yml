@@ -47,7 +47,7 @@ jobs:
             dpi="${dpis[$i]}"; size="${sizes[$i]}"
             dir="android/app/src/main/res/mipmap-$dpi"
             mkdir -p "$dir"
-            magick logo.png -resize "${size}x${size}" "$dir/ic_launcher.png"
+            convert logo.png -resize "${size}x${size}" "$dir/ic_launcher.png"
           done
 
       - name: Build the APK
