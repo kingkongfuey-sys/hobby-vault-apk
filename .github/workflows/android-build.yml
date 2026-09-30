@@ -49,6 +49,9 @@ jobs:
             mkdir -p "$dir"
             convert logo.png -resize "${size}x${size}" "$dir/ic_launcher.png"
           done
+          # Delete Capacitor's adaptive-icon XMLs so Android uses our PNGs
+          find android/app/src/main/res -name "ic_launcher.xml" -delete
+          find android/app/src/main/res -name "ic_launcher_round.xml" -delete
 
       - name: Build the APK
         run: |
