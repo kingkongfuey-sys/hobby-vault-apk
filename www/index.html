@@ -45,7 +45,7 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
 .btn:active{transform:scale(.97)}.btn.ghost{background:var(--s2);color:var(--tx);border-color:var(--line)}.btn.danger{background:var(--dg);color:var(--dgx)}
 #add{position:fixed;right:calc(18px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;border:0;background:var(--ac);color:var(--acx);display:grid;place-items:center;z-index:10;cursor:pointer;transition:transform var(--dur-fast) var(--ease)}
 #add:active{transform:scale(.94)}#add svg{width:28px;transition:transform var(--dur-med) var(--ease)}#add:active svg{transform:rotate(90deg)}
-.backdrop.amenu{display:block;padding:0}.dlg.amcard.nm{top:calc(env(safe-area-inset-top,0px) + 72px);bottom:auto;transition:top 180ms var(--ease)}.dlg.amcard{box-sizing:border-box;position:absolute;left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));max-width:440px;width:auto;margin:0 auto;padding:18px;border-radius:22px}.amcard h2{font-size:var(--t-lg);margin:0 0 2px}.amcard .row{margin-top:12px}
+.backdrop.amenu{display:block;padding:0}.dlg.amcard.nm{transition:bottom 180ms var(--ease)}.dlg.amcard{box-sizing:border-box;position:absolute;left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));max-width:440px;width:auto;margin:0 auto;padding:18px;border-radius:22px}.amcard h2{font-size:var(--t-lg);margin:0 0 2px}.amcard .row{margin-top:12px}
 .backdrop.top{grid-template-columns:minmax(0,1fr);place-items:start center;padding-top:calc(env(safe-area-inset-top,0px) + 72px)}.backdrop.top .dlg{max-height:calc(100dvh - 108px)}
 .backdrop{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;padding:20px;z-index:30}
 .dlg{background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);padding:20px;width:min(100%,380px)}
@@ -789,9 +789,10 @@ function addFlow(title,create){return new Promise(res=>{
  let fin=false,busy=false,phase='menu';const kids=()=>[...d.children];
  const clip=()=>{const f=fab.getBoundingClientRect(),c=d.getBoundingClientRect();return `inset(${f.top-c.top}px ${c.right-f.right}px ${c.bottom-f.bottom}px ${f.left-c.left}px round 30px)`};
  const full='inset(0px 0px 0px 0px round 22px)';
- /* name card sits just above the keyboard: use the visible area when the browser reports it, otherwise assume the keyboard covers the lower ~40% */
- const base0=innerHeight,vv=window.visualViewport,kbTop=()=>{const h=innerHeight,t=Math.min(h,vv?vv.height+vv.offsetTop:h);/* keyboard detected either by visualViewport shrinking or by the webview itself resizing (Android adjustResize) */ if(t<h-120)return t;if(h<base0-120)return h;return base0*.6};
- const place=()=>{if(phase!=='name'||fin)return;const h=d.getBoundingClientRect().height;d.style.top=Math.max(24,kbTop()-14-h)+'px'};
+ /* name card stays anchored to the bottom (where the menu card was), so it only grows upward; once the keyboard is up it rides 14px above it */
+ const base0=innerHeight,vv=window.visualViewport;
+ const place=()=>{if(phase!=='name'||fin)return;const h=innerHeight,over=vv?Math.max(0,h-(vv.height+vv.offsetTop)):0,shrunk=Math.max(0,base0-h);
+  d.style.bottom=(over>120||shrunk>120)?(over>120?over:0)+14+'px':''};
  const unplace=()=>{vv&&vv.removeEventListener('resize',place);removeEventListener('resize',place)};
  const done=()=>{unplace();bd.remove();fab.style.visibility='';M.fade(fab,0,1,'fast');res()};
  const close=async()=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});
@@ -814,10 +815,10 @@ function addFlow(title,create){return new Promise(res=>{
   const go=el('button','btn','Create'),more=el('button','btn ghost','Create and add another');
   go.onclick=guard(()=>submit(false));more.onclick=guard(()=>submit(true));row.append(go,more);
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go.click()}};
-  d.classList.add('nm');place();vv&&vv.addEventListener('resize',place);addEventListener('resize',place);const r2=d.getBoundingClientRect();d.style.overflow='hidden';
+  d.classList.add('nm');vv&&vv.addEventListener('resize',place);addEventListener('resize',place);const r2=d.getBoundingClientRect();d.style.overflow='hidden';
   kids().forEach(x=>M.run(x,[{opacity:0},{opacity:1}],'med',{delay:M.px(140)}));
   inp.focus();
-  await M.run(d,[{top:r1.top+'px',height:r1.height+'px'},{top:r2.top+'px',height:r2.height+'px'}],'slow');
+  await M.run(d,[{height:r1.height+'px'},{height:r2.height+'px'}],'slow');place();
   d.style.overflow='';busy=false};
  d.innerHTML=`<h2>${esc(title)}</h2><div class="row"></div>`;const row0=$('.row',d);
  [['New collection','c'],['New model','i']].forEach(([l,v])=>{const b=el('button','btn ghost',esc(l));b.onclick=()=>toName(v);row0.append(b)});
