@@ -45,7 +45,7 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
 .btn:active{transform:scale(.97)}.btn.ghost{background:var(--s2);color:var(--tx);border-color:var(--line)}.btn.danger{background:var(--dg);color:var(--dgx)}
 #add{position:fixed;right:calc(18px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;border:0;background:var(--ac);color:var(--acx);display:grid;place-items:center;z-index:10;cursor:pointer;transition:transform var(--dur-fast) var(--ease)}
 #add:active{transform:scale(.94)}#add svg{width:28px;transition:transform var(--dur-med) var(--ease)}#add:active svg{transform:rotate(90deg)}
-.backdrop.amenu{display:block;padding:0}.dlg.amcard.nm{top:calc(env(safe-area-inset-top,0px) + 72px);bottom:auto}.dlg.amcard{box-sizing:border-box;position:absolute;left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));max-width:440px;width:auto;margin:0 auto;padding:18px;border-radius:22px}.amcard h2{font-size:var(--t-lg);margin:0 0 2px}.amcard .row{margin-top:12px}
+.backdrop.amenu{display:block;padding:0}.dlg.amcard.nm{top:calc(env(safe-area-inset-top,0px) + 72px);bottom:auto;transition:top 180ms var(--ease)}.dlg.amcard{box-sizing:border-box;position:absolute;left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));max-width:440px;width:auto;margin:0 auto;padding:18px;border-radius:22px}.amcard h2{font-size:var(--t-lg);margin:0 0 2px}.amcard .row{margin-top:12px}
 .backdrop.top{grid-template-columns:minmax(0,1fr);place-items:start center;padding-top:calc(env(safe-area-inset-top,0px) + 72px)}.backdrop.top .dlg{max-height:calc(100dvh - 108px)}
 .backdrop{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;padding:20px;z-index:30}
 .dlg{background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);padding:20px;width:min(100%,380px)}
@@ -789,7 +789,11 @@ function addFlow(title,create){return new Promise(res=>{
  let fin=false,busy=false,phase='menu';const kids=()=>[...d.children];
  const clip=()=>{const f=fab.getBoundingClientRect(),c=d.getBoundingClientRect();return `inset(${f.top-c.top}px ${c.right-f.right}px ${c.bottom-f.bottom}px ${f.left-c.left}px round 30px)`};
  const full='inset(0px 0px 0px 0px round 22px)';
- const done=()=>{bd.remove();fab.style.visibility='';M.fade(fab,0,1,'fast');res()};
+ /* name card sits just above the keyboard: use the visible area when the browser reports it, otherwise assume the keyboard covers the lower ~40% */
+ const vv=window.visualViewport,kbTop=()=>{const h=innerHeight,t=vv?vv.height+vv.offsetTop:h;return t<h-120?t:h*.6};
+ const place=()=>{if(phase!=='name'||fin)return;const h=d.getBoundingClientRect().height;d.style.top=Math.max(24,kbTop()-14-h)+'px'};
+ const unplace=()=>{vv&&vv.removeEventListener('resize',place);removeEventListener('resize',place)};
+ const done=()=>{unplace();bd.remove();fab.style.visibility='';M.fade(fab,0,1,'fast');res()};
  const close=async()=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});
   if(phase==='menu'){const bg=getComputedStyle(fab).backgroundColor,to=clip();
    kids().forEach(k=>M.run(k,[{opacity:1},{opacity:0}],'fast',{fill:'forwards'}));
@@ -810,7 +814,7 @@ function addFlow(title,create){return new Promise(res=>{
   const go=el('button','btn','Create'),more=el('button','btn ghost','Create and add another');
   go.onclick=guard(()=>submit(false));more.onclick=guard(()=>submit(true));row.append(go,more);
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go.click()}};
-  d.classList.add('nm');const r2=d.getBoundingClientRect();d.style.overflow='hidden';
+  d.classList.add('nm');place();vv&&vv.addEventListener('resize',place);addEventListener('resize',place);const r2=d.getBoundingClientRect();d.style.overflow='hidden';
   kids().forEach(x=>M.run(x,[{opacity:0},{opacity:1}],'med',{delay:M.px(140)}));
   inp.focus();
   await M.run(d,[{top:r1.top+'px',height:r1.height+'px'},{top:r2.top+'px',height:r2.height+'px'}],'slow');
