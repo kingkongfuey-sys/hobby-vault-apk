@@ -13,20 +13,22 @@
 :root[data-theme=light]{color-scheme:light;--bg:#eef1f4;--s1:#ffffff;--s2:#e2e7ec;--line:#c5cdd6;--tx:#1b2229;--mu:#58646f;--ac:#9c6a17;--acx:#ffffff;--dg:#b93b28;--dgx:#ffffff;--ovl:rgba(255,255,255,.85);--ovlx:#1b2229;--scrim:rgba(20,26,32,.45);--lb:rgba(238,241,244,.97);--shim:rgba(0,0,0,.06)}
 :root[data-motion=off]{--dur-fast:1ms;--dur-med:1ms;--dur-slow:1ms}:root[data-motion=off] .float,:root[data-motion=off] .sk::after{animation:none}
 @media(prefers-reduced-motion:reduce){:root{--dur-fast:80ms;--dur-med:80ms;--dur-slow:80ms}
-.float,.sk::after{animation:none!important}.card:hover{transform:none}}
+.float,.sk::after{animation:none!important}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--tx);font:var(--t-md)/1.4 var(--sans)}
 body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);min-height:100vh}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.top{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 0 0}h1{font:600 var(--t-2xl) var(--serif);margin:0;padding:0 0 0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 0 0}h1{font:600 var(--t-2xl) var(--serif);margin:0;padding:0 0 0 16px}
 #crumbs{display:flex;align-items:center;overflow-x:auto;padding:0 8px;scrollbar-width:none}
 #crumbs button{min-height:44px;padding:0 8px;background:none;border:0;color:var(--mu);font:inherit;white-space:nowrap;cursor:pointer}
 #crumbs button[aria-current]{color:var(--tx);font-weight:600}#crumbs i{color:var(--line);font-style:normal}
 #stage{position:relative;overflow:hidden;min-height:60vh;padding-bottom:110px}
 .view{padding:8px 16px}.view.leaving{position:absolute;left:0;right:0;top:0;pointer-events:none}
-.grid{display:grid;grid-template-columns:1fr;gap:10px}
-.card{display:flex;align-items:stretch;min-height:88px;position:relative;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-card);overflow:hidden;cursor:pointer;transition:transform var(--dur-fast) var(--ease),border-color var(--dur-med) var(--ease)}
-.card:hover{transform:scale(1.02);border-color:var(--ac)}.card:active{transform:scale(.97)}
+.grid{display:grid;grid-template-columns:1fr;gap:8px}
+.card{display:flex;align-items:stretch;min-height:72px;position:relative;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-control);overflow:hidden;cursor:pointer;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;transition:transform var(--dur-fast) var(--ease),border-color var(--dur-med) var(--ease)}
+@media(hover:hover){.card:hover{transform:scale(1.02);border-color:var(--ac)}}
+@media(hover:hover) and (prefers-reduced-motion:reduce){.card:hover{transform:none}}
+:root[data-motion=off] .card:hover{transform:none}.card:active{transform:scale(.97)}
 .ph{flex:none;width:88px;min-height:88px;background:var(--s2);display:grid;place-items:center;position:relative}
 .ph .addp{position:absolute;right:6px;bottom:6px;width:26px;height:26px;border-radius:50%;background:var(--ac);color:var(--acx);display:grid;place-items:center}.ph .addp svg{width:16px;color:inherit}.ph[role=button]{cursor:pointer}
 .ph svg{width:44px;color:var(--ac)}
@@ -46,7 +48,7 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
 .backdrop{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;padding:20px;z-index:30}
 .dlg{background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);padding:20px;width:min(100%,380px)}
 .dlg h2{font:600 var(--t-xl) var(--serif);margin:0 0 8px}.dlg p{color:var(--mu);margin:0 0 8px}
-.dlg input{width:100%;min-height:48px;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--tx);padding:0 12px;font:var(--t-md) var(--sans);margin-top:8px}
+.dlg input{width:100%;min-height:48px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-control);color:var(--tx);padding:0 12px;font:var(--t-md) var(--sans);margin-top:8px}
 .row{display:flex;flex-direction:column;gap:8px;margin-top:14px}.row.h{flex-direction:row}.row.h .btn{flex:1}
 .sheet{position:fixed;inset:0;background:var(--bg);z-index:20;overflow-y:auto;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 .bar{display:flex;align-items:center;gap:8px;padding:10px 12px;position:sticky;top:0;background:var(--bg);z-index:2}
@@ -56,7 +58,7 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
 textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-control);color:var(--tx);padding:12px;font:var(--t-md)/1.4 var(--sans);margin-top:6px}
 .phead{display:flex;justify-content:space-between;align-items:center}.phead h3{font:600 var(--t-lg) var(--serif);margin:0}.muted{color:var(--mu)}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-.tile{position:relative;aspect-ratio:1;border-radius:var(--radius-control);overflow:hidden;background:var(--s2)}
+.tile{position:relative;aspect-ratio:1;border-radius:var(--radius-control);overflow:hidden;background:var(--s2);touch-action:pan-y;border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.16);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:box-shadow var(--dur-med) var(--ease),border-color var(--dur-med) var(--ease)}
 .tile img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;opacity:0;transition:opacity var(--dur-slow) var(--ease)}.tile img.on{opacity:1}
 .tile button{position:absolute;width:44px;height:44px;border:0;border-radius:50%;background:var(--ovl);color:var(--ovlx);display:grid;place-items:center;cursor:pointer;transition:transform var(--dur-fast) var(--ease)}
 .tile button:active{transform:scale(.9)}.tile svg{width:18px}
@@ -64,7 +66,7 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 .lb{position:fixed;inset:0;z-index:40;display:grid;place-items:center}
 #toasts{position:fixed;left:0;right:0;bottom:calc(92px + env(safe-area-inset-bottom));display:grid;justify-items:center;gap:8px;pointer-events:none;z-index:50}
 .toast{background:var(--s2);border:1px solid var(--line);padding:12px 16px;border-radius:var(--radius-control);max-width:90%}.toast.err{border-color:var(--dg)}
-.tools{display:grid;gap:10px;margin-bottom:14px}
+.tools{display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:6px}
 .tools input,.body input.cat{width:100%;min-height:46px;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-control);color:var(--tx);padding:0 14px;font:var(--t-md) var(--sans)}
 .body input.cat{margin-top:6px}
 .tb{display:flex;gap:8px}.tb .btn{flex:1}.btn.sm{min-height:42px;font-size:var(--t-sm);padding:0 12px}
@@ -82,9 +84,9 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 .srow[aria-checked=true] .sw{background:var(--ac);border-color:var(--ac)}.srow[aria-checked=true] .sw::after{transform:translateX(20px);background:var(--acx)}
 .sws{display:flex;gap:12px;margin-top:10px}.swt{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);cursor:pointer;transition:transform var(--dur-fast) var(--ease)}.swt:active{transform:scale(.94)}.swt[aria-pressed=true]{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--tx)}
 .qty{display:inline-flex;align-items:center;gap:6px;margin-top:6px}
-.qty button{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--s2);color:var(--tx);display:grid;place-items:center;cursor:pointer;transition:transform var(--dur-fast) var(--ease)}
+.qty button{width:44px;height:44px;border-radius:var(--radius-control);border:1px solid var(--line);background:var(--s2);color:var(--tx);display:grid;place-items:center;cursor:pointer;transition:transform var(--dur-fast) var(--ease)}
 .qty button:active{transform:scale(.94)}.qty button svg{width:18px}
-.qty input{width:56px;height:44px;text-align:center;background:var(--s1);border:1px solid var(--line);border-radius:10px;color:var(--tx);font:600 var(--t-md) var(--sans);-moz-appearance:textfield;appearance:textfield}
+.qty input{width:56px;height:44px;text-align:center;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-control);color:var(--tx);font:600 var(--t-md) var(--sans);-moz-appearance:textfield;appearance:textfield}
 .qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .qrow{display:flex;justify-content:space-between;align-items:center;gap:12px}.qrow .qty{margin:0}
 .tr{display:flex;gap:8px}.chips.wrap{flex-wrap:wrap;overflow:visible;margin-top:10px}
@@ -92,29 +94,28 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 .srch .q{flex:1;min-width:0;min-height:46px;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-control);color:var(--tx);padding:0 14px;font:var(--t-md) var(--sans)}
 .res{gap:8px}.res-row{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-control);padding:8px 12px;color:var(--tx);text-align:left;cursor:pointer;font:inherit;transition:transform var(--dur-fast) var(--ease)}
 .res-row:active{transform:scale(.98)}.res-row b{display:block;font:600 var(--t-md) var(--serif);overflow-wrap:anywhere}.res-row small{color:var(--mu)}.rk img{display:block;width:28px;height:28px;border-radius:6px;object-fit:cover}.rk{flex:none;width:28px;color:var(--ac)}.rk svg{width:28px}
-.top{padding:8px 12px 0 0}.top .ib{width:40px;height:40px}
+.top .ib{width:40px;height:40px}
 #crumbs button{min-height:34px;padding:0 6px;font-size:var(--t-sm)}
-.view{padding:4px 12px}.grid{gap:8px}
-.card{min-height:72px;border-radius:var(--radius-control)}.ph{width:72px;min-height:72px}.ph svg{width:36px}
+.view{padding:4px 12px}
+.ph{width:72px;min-height:72px}.ph svg{width:36px}
 .lab{padding:8px 52px 8px 12px}
 .gh{min-height:40px;margin:8px 0 8px}
-.tools{grid-template-columns:minmax(0,1fr) auto;gap:6px;margin-bottom:6px}.tools>.chips{grid-column:1/-1}
-.tools input{min-height:38px;border-radius:10px}
-.tb{gap:6px}.tb .btn{flex:none}.btn.sm{min-height:38px;font-size:var(--t-sm);padding:0 10px;border-radius:10px}
+.tools>.chips{grid-column:1/-1}
+.tools input{min-height:38px;border-radius:var(--radius-control)}
+.tb{gap:6px}.tb .btn{flex:none}.btn.sm{min-height:38px;font-size:var(--t-sm);padding:0 10px;border-radius:var(--radius-control)}
 .tools .chips{gap:6px}.tools .chip{min-height:32px;padding:0 12px}
 .ph.it>svg{width:30px;margin:16px 14px 0 0}
 .ph .addp{right:4px;bottom:4px;width:22px;height:22px}.ph .addp svg{width:14px}
-.tools{display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:6px}
 #stage{overflow:hidden;overflow:clip}
 #crumbs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);height:36px}
 .srow2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 36px);z-index:4;background:var(--bg);padding:4px 0 6px}
-.srow2 input{width:100%;min-height:38px;background:var(--s1);border:1px solid var(--line);border-radius:10px;color:var(--tx);padding:0 14px;font:var(--t-md) var(--sans)}
+.srow2 input{width:100%;min-height:38px;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-control);color:var(--tx);padding:0 14px;font:var(--t-md) var(--sans)}
 .prog{margin:4px 0 8px}.prog .ph1{display:flex;justify-content:space-between;align-items:baseline;font-size:var(--t-sm);color:var(--mu)}.prog .ph1 b{font:600 var(--t-md) var(--serif);color:var(--tx)}
 .pbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line);margin:6px 0;transform-origin:left}.pbar i{display:block;flex-basis:0}
 .pc0{background:var(--line)}.pc1{background:var(--ac);opacity:.3}.pc2{background:var(--ac);opacity:.5}.pc3{background:var(--ac);opacity:.75}.pc4{background:var(--ac)}
 .pleg{display:flex;flex-wrap:wrap;gap:0 10px;font-size:var(--t-sm);color:var(--mu)}.pleg .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 /* statistics dashboard */
-.prog{cursor:pointer;border-radius:10px;transition:background var(--dur-med) var(--ease),box-shadow var(--dur-med) var(--ease)}.prog:hover{background:var(--s1);box-shadow:0 0 0 6px var(--s1)}
+.prog{cursor:pointer;border-radius:var(--radius-control);transition:background var(--dur-med) var(--ease),box-shadow var(--dur-med) var(--ease)}.prog:hover{background:var(--s1);box-shadow:0 0 0 6px var(--s1)}
 .stats .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .kpi{background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-card);padding:12px 14px}.kpi b{display:block;font:600 var(--t-2xl) var(--serif)}.kpi small{color:var(--mu)}
 .strow{display:grid;gap:6px;padding:8px 0}.strow .sth{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.strow .sth span{min-width:0;overflow-wrap:anywhere}.strow .sth small{color:var(--mu);white-space:nowrap}
@@ -129,7 +130,7 @@ img.sico{display:inline-block;width:24px;height:24px;border-radius:6px;object-fi
 .trk.mini{height:6px;border-radius:3px}.trk.mini i{border-radius:3px}
 .rec li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}.rec li span{min-width:0;overflow-wrap:anywhere}.rec li small{color:var(--mu);text-align:right}
 
-.card{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}.ph img{-webkit-user-drag:none}
+.ph img{-webkit-user-drag:none}
 .ck{display:none;position:absolute;right:15px;top:calc(50% - 14px);transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:2px solid var(--mu);background:var(--bg);place-items:center;color:transparent;pointer-events:none}.ck svg{width:15px;color:inherit;stroke-width:2.4}
 body.selmode .ck{display:grid}body.selmode .card .more{visibility:hidden}
 .card.sel{border-color:var(--ac);box-shadow:inset 0 0 0 2px var(--ac)}.card.sel .ck{background:var(--ac);border-color:var(--ac);color:var(--acx)}
@@ -146,8 +147,8 @@ body.selmode #selbar{display:flex}
 .vwslide img{max-width:100%;max-height:100%;object-fit:contain;display:block;-webkit-user-drag:none;will-change:transform}
 .vwx,.vwn,.vwr{position:absolute;width:44px;height:44px;border:0;border-radius:50%;background:var(--ovl);color:var(--ovlx);display:grid;place-items:center;cursor:pointer}
 .vwx{top:10px;right:10px}.vwn{top:50%;margin-top:-22px}.vwp{left:8px}.vwq{right:8px}.vwx svg,.vwn svg,.vwr svg{width:20px}.vwr{top:10px;left:10px}.vwr:disabled{opacity:.5}
-.vwc{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:0 12px;height:28px;line-height:28px;border-radius:14px;background:var(--ovl);color:var(--ovlx);font:600 var(--t-sm) var(--sans)}.vwc:empty{display:none}
-.tile{touch-action:pan-y}
+.vwc{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:0 12px;height:28px;line-height:28px;border-radius:var(--radius-card);background:var(--ovl);color:var(--ovlx);font:600 var(--t-sm) var(--sans)}.vwc:empty{display:none}
+
 .tile .cvl{position:absolute;top:8px;left:8px;padding:0 10px;height:26px;line-height:26px;border-radius:13px;background:var(--ac);color:var(--acx);font:600 var(--t-xs) var(--sans)}.tile:not(.first) .cvl{display:none}
 .ddbg{position:fixed;inset:0;z-index:35}
 .dd{position:fixed;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.35);max-height:70vh;overflow-y:auto;transform-origin:top right}
@@ -160,7 +161,7 @@ body.selmode #selbar{display:flex}
 .dlg input.cz{min-height:32px;padding:0;border:0;background:none;accent-color:var(--ac)}
 
 .pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.phint{margin:-8px 0 0;color:var(--mu);font-size:var(--t-sm)}
-.tile{border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.16);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:box-shadow var(--dur-med) var(--ease),border-color var(--dur-med) var(--ease)}
+
 .tile img{cursor:pointer;-webkit-user-drag:none}
 .tile button{width:32px;height:32px;background:rgba(10,14,18,.58);color:#fff;border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:transform var(--dur-fast) var(--ease),opacity var(--dur-med) var(--ease)}
 .tile .x::after{content:none}
@@ -179,16 +180,35 @@ body.selmode #selbar{display:flex}
 :root[data-layout=grid] .qp{top:6px;left:6px;right:auto;bottom:auto}
 :root[data-layout=grid] .ck{top:6px;right:6px;transform:none}
 :root[data-theme=dark][data-amoled=on]{--bg:#000;--s1:#0c0e11;--s2:#171b20;--line:#262d35;--scrim:rgba(0,0,0,.8)}
-.dbtn{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dbtn .btn{width:100%;min-width:0;flex:none}.dbtn .rep{grid-column:1/-1}
+.dbtn{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dbtn .btn{width:100%;min-width:0;flex:none}.dbtn .rep,.dbtn .chk{grid-column:1/-1}
 .dlg.rpt{width:min(100%,420px);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.dlg.rpt .row{flex:none}
 .rpt .rb{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:16px;margin:0 -8px 8px;padding:0 8px}
 .rpt .gh2{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.rpt .gh2 span{display:flex}
 .rpt .lnk{background:none;border:0;color:var(--ac);font:600 var(--t-sm) var(--sans);padding:0 8px;min-height:36px;cursor:pointer}
-.rpt .clist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rpt .clist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius-control);overflow:hidden}
 .rpt .crow{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px;background:var(--s1);border:0;border-bottom:1px solid var(--line);color:var(--tx);font:var(--t-md) var(--sans);text-align:left;cursor:pointer}.rpt .crow:last-child{border-bottom:0}
 .rpt .cb{flex:none;width:22px;height:22px;border:1.5px solid var(--line);border-radius:6px;display:grid;place-items:center;transition:background var(--dur-med) var(--ease),border-color var(--dur-med) var(--ease)}
 .rpt .crow.on .cb{background:var(--ac);border-color:var(--ac);color:var(--acx)}.rpt .cb svg{width:14px}
 .rpt .cn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rpt .crow small{color:var(--mu)}.rpt .rcount{margin:0 0 10px}
+.card.hasq{touch-action:pan-y}
+.card[data-sw]::after{content:attr(data-lab);position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:6px;font:600 var(--t-sm) var(--sans);color:#fff;opacity:var(--sw,0);z-index:4;pointer-events:none}
+.card[data-sw=del]::after{background:rgba(185,59,40,.92)}
+.card.drag{z-index:5;box-shadow:0 14px 32px rgba(0,0,0,.4);transition:none}
+.card.cc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--cc);z-index:2}
+:root[data-layout=grid] .card.cc::before{right:0;bottom:auto;width:auto;height:6px}
+.cols{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:6px}
+.cwatch{aspect-ratio:1;border-radius:50%;border:2px solid transparent;cursor:pointer;min-height:44px;transition:transform var(--dur-fast) var(--ease)}.cwatch:active{transform:scale(.92)}.cwatch.on{border-color:var(--tx);box-shadow:0 0 0 2px var(--bg) inset}
+.splitc{display:flex;flex-direction:column;gap:6px;margin-top:6px}.srw{display:flex;align-items:center;justify-content:space-between;gap:12px}.srw .qty{margin:0}
+.srw .sl{font:var(--t-md) var(--sans)}.srw .sv{min-width:48px;text-align:center;font:600 var(--t-md) var(--sans)}.qty button:disabled{opacity:.35}
+.sinfo{margin:4px 0 0}.sinfo.bad{color:var(--dg)}
+.dlg .row.h{flex-wrap:wrap}
+.setall{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.mlist{display:grid;gap:8px}.bin .res-row{cursor:default}.bin .res-row:active{transform:none}.mgh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:600 var(--t-lg) var(--serif);border-bottom:1px solid var(--line);padding-bottom:6px;margin:14px 0 2px}.mgh small{font:var(--t-sm) var(--sans);color:var(--mu)}
+.mtags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.mtag{font:600 var(--t-xs) var(--sans);padding:2px 8px;border-radius:10px;background:var(--s2);border:1px solid var(--dg);color:var(--tx)}
+/* off-screen cards are skipped by layout and paint; "auto" remembers each real size once seen */
+.card{content-visibility:auto;contain-intrinsic-size:auto 72px}:root[data-layout=grid] .card{contain-intrinsic-size:auto 170px}
+.ab{display:grid;gap:12px}.ab p{margin:0}
+.tools>.chips{margin:0 -12px;padding:0 12px}
 </style></head><body>
 <header class="top"><h1>Hobby Vault</h1><div class="tr"><button class="ib" id="srch" aria-label="Search everything"></button><button class="ib" id="cog" aria-label="Settings"></button></div></header><nav id="crumbs" aria-label="Location"></nav>
 <main id="stage"></main>
@@ -204,7 +224,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
 const byName=(a,b)=>a.name.localeCompare(b.name);
 const fmtB=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':b<1073741824?(b/1048576).toFixed(1)+' MB':(b/1073741824).toFixed(2)+' GB';
-const matchQ=(r,q)=>{const h=(r.name+' '+(r.category||'')+' '+(r.notes||'')+' '+(r.notes!=null?stLab(stOf(r)):'')).toLowerCase();return q.split(/\s+/).filter(Boolean).every(t=>h.includes(t))};
+const matchQ=(r,q)=>{const h=(r.name+' '+(r.category||'')+' '+(r.notes||'')+' '+(r.notes!=null?segs(r).map(s=>stLab(s.status)).join(' '):'')).toLowerCase();return q.split(/\s+/).filter(Boolean).every(t=>h.includes(t))};
 const svg=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const ICON={folder:svg('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
 cube:svg('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12 4 7.5"/>'),
@@ -215,8 +235,9 @@ ICON.cog=svg('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a
 ICON.search=svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>');
 ICON.minus=svg('<path d="M5 12h14"/>');ICON.check=svg('<path d="M5 12.5l4.5 4.5L19 7"/>');
 ICON.rot=svg('<path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v4.5h-4.5"/>');
+const COLORS={red:'#d9534f',orange:'#e8893a',yellow:'#d4ae2f',green:'#4caf6a',teal:'#3fb0a0',blue:'#4a8de0',purple:'#9b6fd6',pink:'#d9689f',grey:'#8a949f'};
 const ACC={brass:{dark:['#c8974a','#1a1408'],light:['#9c6a17','#ffffff']},verdigris:{dark:['#4fb3a0','#04211c'],light:['#1f7a6a','#ffffff']},azure:{dark:['#6ea8e8','#071a30'],light:['#2a63b0','#ffffff']},violet:{dark:['#a992e6','#140c2b'],light:['#6a4bb5','#ffffff']}};
-const SET=(()=>{const K='hv-settings';let s={theme:null,accent:'brass',motion:true,sort:'az',flat:false,quality:'standard',layout:'list',amoled:false};
+const SET=(()=>{const K='hv-settings';let s={theme:null,accent:'brass',motion:true,sort:'az',flat:false,quality:'standard',layout:'list',amoled:false,binDays:30};
  try{Object.assign(s,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
  const sys=matchMedia('(prefers-color-scheme: light)'),theme=()=>s.theme||(sys.matches?'light':'dark');
  const apply=()=>{const t=theme(),r=document.documentElement,a=(ACC[s.accent]||ACC.brass)[t];r.dataset.theme=t;r.dataset.amoled=(s.amoled&&t==='dark')?'on':'off';r.dataset.motion=s.motion?'on':'off';r.dataset.layout=s.layout==='grid'?'grid':'list';
@@ -232,13 +253,16 @@ const R=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r
 const T=(s,m='readonly')=>db.transaction(s,m);
 const done=t=>new Promise((ok,no)=>{t.oncomplete=ok;t.onerror=()=>no(t.error);t.onabort=()=>no(t.error||new Error('Transaction aborted'))});
 const open=()=>new Promise((ok,no)=>{if(!window.indexedDB)return no(new Error('IndexedDB is not available'));
- const r=indexedDB.open('hobby-vault',2);
+ const r=indexedDB.open('hobby-vault',3);
  r.onupgradeneeded=()=>{const d=r.result;
   if(!d.objectStoreNames.contains('collections')){
    d.createObjectStore('collections',{keyPath:'id'}).createIndex('parentId','parentId');
    d.createObjectStore('items',{keyPath:'id'}).createIndex('parentId','parentId');
    d.createObjectStore('photos',{keyPath:'id'}).createIndex('itemId','itemId')}
-  const ps=r.transaction.objectStore('photos');if(!ps.indexNames.contains('itemOrder'))ps.createIndex('itemOrder',['itemId','sortOrder'])};
+  const ps=r.transaction.objectStore('photos');if(!ps.indexNames.contains('itemOrder'))ps.createIndex('itemOrder',['itemId','sortOrder']);
+  /* recycling bin: entry metadata in 'bin', the deleted photos in 'binPhotos' (kept apart so they never show up as live photos) */
+  if(!d.objectStoreNames.contains('bin'))d.createObjectStore('bin',{keyPath:'id'});
+  if(!d.objectStoreNames.contains('binPhotos'))d.createObjectStore('binPhotos',{keyPath:'id'}).createIndex('binId','binId')};
  r.onsuccess=()=>{db=r.result;ok()};r.onerror=()=>no(r.error);r.onblocked=()=>no(new Error('Database is blocked by another tab'))});
 const get=(s,id)=>R(T(s).objectStore(s).get(id));
 const put=async(s,o)=>{const t=T(s,'readwrite');t.objectStore(s).put(o);await done(t);return o};
@@ -271,12 +295,21 @@ const setThumb=(id,thumb)=>new Promise((ok,no)=>{const t=T('photos','readwrite')
 const photoKeys=()=>R(T('photos').objectStore('photos').getAllKeys());
 const replaceAll=async d=>{const t=T(['collections','items','photos'],'readwrite');
  for(const n of ['collections','items','photos']){const o=t.objectStore(n);o.clear();(d[n]||[]).forEach(r=>o.put(r))}await done(t)};
+const binAdd=async(e,list)=>{const t=T(['bin','binPhotos'],'readwrite');t.objectStore('bin').put(e);list.forEach(x=>t.objectStore('binPhotos').put({...x,binId:e.id}));await done(t)};
+const binDrop=async ids=>{const t=T(['bin','binPhotos'],'readwrite'),b=t.objectStore('bin'),q=t.objectStore('binPhotos'),ix=q.index('binId');
+ for(const id of ids){b.delete(id);(await R(ix.getAllKeys(IDBKeyRange.only(id)))).forEach(k=>q.delete(k))}await done(t)};
+const binPhotos=async id=>(await by('binPhotos','binId',id)).map(({binId,...x})=>x);
+const binClear=async()=>{const t=T(['bin','binPhotos'],'readwrite');t.objectStore('bin').clear();t.objectStore('binPhotos').clear();await done(t)};
+const binPhotoKeys=()=>R(T('binPhotos').objectStore('binPhotos').getAllKeys());
+const binReplace=async(es,ps)=>{const t=T(['bin','binPhotos'],'readwrite'),a=t.objectStore('bin'),b=t.objectStore('binPhotos');a.clear();b.clear();es.forEach(x=>a.put(x));ps.forEach(x=>b.put(x));await done(t)};
+const binUsage=()=>new Promise((ok,no)=>{let n=0,b=0;const q=T('binPhotos').objectStore('binPhotos').openCursor();
+ q.onsuccess=()=>{const c=q.result;if(!c)return ok({n,b});const v=c.value;n++;b+=(v.blob?v.blob.size:0)+(v.thumb?v.thumb.size:0);c.continue()};q.onerror=()=>no(q.error)});
 const delItem=id=>wipe([],[id]);
 const delCollection=async id=>{const cols=[id],items=[];
  for(let n=0;n<cols.length;n++){(await by('collections','parentId',cols[n])).forEach(c=>cols.push(c.id));
   (await by('items','parentId',cols[n])).forEach(x=>items.push(x.id))}
  await wipe(cols,items)};
-return{setThumb,usage,photoKeys,thumbs,all,replaceAll,open,get,put,by,count,photoCounts,photos,delPhoto,putPhotos,delItem,delCollection}})();
+return{binAdd,binDrop,binPhotos,binClear,binPhotoKeys,binReplace,binUsage,setThumb,usage,photoKeys,thumbs,all,replaceAll,open,get,put,by,count,photoCounts,photos,delPhoto,putPhotos,delItem,delCollection}})();
 
 /* ---------- motion system (tokens live in CSS) ---------- */
 const M=(()=>{const RMQ=matchMedia('(prefers-reduced-motion: reduce)'),RM={get matches(){return RMQ.matches||document.documentElement.dataset.motion==='off'}};
@@ -300,7 +333,7 @@ function toast(m,err,undo){const t=el('div','toast'+(err?' err':'')),l=el('span'
  setTimeout(async()=>{if(!t.isConnected)return;await M.fade(t,1,0,'slow',{fill:'forwards'});t.remove()},undo?6000:3000)}
 const guard=fn=>async(...a)=>{try{return await fn(...a)}catch(e){console.error(e);toast(e&&e.message||'Something went wrong',true)}};
 
-function dlg({title,msg,input,ok='OK',danger,choices}){return new Promise(res=>{
+function dlg({title,msg,input,ok='OK',danger,choices,again}){return new Promise(res=>{
  const bd=el('div','backdrop'),d=el('div','dlg');d.setAttribute('role','dialog');
  d.innerHTML=`<h2>${esc(title)}</h2>${msg?`<p>${esc(msg)}</p>`:''}${input!=null?`<input maxlength="80" placeholder="Name" value="${esc(input)}">`:''}<div class="row${choices?'':' h'}"></div>`;
  const row=$('.row',d),inp=$('input',d);let fin=false;
@@ -310,12 +343,20 @@ function dlg({title,msg,input,ok='OK',danger,choices}){return new Promise(res=>{
  if(choices)choices.forEach(c=>{const b=add(c.label,c.value,'ghost'+(c.danger?' danger':''));
   if(c.pick)b.onclick=()=>{const f=el('input');f.type='file';f.accept='image/*';f.onchange=()=>{if(f.files[0])close({file:f.files[0]})};f.click()}});
  add('Cancel',null,'ghost');
+ if(again&&inp){const b2=add(again,null,'ghost');b2.onclick=()=>{const v=inp.value.trim();if(!v)return inp.focus();close({v,again:1})}}
  if(!choices){const b=add(ok,true,danger?'danger':'');b.onclick=()=>{if(inp){const v=inp.value.trim();if(!v)return inp.focus();close(v)}else close(true)}}
  bd.onclick=e=>{if(e.target===bd)close(null)};
  bd.onkeydown=e=>{if(e.key==='Escape')close(null);if(e.key==='Enter'&&inp)$('.btn:last-child',row).click()};
  bd.append(d);document.body.append(bd);M.fade(bd,0,1);
  M.run(d,[{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`},{opacity:1,transform:'none'}],'slow');
  (inp||$('.btn',d)).focus();inp&&inp.select()})}
+
+function pickColour(cur){return new Promise(res=>{const bd=el('div','backdrop'),d=el('div','dlg');d.setAttribute('role','dialog');d.setAttribute('aria-label','Colour label');
+ d.innerHTML='<h2>Colour label</h2><div class="cols"></div><div class="row h"><button class="btn ghost no">Cancel</button><button class="btn ghost none">No colour</button></div>';
+ let fin=false;const close=async v=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});await M.run(d,[{opacity:1,transform:'none'},{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`}],'med',{fill:'forwards'});bd.remove();res(v)};
+ Object.entries(COLORS).forEach(([k,h])=>{const b=el('button','cwatch'+(cur===k?' on':''));b.style.background=h;b.setAttribute('aria-label',k);b.setAttribute('aria-pressed',cur===k);b.onclick=()=>close(k);$('.cols',d).append(b)});
+ $('.no',d).onclick=()=>close(undefined);$('.none',d).onclick=()=>close('');bd.onclick=e=>{if(e.target===bd)close(undefined)};bd.onkeydown=e=>{if(e.key==='Escape')close(undefined)};
+ bd.append(d);document.body.append(bd);M.fade(bd,0,1);M.run(d,[{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`},{opacity:1,transform:'none'}],'slow');(($('.on',d))||$('.cwatch',d)).focus()})}
 
 async function okName(name,parentId,kind,skipId){const k=name.trim().toLowerCase(),list=await DB.by(kind==='c'?'collections':'items','parentId',parentId);
  if(!list.some(x=>x.id!==skipId&&String(x.name).trim().toLowerCase()===k))return true;
@@ -328,7 +369,7 @@ async function pathOf(id){const p=[];while(id!==ROOT){const c=await DB.get('coll
 const skeleton=()=>`<div class="grid">${'<div class="card sk"><div class="ph"></div><div class="lab"><b>Loading</b></div></div>'.repeat(6)}</div>`;
 
 const go=guard(async(id,dir=0)=>{resetS();clearSel();const my=++nav,path=await pathOf(id);if(my!==nav)return;
- cur=path.length?path[path.length-1].id:ROOT;loadF();
+ cur=path.length?path[path.length-1].id:ROOT;loadF(path[path.length-1]);
  crumbs.innerHTML='';[{id:ROOT,name:'Vault'},...path].forEach((c,i,a)=>{if(i)crumbs.append(el('i','','›'));
   const b=el('button','',esc(c.name));if(i===a.length-1)b.setAttribute('aria-current','page');else b.onclick=()=>go(c.id,-1);crumbs.append(b)});
  crumbs.scrollLeft=1e5;
@@ -343,10 +384,29 @@ const go=guard(async(id,dir=0)=>{resetS();clearSel();const my=++nav,path=await p
 const STATUS=[['unbuilt','Unbuilt'],['built','Built'],['primed','Primed'],['painted','Painted'],['complete','Complete']];
 const stOf=r=>{const k=r.status==='based'?'complete':r.status;return STATUS.some(x=>x[0]===k)?k:'unbuilt'},stLab=k=>STATUS.find(x=>x[0]===k)[1];
 const qtyOf=r=>Number.isInteger(r.qty)?r.qty:1;
-function qtyCtl(rec){const w=el('div','qty');
+/* A unit can be split across statuses: r.split = {painted:4,primed:6}. It only counts while it adds up to the quantity; otherwise the single status field is used. */
+const sq0=r=>Math.max(0,qtyOf(r));
+const segs=r=>{const q=sq0(r),sp=r.split;
+ if(sp&&typeof sp==='object'){const out=STATUS.map(([k])=>({status:k,qty:Math.max(0,Math.floor(+sp[k]||0))})).filter(x=>x.qty>0);if(out.length&&out.reduce((a,x)=>a+x.qty,0)===q)return out}
+ return[{status:stOf(r),qty:q}]};
+const doneOf=r=>{const q=sq0(r);if(!q)return STW[stOf(r)];return segs(r).reduce((a,x)=>a+x.qty*STW[x.status],0)/q}; /* 0..1 weighted completion of one entry, split units included */
+const stText=r=>{const s=segs(r);return s.length>1?s.map(x=>`${x.qty} ${stLab(x.status)}`).join(', '):stLab(s[0].status)};
+/* one pseudo-record per status segment, so every count, filter and total works on plain status + quantity */
+const expand=l=>l.flatMap(r=>r.split?segs(r).map(x=>({...r,status:x.status,qty:x.qty,split:undefined})):[r]);
+function setSplit(r,cnt){const used=STATUS.filter(([k])=>cnt[k]>0);
+ if(used.length<=1){delete r.split;if(used.length)r.status=used[0][0];return}
+ r.split=Object.fromEntries(used.map(([k])=>[k,cnt[k]]));r.status=used.slice().sort((a,b)=>cnt[b[0]]-cnt[a[0]])[0][0]}
+function fitSplit(r){if(!r.split)return;if(typeof r.split!=='object'){delete r.split;return}
+ const q=sq0(r),cnt=Object.fromEntries(STATUS.map(([k])=>[k,Math.max(0,Math.floor(+r.split[k]||0))]));let sum=STATUS.reduce((a,[k])=>a+cnt[k],0);
+ if(sum<q)cnt.unbuilt+=q-sum;else if(sum>q){let x=sum-q;for(const[k]of STATUS){const t=Math.min(cnt[k],x);cnt[k]-=t;x-=t;if(!x)break}}
+ setSplit(r,cnt)}
+function qtyCtl(rec,onQty){const w=el('div','qty');
  w.innerHTML=`<button type="button" aria-label="One fewer">${ICON.minus}</button><input type="number" inputmode="numeric" min="0" max="999" aria-label="Quantity"><button type="button" aria-label="One more">${ICON.plus}</button>`;
  const[m,p]=w.querySelectorAll('button'),i=$('input',w);i.value=qtyOf(rec);
- const set=guard(async n=>{n=Math.max(0,Math.min(999,Math.round(n)||0));i.value=n;if(rec.qty===n)return;rec.qty=n;await DB.put('items',rec)});
+ const set=guard(async n=>{n=Math.max(0,Math.min(999,Math.round(n)||0));i.value=n;if(rec.qty===n)return;const was=sq0(rec);rec.qty=n;
+  if(rec.split)fitSplit(rec);
+  else if(n>was&&was>0&&stOf(rec)!=='unbuilt'){const cc=Object.fromEntries(STATUS.map(([k])=>[k,0]));cc[stOf(rec)]=was;cc.unbuilt=n-was;setSplit(rec,cc)} /* new models start Unbuilt, same as for split units */
+  await DB.put('items',rec);onQty&&onQty()});
  m.onclick=()=>set(qtyOf(rec)-1);p.onclick=()=>set(qtyOf(rec)+1);i.onchange=()=>set(+i.value);
  w.onclick=e=>e.stopPropagation();return w}
 
@@ -358,6 +418,67 @@ async function snapOf(kind,id){const[C,I]=await Promise.all([DB.all('collections
 async function undoSnap(sn){for(const c of sn.cols)await DB.put('collections',c);for(const i of sn.items)await DB.put('items',i);await DB.putPhotos(sn.photos);
  const v=live();v&&await fill(v,{quiet:1});toast('Restored')}
 
+/* ---------- recycling bin ---------- */
+/* binDays: 0 = off (deletes are permanent, undo toast only), -1 = keep forever, otherwise days */
+const binDays=()=>{const d=SET.get().binDays;return(d===0||d===-1||d>0)?d:30};
+const BIN_OPTS=[[0,'Off'],[7,'7 days'],[14,'14 days'],[30,'30 days'],[90,'90 days'],[-1,'Keep forever']];
+const plu=(n,w)=>n+' '+w+(n===1?'':'s');
+const binTail=()=>{const d=binDays();return d<0?' You can restore it from the recycling bin.':` You can restore it from the recycling bin for ${d} days.`};
+const delMsg=(off,on)=>binDays()===0?off:on+binTail();
+/* copies a just-snapshotted deletion into the bin BEFORE the live data is removed, so a failure can never lose data */
+async function trash(kind,rec,sn){
+ if(binDays()===0)return[];
+ const p=await pathOf(rec.parentId),from=p.length?p.map(c=>c.name).join(' / '):'Vault (top level)';
+ const e={id:uid(),kind,rootId:rec.id,name:rec.name,parentId:rec.parentId,from,deletedAt:Date.now(),cols:sn.cols,items:sn.items,nCols:sn.cols.length,nItems:sn.items.length,nPhotos:sn.photos.length};
+ await DB.binAdd(e,sn.photos);return[e.id]}
+async function trashMany(recs,sn){const ids=[];
+ try{for(const r of recs)ids.push(...await trash('i',r,{cols:[],items:[r],photos:sn.photos.filter(x=>x.itemId===r.id)}))}
+ catch(e){if(ids.length)await DB.binDrop(ids).catch(()=>{});throw e}
+ return ids}
+const undoDel=async(sn,ids)=>{await undoSnap(sn);if(ids.length)await DB.binDrop(ids)};
+async function binPurge(days=binDays()){if(!(days>0))return 0;
+ const old=(await DB.all('bin')).filter(e=>Date.now()-e.deletedAt>days*864e5);
+ if(old.length)await DB.binDrop(old.map(e=>e.id));return old.length}
+async function binRestore(e){
+ const[C,I]=await Promise.all([DB.all('collections'),DB.all('items')]);
+ let pid=e.parentId,moved=false;
+ if(pid!==ROOT&&!C.some(c=>c.id===pid)){pid=ROOT;moved=true}
+ const top=(e.kind==='c'?e.cols:e.items).find(x=>x.id===e.rootId);
+ if(!top)throw new Error('This entry is damaged and cannot be restored');
+ const used=new Set((e.kind==='c'?C:I).filter(x=>x.parentId===pid).map(x=>(x.name||'').trim().toLowerCase()));
+ const base=top.name;let name=base,n=1;
+ while(used.has(name.trim().toLowerCase())){n++;name=`${base} (restored${n>2?' '+(n-1):''})`}
+ top.parentId=pid;top.name=name;
+ for(const c of e.cols)await DB.put('collections',c);
+ for(const i of e.items)await DB.put('items',i);
+ await DB.putPhotos(await DB.binPhotos(e.id));
+ await DB.binDrop([e.id]);
+ return{moved,name}}
+async function openBin(){if($('.sheet.bin'))return;
+ const sh=el('div','sheet bin');sh.style.zIndex=26;sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-labelledby','bn-title');
+ sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close recycling bin">${ICON.down}</button><h2 id="bn-title">Recycling bin</h2></div><div class="body"><p class="muted sum" aria-live="polite" style="margin:0"></p><button class="btn ghost sm danger emp">Empty bin</button><div class="mlist"></div></div>`;
+ const sum=$('.sum',sh),box=$('.mlist',sh),emp=$('.emp',sh);
+ const ago=t=>{const n=Math.floor((Date.now()-t)/864e5);return n<=0?'today':n===1?'yesterday':n+' days ago'};
+ const render=async()=>{const top=sh.scrollTop,d=binDays();await binPurge();
+  const list=(await DB.all('bin')).sort((a,b)=>b.deletedAt-a.deletedAt);if(!sh.isConnected)return;
+  box.replaceChildren();emp.hidden=!list.length;
+  sum.textContent=!list.length?'The bin is empty.':plu(list.length,'item')+' in the bin. '+(d>0?`Items are deleted for good ${d} days after you delete them.`:d<0?'Items stay here until you delete them.':'The bin is turned off in Settings.');
+  list.forEach(e=>{
+   const info=e.kind==='c'?`Collection · ${plu(e.nItems,'model')}${e.nCols>1?', '+plu(e.nCols-1,'sub-collection'):''} · ${plu(e.nPhotos,'photo')}`:`Model · ${plu(e.nPhotos,'photo')}`;
+   const left=d>0?Math.max(1,Math.ceil((e.deletedAt+d*864e5-Date.now())/864e5)):null;
+   const r=el('div','res-row',`<span class="rk">${e.kind==='c'?ICON.folder:ICON.cube}</span><span style="flex:1;min-width:0"><b>${esc(e.name)}</b><small style="display:block">${esc(info)}</small><small style="display:block">From ${esc(e.from||'Vault (top level)')}</small><small style="display:block">Deleted ${ago(e.deletedAt)}${left!=null?' · '+left+(left===1?' day':' days')+' left':''}</small></span>`);
+   const a=el('span');a.style.cssText='display:flex;gap:8px;justify-content:flex-end;width:100%';r.style.flexWrap='wrap';
+   const rb=el('button','btn ghost sm','Restore'),xb=el('button','btn ghost sm danger','Delete forever');
+   rb.onclick=guard(async()=>{rb.disabled=xb.disabled=true;try{const o=await binRestore(e);toast(`Restored “${o.name}”${o.moved?' to the top level':''}`)}finally{await render();const v=live();v&&fill(v,{quiet:1})}});
+   xb.onclick=guard(async()=>{if(!await dlg({title:`Delete “${e.name}” for good?`,msg:'This cannot be undone.',ok:'Delete forever',danger:1}))return;await DB.binDrop([e.id]);toast('Deleted for good');await render()});
+   a.append(xb,rb);r.append(a);box.append(r)});
+  sh.scrollTop=top};
+ emp.onclick=guard(async()=>{const n=(await DB.all('bin')).length;if(!n)return;if(!await dlg({title:'Empty the recycling bin?',msg:`${plu(n,'item')} will be deleted for good. This cannot be undone.`,ok:'Empty bin',danger:1}))return;await DB.binClear();toast('Bin emptied');await render()});
+ const close=guard(async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove();const v=live();v&&fill(v,{quiet:1})});
+ $('.back',sh).onclick=close;sh.onkeydown=e=>{if(e.key==='Escape'){e.stopPropagation();$('.back',sh).click()}};
+ document.body.append(sh);M.run(sh,[{transform:'translateY(100%)'},{transform:'none'}],'slow');$('.back',sh).focus();
+ await render()}
+
 /* ---------- multi-select ---------- */
 const SEL=new Set();
 function syncSel(){document.body.classList.toggle('selmode',SEL.size>0);const n=$('#sn');if(n)n.textContent=SEL.size+' selected'}
@@ -368,8 +489,9 @@ async function bulk(a){
  if(!v||!n){clearSel();return}
  const word=`${n} model${n===1?'':'s'}`,cards=()=>[...v.querySelectorAll('.card.sel')],undo=()=>cards().forEach(c=>c.getAnimations().forEach(x=>x.cancel()));
  if(a==='st'){const k=await dlg({title:`Set status for ${word}`,choices:STATUS.map(([k,l])=>({label:l,value:k}))});if(!k)return;
-  for(const r of recs){r.status=k;await DB.put('items',r)}
-  toast(`Status set to ${stLab(k)}`);clearSel();await fill(v,{quiet:1});return}
+  const old=recs.map(r=>({id:r.id,status:r.status,split:r.split?{...r.split}:undefined}));
+  for(const r of recs){r.status=k;delete r.split;await DB.put('items',r)}
+  toast(`Status set to ${stLab(k)}`,false,async()=>{for(const o of old){const r=await DB.get('items',o.id);if(!r)continue;if(o.split)r.split=o.split;else delete r.split;if(o.status===undefined)delete r.status;else r.status=o.status;await DB.put('items',r)}const lv=live();lv&&await fill(lv,{quiet:1})});clearSel();await fill(v,{quiet:1});return}
  if(a==='mv'){const cols=await DB.all('collections'),map=new Map(cols.map(c=>[c.id,c])),nm=c=>{const p=[];for(let x=c;x;x=map.get(x.parentId))p.unshift(x.name);return p.join(' / ')};
   const same=recs.every(r=>r.parentId===recs[0].parentId)?recs[0].parentId:null;
   const choices=[{label:'Vault (top level)',value:ROOT},...cols.map(c=>({label:nm(c),value:c.id})).sort((x,y)=>x.label.localeCompare(y.label))].filter(c=>c.value!==same);
@@ -377,17 +499,19 @@ async function bulk(a){
   await Promise.all(cards().map(c=>M.out(c)));
   try{for(const r of recs){r.parentId=d;await DB.put('items',r)}}catch(e){undo();throw e}
   toast(`Moved ${word}`);clearSel();await fill(v,{quiet:1});return}
- if(a==='del'){if(!await dlg({title:`Delete ${word}?`,msg:'This also deletes their photos.',ok:'Delete',danger:1}))return;
+ if(a==='del'){if(!await dlg({title:`Delete ${word}?`,msg:delMsg('This also deletes their photos.','Their photos go with them.'),ok:'Delete',danger:1}))return;
   await Promise.all(cards().map(c=>M.out(c)));
   const sn=await snapItems(recs);
-  try{for(const r of recs)await DB.delItem(r.id)}catch(e){undo();throw e}
-  toast(`Deleted ${word}`,false,()=>undoSnap(sn));clearSel();await fill(v,{quiet:1})}}
+  let bin=[];
+  try{bin=await trashMany(recs,sn);for(const r of recs)await DB.delItem(r.id)}catch(e){undo();if(bin.length)await DB.binDrop(bin).catch(()=>{});throw e}
+  toast(`Deleted ${word}`,false,()=>undoDel(sn,bin));clearSel();await fill(v,{quiet:1})}}
 $('#sx').innerHTML=ICON.x;$('#sx').onclick=clearSel;
 $('#sall').onclick=()=>{const v=live();if(!v)return;v.querySelectorAll('.card.hasq').forEach(c=>{if(c.offsetParent&&c.dataset.id){SEL.add(c.dataset.id);c.classList.add('sel')}});syncSel()};
 document.querySelectorAll('#selbar [data-a]').forEach(b=>{b.onclick=guard(()=>bulk(b.dataset.a))});
 
 function card(kind,rec,sub,thumb,v,photo){const c=el('div','card');c.tabIndex=0;c.dataset.id=rec.id;
  c.innerHTML=`<div class="ph">${kind==='c'?ICON.folder:ICON.cube}</div><div class="lab"><b>${esc(rec.name)}</b><small>${sub}</small></div><button class="more" aria-label="Options for ${esc(rec.name)}">${ICON.dots}</button>`;
+ if(kind==='c'&&COLORS[rec.color]){c.classList.add('cc');c.style.setProperty('--cc',COLORS[rec.color]);c.dataset.colour=rec.color}
  if(thumb){const u=URL.createObjectURL(thumb);v._urls.push(u);const im=new Image();im.alt='';im.decoding='async';im.onload=()=>im.classList.add('on');im.src=u;$('.ph',c).append(im)}
  if(kind==='i'){const ph=$('.ph',c);ph.classList.add('it');c.classList.add('hasq');c.insertAdjacentHTML('beforeend',`<span class="qp" title="Quantity">×${qtyOf(rec)}</span><span class="ck" aria-hidden="true">${ICON.check}</span>`);if(SEL.has(rec.id))c.classList.add('sel');ph.setAttribute('role','button');ph.setAttribute('aria-label',photo?'View photo':'Add photo');
   if(!photo)ph.insertAdjacentHTML('beforeend',`<span class="addp">${ICON.plus}</span>`)}
@@ -399,19 +523,40 @@ function card(kind,rec,sub,thumb,v,photo){const c=el('div','card');c.tabIndex=0;
     const n=await importFiles(rec.id,fs);if(n){toast(`Added ${n} photo${n>1?'s':''}`);await fill(v,{quiet:1})}});
    inp.click();return}
   kind==='c'?go(rec.id,1):openItem(rec.id)});
- if(kind==='i'){let t,x0=0,y0=0;const stop=()=>clearTimeout(t);
-  c.addEventListener('pointerdown',e=>{c._lp=false;if(e.button>0||e.target.closest('.more'))return;x0=e.clientX;y0=e.clientY;stop();
+ if(kind==='i'){let t,x0=0,y0=0,sw=false,dx=0;const stop=()=>clearTimeout(t);
+  const reset=()=>{c.style.transition='';c.style.transform='';c.removeAttribute('data-sw');c.removeAttribute('data-lab');c.style.removeProperty('--sw')};
+  c.addEventListener('pointerdown',e=>{c._lp=false;sw=false;dx=0;if(e.button>0||e.target.closest('.more'))return;x0=e.clientX;y0=e.clientY;stop();
    t=setTimeout(()=>{c._lp=true;if(!SEL.has(rec.id))toggleSel(rec.id,c);try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}},450)});
-  c.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-x0,e.clientY-y0)>10)stop()});
-  ['pointerup','pointercancel','pointerleave'].forEach(n=>c.addEventListener(n,stop));
+  c.addEventListener('pointermove',e=>{const mx=e.clientX-x0,my=e.clientY-y0;
+   if(!sw&&!SEL.size&&e.buttons&&mx<-12&&Math.abs(mx)>Math.abs(my)*1.6){sw=true;stop();c._lp=true;try{c.setPointerCapture(e.pointerId)}catch(_){}c.style.transition='none'}
+   if(sw){dx=Math.max(-140,Math.min(0,mx));c.style.transform=`translateX(${dx*.7}px)`;c.dataset.sw='del';c.dataset.lab='Delete';c.style.setProperty('--sw',Math.min(1,Math.abs(dx)/90));return}
+   if(Math.hypot(mx,my)>10)stop()});
+  c.addEventListener('pointerup',guard(async()=>{stop();if(!sw)return;sw=false;const d=dx;dx=0;reset();
+   if(d<=-90)await swipeDel(rec,c,v)}));
+  c.addEventListener('pointercancel',()=>{stop();if(sw){sw=false;dx=0;reset()}});
+  c.addEventListener('pointerleave',stop);
   c.addEventListener('contextmenu',e=>e.preventDefault())}
  c.onkeydown=e=>{if(e.key==='Enter'&&e.target===c)c.click()};return c}
 
+async function swipeDel(rec,c,v){await M.out(c);const sn=await snapOf('i',rec.id);
+ let bin=[];
+ try{bin=await trash('i',rec,sn);await DB.delItem(rec.id)}catch(e){c.getAnimations().forEach(x=>x.cancel());if(bin.length)await DB.binDrop(bin).catch(()=>{});throw e}
+ toast(`Deleted “${rec.name}”`,false,()=>undoDel(sn,bin));await fill(v,{quiet:1})}
 const empty=()=>{const e=el('div','empty',`<div class="float">${ICON.cube}</div><h2>Nothing here yet</h2><p>Add a collection for an army or faction, or a model to photograph.</p>`);M.fade(e,0,1,'slow');return e};
 
 let S,collapsed;const resetS=()=>{S={q:'',sort:SET.get().sort,flat:SET.get().flat,cats:new Set(),sts:new Set()};collapsed=new Set()};resetS();
 const FK='hv-filters',readF=()=>{try{return JSON.parse(localStorage.getItem(FK)||'{}')}catch(e){return{}}};
-const loadF=()=>{const a=readF(),f=a[cur]||{};S.cats=new Set(f.c||[]);S.sts=new Set(a._globalStatuses||[])};
+const SK='hv-sorts',readSorts=()=>{try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){return{}}};
+/* each collection keeps its sort on its own record, so it travels with backups and restores; the top level has no record and uses localStorage */
+const saveSort=async()=>{const sort=S.sort,id=cur;
+ if(id===ROOT){const a=readSorts();a[ROOT]=sort;try{localStorage.setItem(SK,JSON.stringify(a))}catch(e){}return}
+ try{const r=await DB.get('collections',id);if(r){r.sort=sort;await DB.put('collections',r)}}catch(e){}};
+async function migrateSorts(){const a=readSorts();let ch=false;
+ for(const id of Object.keys(a)){if(id===ROOT)continue;ch=true;
+  try{const r=await DB.get('collections',id);if(r&&!r.sort&&SORTS.some(x=>x[0]===a[id])){r.sort=a[id];await DB.put('collections',r)}}catch(e){}
+  delete a[id]}
+ if(ch)try{localStorage.setItem(SK,JSON.stringify(a))}catch(e){}}
+const loadF=rec=>{const a=readF(),f=a[cur]||{};S.cats=new Set(f.c||[]);S.sts=new Set(a._globalStatuses||[]);const so=(rec&&rec.sort)||readSorts()[cur];if(so&&SORTS.some(x=>x[0]===so))S.sort=so};
 const saveF=()=>{const a=readF();if(S.cats.size)a[cur]={...(a[cur]||{}),c:[...S.cats]};else delete a[cur];
 a._globalStatuses=[...S.sts];try{localStorage.setItem(FK,JSON.stringify(a))}catch(e){}};
 const ckr=r=>(r.category||'').trim().toLowerCase();
@@ -421,22 +566,23 @@ async function fill(v,o={}){
  const ids=new Set([cur]);for(let more=true;more;){more=false;allC.forEach(c=>{if(!ids.has(c.id)&&ids.has(c.parentId)){ids.add(c.id);more=true}})}
  const sub=allI.filter(i=>ids.has(i.parentId)),cats=new Map();let uncat=false;
  sub.forEach(i=>{const c=(i.category||'').trim();if(!c)uncat=true;else if(!cats.has(c.toLowerCase()))cats.set(c.toLowerCase(),c)});
- const sts=STATUS.map(x=>x[0]).filter(k=>sub.some(i=>stOf(i)===k));
+ const sts=STATUS.map(x=>x[0]).filter(k=>sub.some(i=>segs(i).some(s=>s.status===k)));
  [...S.cats].forEach(k=>{if(!(k===''?uncat:cats.has(k)))S.cats.delete(k)});[...S.sts].forEach(k=>{if(!sts.includes(k))S.sts.delete(k)});
  if(o.pop){collapsed.clear();S.q='';S.cats.clear();S.sts.clear();saveF()}
- const filt=S.cats.size>0||S.sts.size>0,hitF=i=>(!S.cats.size||S.cats.has(ckr(i)))&&(!S.sts.size||S.sts.has(stOf(i)));
+ const filt=S.cats.size>0||S.sts.size>0,hitF=i=>(!S.cats.size||S.cats.has(ckr(i)))&&(!S.sts.size||segs(i).some(s=>S.sts.has(s.status)));
  const matched=filt?sub.filter(hitF):sub,items=filt?matched:allI.filter(i=>i.parentId===cur),cols=filt?[]:allC.filter(c=>c.parentId===cur);
  const tm=await DB.thumbs(items.map(i=>i.id));
  if(!v.isConnected||v.classList.contains('leaving'))return;
  (v._urls||[]).forEach(URL.revokeObjectURL);v._urls=[];
- const cnt=id=>allC.filter(c=>c.parentId===id).length+allI.filter(i=>i.parentId===id).length;
+ const cnt=id=>allC.filter(c=>c.parentId===id).length+allI.filter(i=>i.parentId===id).length,
+  cntTxt=id=>[[allC.filter(c=>c.parentId===id).length,'collection'],[allI.filter(i=>i.parentId===id).length,'model']].filter(x=>x[0]).map(x=>plu(x[0],x[1])).join(' · ')||'Empty';
  const rel=id=>{const p=[];for(let x=allC.find(c=>c.id===id);x&&x.id!==cur;x=allC.find(c=>c.id===x.parentId))p.unshift(x.name);return p.join(' / ')};
- const D={subN:sub.length,cols:cols.map(c=>{const n=cnt(c.id);return{rec:c,el:card('c',c,n?n+' inside':'Empty',c.icon instanceof Blob?c.icon:null,v)}}),
+ const D={subN:sub.length,cols:cols.map(c=>{const n=cnt(c.id);return{rec:c,el:card('c',c,n?cntTxt(c.id):'Empty',c.icon instanceof Blob?c.icon:null,v)}}),
   items:items.map(it=>{const th=tm.get(it.id),c=(it.category||'').trim(),loc=it.parentId!==cur?'<br>'+esc(rel(it.parentId)):'';
-   return{rec:it,el:card('i',it,stLab(stOf(it))+(c?', '+esc(c):'')+loc,th,v,th)}})};
+   return{rec:it,el:card('i',it,esc(stText(it))+(c?', '+esc(c):'')+loc,th,v,th)}})};
  v._d=D;v._cats=cats;v._uncat=uncat;v._sts=sts;
  if(!filt&&!D.cols.length&&!D.items.length){v.replaceChildren(empty());return}
- const sl=[...v.querySelectorAll('.chips')].map(c=>c.scrollLeft),pr=progress(barList(matched));v._m=matched;
+ const sl=[...v.querySelectorAll('.chips')].map(c=>c.scrollLeft),pr=progress(restrictS(barList(matched)));v._m=matched;
  v.replaceChildren(...(pr?[progEl(pr)]:[]),...tools(v),el('div','content'));paint(v);
  if(o.keep)v.querySelectorAll('.chips').forEach((c,i)=>{c.scrollLeft=sl[i]||0});
  if(o.quiet)return;
@@ -444,10 +590,11 @@ async function fill(v,o={}){
  if(o.pop){const x=[...D.cols,...D.items].find(x=>x.rec.id===o.pop);x&&M.pop(x.el)}else M.stagger(v.querySelectorAll('.card'))}
 
 const barList=l=>{const q=S.q.trim().toLowerCase();return q?l.filter(i=>matchQ(i,q)):l};
-function barSync(v){const old=$('.prog',v),pr=progress(barList(v._m||[])),e=pr?progEl(pr):null;if(old&&e)old.replaceWith(e);else if(old)old.remove();else if(e)v.prepend(e)}
+function barSync(v){const old=$('.prog',v),pr=progress(restrictS(barList(v._m||[]))),e=pr?progEl(pr):null;if(old&&e)old.replaceWith(e);else if(old)old.remove();else if(e)v.prepend(e)}
 const STW={unbuilt:0,built:.25,primed:.30,painted:.80,complete:1};
 function progress(list){const n=Object.fromEntries(STATUS.map(x=>[x[0],0]));let total=0;
- list.forEach(i=>{const q=sq(i);n[stOf(i)]+=q;total+=q});return total?{n,total}:null}
+ expand(list).forEach(i=>{const q=sq(i);n[stOf(i)]+=q;total+=q});return total?{n,total}:null}
+const restrictS=l=>S.sts.size?expand(l).filter(p=>S.sts.has(stOf(p))):l;
 function progEl(P){const pct=Math.round(STATUS.reduce((a,[k])=>a+P.n[k]*STW[k],0)/P.total*100),e=el('div','prog'),rev=[...STATUS].reverse().filter(([k])=>P.n[k]),ix=k=>STATUS.findIndex(x=>x[0]===k);
  e.innerHTML=`<div class="ph1"><b>Completion ${pct}%</b><span>${P.total} model${P.total===1?'':'s'}</span></div><div class="pbar" role="img" aria-label="Completion ${pct} percent. ${rev.map(([k,l])=>l+' '+P.n[k]).join(', ')}">${rev.map(([k])=>`<i class="pc${ix(k)}" style="flex-grow:${P.n[k]}"></i>`).join('')}</div><div class="pleg">${rev.map(([k,l])=>`<span><span class="dot pc${ix(k)}"></span>${l} ${P.n[k]} (${Math.round(P.n[k]/P.total*100)}%)</span>`).join('')}</div>`;
  e.tabIndex=0;e.setAttribute('role','button');e.setAttribute('aria-label',`Completion ${pct} percent. Open statistics`);
@@ -465,7 +612,8 @@ async function openStats(){if(statsBusy||$('.sheet.stats'))return;statsBusy=true
 async function buildStats(){
  const root=cur,dir=S.sort==='za'?-1:1,q=S.q.trim().toLowerCase(),snapC=new Set(S.cats),snapS=new Set(S.sts),chipsOn=snapC.size>0||snapS.size>0,anyF=chipsOn||!!q,opener=document.activeElement;
  const[allC,allI,pc]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoCounts()]);
- const ids=scopeIds(allC,root),scoped=allI.filter(i=>ids.has(i.parentId)),nCols=allC.filter(c=>ids.has(c.id)&&c.id!==root).length;
+ const rawI=new Map(allI.map(i=>[i.id,i])),U=l=>[...new Set(l.map(i=>i.id))].map(id=>rawI.get(id));
+ const ids=scopeIds(allC,root),scoped=expand(allI.filter(i=>ids.has(i.parentId))),nCols=allC.filter(c=>ids.has(c.id)&&c.id!==root).length;
  const hitF=i=>(!snapC.size||snapC.has(ckr(i)))&&(!snapS.size||snapS.has(stOf(i)))&&(!q||matchQ(i,q));
  const scopeName=root===ROOT?'Whole vault':((allC.find(c=>c.id===root)||{}).name||'Collection');
  const byId=new Map(allC.map(c=>[c.id,c])),relName=c=>{const p=[];for(let x=c;x&&x.id!==root;x=byId.get(x.parentId))p.unshift(x.name);return p.join(' / ')};
@@ -480,9 +628,9 @@ async function buildStats(){
  const row=(label,n,t,cls)=>`<div class="strow"><div class="sth"><span>${esc(label)}</span><small>${n} · ${share(n,t)}%</small></div><div class="trk" aria-hidden="true"><i class="${cls}" style="width:${wid(n,t)}"></i></div></div>`;
  const f1=x=>String(Math.round(x*10)/10);
  const none='<p class="muted">Nothing to show.</p>';
- const draw=()=>{drop();const f=mode==='filtered',list=f?scoped.filter(hitF):scoped,P=progress(list),tot=P?P.total:0,nE=list.length;
+ const draw=()=>{drop();const f=mode==='filtered',list=f?scoped.filter(hitF):scoped,P=progress(list),tot=P?P.total:0,ul=U(list),nE=ul.length;
   note.textContent=!f?'Everything in scope, ignoring filters and search.':anyF?'Only models matching your current filters and search.':'No filters or search are active, so this matches All.';
-  const nPh=list.reduce((a,i)=>a+(pc.get(i.id)||0),0),withP=list.filter(i=>pc.get(i.id)).length,cov=nE?share(withP,nE)+'%':'—';
+  const nPh=ul.reduce((a,i)=>a+(pc.get(i.id)||0),0),withP=ul.filter(i=>pc.get(i.id)).length,cov=nE?share(withP,nE)+'%':'—';
   const cm=new Map();list.forEach(i=>{const k=ckr(i),e=cm.get(k)||cm.set(k,{name:k===''?'Uncategorised':(i.category||'').trim(),n:0}).get(k);e.n+=sq(i)});
   const cats=[...cm.entries()].filter(([,c])=>c.n>0).sort((a,b)=>a[0]===''?1:b[0]===''?-1:dir*a[1].name.localeCompare(b[1].name));
   const subs=allC.filter(c=>c.parentId===root).sort((a,b)=>dir*byName(a,b)).map(c=>{const cid=scopeIds(allC,c.id),p=progress(list.filter(i=>cid.has(i.parentId))),t=p?p.total:0,pct=pctOf(p),pl=t?pct+'%':'—';
@@ -495,8 +643,8 @@ async function buildStats(){
   const top=[...bk.entries()].map(([id,arr])=>{const p=progress(arr);return{c:byId.get(id),t:p?p.total:0,pct:pctOf(p)}}).filter(x=>x.t>0).sort((a,b)=>b.t-a.t||byName(a.c,b.c)).slice(0,5);
   const topH=top.length?`<ol aria-label="Biggest collections">${top.map((x,i)=>`<li><button class="strow sub" data-id="${esc(x.c.id)}" aria-label="${esc(relName(x.c))}: ${x.t} model${x.t===1?'':'s'}, ${x.pct} percent complete. Open"><div class="sth"><span><span aria-hidden="true">${i+1}. </span>${ic(x.c)}${esc(relName(x.c))}</span><small>${x.t} model${x.t===1?'':'s'} · ${x.pct}%</small></div><div class="trk mini" aria-hidden="true"><i class="ac" style="width:${x.pct}%"></i></div></button></li>`).join('')}</ol>`:(subs.length||cnt0()?none:'<p class="muted">No sub-collections here.</p>');
   // recently added: newest createdAt first; records made before the field existed are simply left out
-  const rec=list.filter(i=>okTime(i.createdAt)).sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
-  const recH=rec.length?`<ul class="rec" aria-label="Recently added">${rec.map(i=>{const d=new Date(i.createdAt),q=qtyOf(i);return`<li><span>${esc(i.name)}</span><small>${stLab(stOf(i))}${q>1?' · ×'+q:''} · <time datetime="${d.toISOString()}">${esc(d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}))}</time></small></li>`}).join('')}</ul>`:(nE?'<p class="muted">No creation dates yet. Models added from now on will appear here.</p>':none);
+  const rec=ul.filter(i=>okTime(i.createdAt)).sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
+  const recH=rec.length?`<ul class="rec" aria-label="Recently added">${rec.map(i=>{const d=new Date(i.createdAt),q=qtyOf(i);return`<li><span>${esc(i.name)}</span><small>${esc(stText(i))}${q>1?' · ×'+q:''} · <time datetime="${d.toISOString()}">${esc(d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}))}</time></small></li>`}).join('')}</ul>`:(nE?'<p class="muted">No creation dates yet. Models added from now on will appear here.</p>':none);
   box.innerHTML=`<section aria-labelledby="sth-ov"><h3 id="sth-ov">Overview</h3><div class="kpis"><div class="kpi"><b>${tot}</b><small>Models</small></div><div class="kpi"><b>${tot?pctOf(P)+'%':'—'}</b><small>Completion</small></div><div class="kpi"><b>${nCols}</b><small>Collections</small></div><div class="kpi"><b>${nPh}</b><small>Photos</small></div><div class="kpi"><b>${cov}</b><small>Photo coverage</small></div></div></section>
   <section aria-labelledby="sth-st"><h3 id="sth-st">Status</h3>${stack}</section>
   <section aria-labelledby="sth-ca"><h3 id="sth-ca">Categories</h3><div>${cats.length&&tot?cats.map(([,c])=>row(c.name,c.n,tot,'ac')).join(''):none}</div></section>
@@ -514,7 +662,7 @@ async function buildStats(){
  sh.onkeydown=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};
  document.body.append(sh);bg.forEach(e=>{e.inert=true});$('.back',sh).focus()}
 
-const SORTS=[['az','A to Z','A–Z'],['za','Z to A','Z–A'],['new','Newest first','Newest'],['old','Oldest first','Oldest'],['stl','Least finished first','Least done'],['sth','Most finished first','Most done'],['qty','Highest quantity first','Quantity']];
+const SORTS=[['manual','Manual order','Manual'],['az','A to Z','A–Z'],['za','Z to A','Z–A'],['new','Newest first','Newest'],['old','Oldest first','Oldest'],['stl','Least finished first','Least done'],['sth','Most finished first','Most done'],['qty','Highest quantity first','Quantity']];
 function dropdown(anchor,opts,cur,pick){
  const bg=el('div','ddbg'),m=el('div','dd');m.setAttribute('role','listbox');const close=()=>bg.remove();
  opts.forEach(([k,l])=>{const b=el('button','ddi'+(k===cur?' on':''),`<span>${esc(l)}</span>${k===cur?ICON.check:''}`);b.setAttribute('role','option');b.setAttribute('aria-selected',k===cur);b.onclick=()=>{close();pick(k)};m.append(b)});
@@ -522,11 +670,11 @@ function dropdown(anchor,opts,cur,pick){
  const r=anchor.getBoundingClientRect(),w=Math.max(230,r.width),h=m.offsetHeight;m.style.minWidth=w+'px';m.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px';
  m.style.top=(r.bottom+6+h>innerHeight-8?Math.max(8,r.top-6-h):r.bottom+6)+'px';
  M.run(m,[{opacity:0,transform:'translateY(-6px) scale(.97)'},{opacity:1,transform:'none'}],'med');($('.on',m)||m.firstChild).focus()}
-function sortDD(box,cur,fn){box.replaceChildren();const o=SORTS.find(x=>x[0]===cur)||SORTS[0],b=el('button','btn ghost sm sort',`<span>${o[2]}</span>${ICON.down}`);
- b.setAttribute('aria-haspopup','listbox');b.setAttribute('aria-label','Sort: '+o[1]);b.onclick=()=>dropdown(b,SORTS.map(x=>[x[0],x[1]]),cur,fn);box.append(b)}
+function sortDD(box,cur,fn,opts){box.replaceChildren();const o=SORTS.find(x=>x[0]===cur)||SORTS[0],b=el('button','btn ghost sm sort',`<span>${o[2]}</span>${ICON.down}`);
+ b.setAttribute('aria-haspopup','listbox');b.setAttribute('aria-label','Sort: '+o[1]);b.onclick=()=>dropdown(b,(opts||SORTS).map(x=>[x[0],x[1]]),cur,fn);box.append(b)}
 function tools(v){const t=el('div','tools'),bar=el('div','srow2'),hasItems=v._d.subN;
- bar.innerHTML=`<input type="search" class="q" placeholder="Search name, notes, status" aria-label="Search name, notes, status"><div class="tb"><span class="sortbox"></span>${hasItems?'<button class="btn ghost sm vtog"></button>':''}</div>`;t.innerHTML='<div class="chips"></div>';
- const q=$('.q',bar),vb=$('.vtog',bar),ch=$('.chips',t);q.value=S.q;const drawSort=()=>sortDD($('.sortbox',bar),S.sort,k=>{S.sort=k;drawSort();paint(v,1)});drawSort();
+ bar.innerHTML=`<input type="search" class="q" placeholder="Search" aria-label="Search name, notes, status"><div class="tb"><span class="sortbox"></span>${hasItems?'<button class="btn ghost sm vtog"></button>':''}</div>`;t.innerHTML='<div class="chips"></div>';
+ const q=$('.q',bar),vb=$('.vtog',bar),ch=$('.chips',t);q.value=S.q;const drawSort=()=>sortDD($('.sortbox',bar),S.sort,k=>{S.sort=k;saveSort();drawSort();paint(v,1)},SORTS.filter(x=>x[0]!=='manual'||v._d.cols.length>1||S.sort==='manual'));drawSort();
  const lab=()=>{if(vb){vb.textContent=S.flat?'Flat':'Grouped';vb.setAttribute('aria-label','View: '+vb.textContent)}};lab();
  q.oninput=()=>{S.q=q.value;paint(v,1);barSync(v)};
  if(vb)vb.onclick=()=>{S.flat=!S.flat;lab();paint(v,1)};
@@ -537,15 +685,36 @@ function tools(v){const t=el('div','tools'),bar=el('div','srow2'),hasItems=v._d.
  if(v._sts.length>1||S.sts.size){const cs=el('div','chips');t.append(cs);mkRow(cs,'Any status',v._sts.map(k=>[k,stLab(k)]),S.sts)}
  return [bar,t]}
 
+/* hold a collection card, then drag it to a new place; the order is saved and the sort switches to Manual */
+function colDrag(v,g){let drag=null,to=0,x0=0,y0=0,lx=0,ly=0,gx=0,gy=0,swapAt=0;
+ const follow=()=>{const t=drag.t;t.style.transform='none';const r=t.getBoundingClientRect();t.style.transform=`translate(${lx-gx-r.left}px,${ly-gy-r.top}px) scale(1.04)`};
+ const step=()=>{if(!drag)return;follow();const t=drag.t,o=document.elementsFromPoint(lx,ly).map(n=>n.closest&&n.closest('.card')).find(n=>n&&n!==t&&n.parentNode===g);
+  if(!o||performance.now()-swapAt<140)return;swapAt=performance.now();
+  const first=new Map([...g.children].filter(c=>c!==t).map(c=>[c,c.getBoundingClientRect()]));
+  (t.compareDocumentPosition(o)&Node.DOCUMENT_POSITION_FOLLOWING)?o.after(t):o.before(t);follow();
+  first.forEach((f,c)=>{const l=c.getBoundingClientRect(),dx=f.left-l.left,dy=f.top-l.top;if(dx||dy)M.run(c,[{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],'med')})};
+ const auto=()=>{if(!drag)return;if(ly>innerHeight-90)scrollBy(0,10);else if(ly<110)scrollBy(0,-10);step();requestAnimationFrame(auto)};
+ g.addEventListener('pointerdown',e=>{const t=e.target.closest('.card');if(!t||t.parentNode!==g||e.button>0||e.target.closest('.more'))return;t._lp=false;x0=lx=e.clientX;y0=ly=e.clientY;clearTimeout(to);
+  to=setTimeout(()=>{const r=t.getBoundingClientRect();gx=lx-r.left;gy=ly-r.top;drag={t};t._lp=true;t.classList.add('drag');
+   try{g.setPointerCapture(e.pointerId);navigator.vibrate&&navigator.vibrate(12)}catch(_){}requestAnimationFrame(auto)},380)});
+ g.addEventListener('pointermove',e=>{lx=e.clientX;ly=e.clientY;if(!drag&&Math.hypot(lx-x0,ly-y0)>8)clearTimeout(to)});
+ const end=guard(async()=>{clearTimeout(to);if(!drag)return;const t=drag.t;drag=null;
+  const a=t.getBoundingClientRect();t.classList.remove('drag');t.style.transform='none';const b=t.getBoundingClientRect();
+  M.run(t,[{transform:`translate(${a.left-b.left}px,${a.top-b.top}px) scale(1.04)`},{transform:'none'}],'med');
+  const recs=new Map(v._d.cols.map(x=>[x.rec.id,x.rec]));let n=0;
+  for(const id of [...g.children].map(c=>c.dataset.id)){const r=recs.get(id);if(r&&r.order!==n){r.order=n;await DB.put('collections',r)}n++}
+  if(S.sort!=='manual'){S.sort='manual';toast('Collections are now in manual order')}saveSort();await fill(v,{quiet:1,keep:1})});
+ g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
+ g.addEventListener('touchmove',e=>{if(drag)e.preventDefault()},{passive:false});g.addEventListener('contextmenu',e=>e.preventDefault())}
 function paint(v,anim){const D=v._d,q=S.q.trim().toLowerCase(),dir=S.sort==='za'?-1:1,cmp=(a,b)=>dir*byName(a.rec,b.rec);
- const si=x=>STATUS.findIndex(t=>t[0]===stOf(x.rec)),num={new:x=>-(x.rec.createdAt||0),old:x=>x.rec.createdAt||9e15,stl:si,sth:x=>-si(x),qty:x=>-qtyOf(x.rec)}[S.sort],icmp=num?(a,b)=>num(a)-num(b)||byName(a.rec,b.rec):cmp;
+ const si=x=>doneOf(x.rec),num={new:x=>-(x.rec.createdAt||0),old:x=>x.rec.createdAt||9e15,stl:si,sth:x=>-si(x),qty:x=>-qtyOf(x.rec)}[S.sort],icmp=num?(a,b)=>num(a)-num(b)||byName(a.rec,b.rec):cmp;
  const hit=x=>matchQ(x.rec,q),ck=x=>(x.rec.category||'').trim().toLowerCase();
- const cols=D.cols.filter(hit).sort(cmp);
+ const mcmp=(a,b)=>(a.rec.order??1e9)-(b.rec.order??1e9)||byName(a.rec,b.rec),cols=D.cols.filter(hit).sort(S.sort==='manual'?mcmp:cmp);
  const its=D.items.filter(hit).sort(icmp);
  for(const id of [...SEL])if(!its.some(x=>x.rec.id===id))SEL.delete(id);syncSel();
  const box=$('.content',v);box.replaceChildren();
  const gridOf=l=>{const g=el('div','grid');g.append(...l.map(x=>x.el));return g};
- if(cols.length)box.append(gridOf(cols));
+ if(cols.length){const g=gridOf(cols);box.append(g);if(!q&&cols.length>1)colDrag(v,g)}
  if(its.length){
   if(S.flat||!its.some(x=>ck(x)))box.append(gridOf(its));
   else{const groups=new Map();its.forEach(x=>{const k=ck(x);(groups.get(k)||groups.set(k,[]).get(k)).push(x)});
@@ -561,8 +730,9 @@ function paint(v,anim){const D=v._d,q=S.q.trim().toLowerCase(),dir=S.sort==='za'
  if(anim)M.fade(box,0,1,'fast')}
 
 async function menu(kind,rec,cardEl,v){const store=kind==='c'?'collections':'items';
- const a=await dlg({title:rec.name,choices:[{label:'Rename',value:'r'},...(kind==='c'?[{label:rec.icon?'Change icon':'Set icon',pick:1},...(rec.icon?[{label:'Remove icon',value:'ri'}]:[])]:[]),{label:'Move',value:'m'},...(kind==='i'?[{label:'Duplicate',value:'p'}]:[]),{label:'Delete',value:'d',danger:1}]});
+ const a=await dlg({title:rec.name,choices:[{label:'Rename',value:'r'},...(kind==='c'?[{label:rec.icon?'Change icon':'Set icon',pick:1},...(rec.icon?[{label:'Remove icon',value:'ri'}]:[]),{label:'Set colour',value:'col'}]:[]),{label:'Move',value:'m'},...(kind==='i'?[{label:'Duplicate',value:'p'}]:[]),{label:'Delete',value:'d',danger:1}]});
  if(a&&a.file){const b=await cropSquare(a.file);if(b){rec.icon=b;await DB.put(store,rec);await fill(v,{quiet:1});toast('Icon updated')}}
+ if(a==='col'){const k=await pickColour(rec.color);if(k!==undefined){if(k)rec.color=k;else delete rec.color;await DB.put(store,rec);await fill(v,{quiet:1});toast(k?'Colour set':'Colour removed')}}
  if(a==='ri'){delete rec.icon;await DB.put(store,rec);await fill(v,{quiet:1});toast('Icon removed')}
  if(a==='r'){const n=await dlg({title:'Rename',input:rec.name,ok:'Save'});
   if(n&&await okName(n,rec.parentId,kind,rec.id)){rec.name=n;await DB.put(store,rec);await fill(v,{quiet:1});toast('Renamed')}}
@@ -577,18 +747,21 @@ async function menu(kind,rec,cardEl,v){const store=kind==='c'?'collections':'ite
  if(a==='p'){const id=uid();await DB.put('items',{...rec,id,name:rec.name+' copy',createdAt:Date.now()});
   await DB.putPhotos((await DB.photos(rec.id)).map(p=>({...p,id:uid(),itemId:id})));await fill(v,{pop:id});toast('Duplicated')}
  if(a==='d'){const ok=await dlg({title:`Delete “${rec.name}”?`,ok:'Delete',danger:1,
-   msg:kind==='c'?'This also deletes every collection, model and photo inside it.':'This deletes the model and all its photos.'});
+   msg:kind==='c'?delMsg('This also deletes every collection, model and photo inside it.','Every collection, model and photo inside goes with it.'):delMsg('This deletes the model and all its photos.','Its photos go with it.')});
   if(!ok)return;await M.out(cardEl);
   const sn=await snapOf(kind,rec.id);
-  try{kind==='c'?await DB.delCollection(rec.id):await DB.delItem(rec.id)}catch(e){cardEl.getAnimations().forEach(x=>x.cancel());throw e}
-  toast(`Deleted “${rec.name}”`,false,()=>undoSnap(sn));await fill(v,{quiet:1})}}
+  let bin=[];
+  try{bin=await trash(kind,rec,sn);kind==='c'?await DB.delCollection(rec.id):await DB.delItem(rec.id)}catch(e){cardEl.getAnimations().forEach(x=>x.cancel());if(bin.length)await DB.binDrop(bin).catch(()=>{});throw e}
+  toast(`Deleted “${rec.name}”`,false,()=>undoDel(sn,bin));await fill(v,{quiet:1})}}
 
 $('#add').onclick=guard(async()=>{
  const k=await dlg({title:'Add here',choices:[{label:'New collection',value:'c'},{label:'New model',value:'i'}]});if(!k)return;
- const n=await dlg({title:k==='c'?'New collection':'New model',input:'',ok:'Create'});if(!n)return;
- if(!await okName(n,cur,k))return;
- const rec={id:uid(),name:n,parentId:cur};if(k==='i'){rec.notes='';rec.createdAt=Date.now()}
- await DB.put(k==='c'?'collections':'items',rec);await fill(live(),{pop:rec.id})});
+ for(let again=true;again;){
+  const r=await dlg({title:k==='c'?'New collection':'New model',input:'',ok:'Create',again:'Create + another'});if(!r)return;
+  const n=typeof r==='string'?r:r.v;again=typeof r!=='string';
+  if(!await okName(n,cur,k)){if(again)continue;return}
+  const rec={id:uid(),name:n,parentId:cur};if(k==='i'){rec.notes='';rec.createdAt=Date.now()}
+  await DB.put(k==='c'?'collections':'items',rec);await fill(live(),{pop:rec.id})}});
 
 /* ---------- item sheet & photos ---------- */
 const load=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>no(new Error('Could not read that image'));i.src=u});
@@ -618,7 +791,7 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
  sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close">${ICON.down}</button><h2>${esc(it.name)}</h2><button class="btn ghost ren">Rename</button><button class="ib cog" aria-label="Settings">${ICON.cog}</button></div>
  <div class="body"><div class="qrow"><div><b>Quantity</b><small class="muted" style="display:block">How many of this model or unit you own</small></div><span class="qslot"></span></div><label>Category<input class="cat" maxlength="40" placeholder="e.g. Vehicles or Infantry"></label><div class="chips sug"></div><div><b>Painting status</b><div class="chips wrap stc"></div></div><label>Notes<textarea maxlength="2000" placeholder="Paint scheme, basing, what is left to do"></textarea></label>
  <div class="phead"><h3>Photos</h3><button class="btn add">Add photos</button></div><p class="phint">Hold and drag a photo to reorder. The first photo is the cover.</p><div class="pgrid"></div><input type="file" accept="image/*" multiple hidden></div>`;
- $('.qslot',sh).replaceWith(qtyCtl(it));const ta=$('textarea',sh),grid=$('.pgrid',sh),file=$('input[type=file]',sh),tiles=new Map();ta.value=it.notes||'';
+ let cnt=null;$('.qslot',sh).replaceWith(qtyCtl(it,()=>{cnt=null;drawSt()}));const ta=$('textarea',sh),grid=$('.pgrid',sh),file=$('input[type=file]',sh),tiles=new Map();ta.value=it.notes||'';
  const known=new Map();(await DB.by('items','parentId',it.parentId)).forEach(x=>{const c=(x.category||'').trim();if(c&&x.id!==id&&!known.has(c.toLowerCase()))known.set(c.toLowerCase(),c)});
  const ci=$('.cat',sh),sug=$('.sug',sh);ci.value=it.category||'';
  const chips=()=>{sug.replaceChildren();[...known.values()].sort((a,b)=>a.localeCompare(b)).forEach(c=>{const b=el('button','chip'+(ci.value.trim().toLowerCase()===c.toLowerCase()?' on':''),esc(c));
@@ -626,8 +799,20 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
  const savecat=async()=>{it.category=ci.value.trim();await DB.put('items',it);chips()};
  ci.oninput=guard(savecat);
  ci.onchange=guard(async()=>{const k=ci.value.trim().toLowerCase();if(known.has(k))ci.value=known.get(k);await savecat()});chips();
- const stc=$('.stc',sh),drawSt=()=>{stc.replaceChildren();STATUS.forEach(([k,l])=>{const b=el('button','chip'+(stOf(it)===k?' on':''),esc(l));
-  b.onclick=guard(async()=>{it.status=k;await DB.put('items',it);drawSt()});stc.append(b)})};drawSt();
+ const stc=$('.stc',sh),drawSt=()=>{stc.replaceChildren();const q=sq(it);
+  if(q<=1){stc.className='chips wrap stc';STATUS.forEach(([k,l])=>{const b=el('button','chip'+(stOf(it)===k?' on':''),esc(l));
+   b.onclick=guard(async()=>{it.status=k;delete it.split;await DB.put('items',it);drawSt()});stc.append(b)});return}
+  /* more than one model: a counter per status, saved once the counts add up to the quantity */
+  stc.className='stc splitc';cnt=cnt||Object.fromEntries(segs(it).map(x=>[x.status,x.qty]));STATUS.forEach(([k])=>{cnt[k]=cnt[k]||0});
+  const info=el('p','muted sinfo'),sum=()=>STATUS.reduce((a,[k])=>a+cnt[k],0);
+  const upd=()=>{const t=sum();info.textContent=t===q?`All ${q} models assigned.`:`${t<q?(q-t)+' still to assign':(t-q)+' too many'}. Changes save once the counts add up to ${q}.`;info.classList.toggle('bad',t!==q);
+   rows.forEach(([k,v,m,p])=>{v.textContent=cnt[k];m.disabled=cnt[k]<=0;p.disabled=t>=q})};
+  const rows=STATUS.map(([k,l])=>{const r=el('div','srw',`<span class="sl">${esc(l)}</span><div class="qty"><button type="button" aria-label="One fewer ${esc(l)}">${ICON.minus}</button><span class="sv" aria-live="polite"></span><button type="button" aria-label="One more ${esc(l)}">${ICON.plus}</button></div>`);
+   const[m,p]=r.querySelectorAll('button'),v=$('.sv',r),chg=guard(async d=>{cnt[k]+=d;upd();if(sum()===q){setSplit(it,cnt);await DB.put('items',it)}});
+   m.onclick=()=>chg(-1);p.onclick=()=>chg(1);stc.append(r);return[k,v,m,p]});
+  const sa=el('div','setall',`<span class="muted">Set all ${q} to</span>`),sac=el('div','chips wrap');
+  STATUS.forEach(([k,l])=>{const b=el('button','chip',esc(l));b.onclick=guard(async()=>{STATUS.forEach(([j])=>{cnt[j]=0});cnt[k]=q;setSplit(it,cnt);await DB.put('items',it);cnt=null;drawSt()});sac.append(b)});sa.append(sac);
+  stc.append(info,sa);upd()};drawSt();
  ta.oninput=guard(async()=>{it.notes=ta.value;await DB.put('items',it)});
  $('.ren',sh).onclick=guard(async()=>{const n=await dlg({title:'Rename model',input:it.name,ok:'Save'});
   if(n&&await okName(n,it.parentId,'i',it.id)){it.name=n;await DB.put('items',it);$('h2',sh).textContent=n;toast('Renamed')}});
@@ -654,9 +839,9 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
  grid.addEventListener('pointerup',end);grid.addEventListener('pointercancel',end);
  grid.addEventListener('touchmove',e=>{if(drag)e.preventDefault()},{passive:false});
  grid.addEventListener('contextmenu',e=>e.preventDefault());
- const mk=p=>{const u=URL.createObjectURL(p.blob),t=el('div','tile');t._u=u;
+ const tb=p=>p.thumb instanceof Blob&&p.thumb.size?p.thumb:p.blob,mk=p=>{const u=URL.createObjectURL(tb(p)),t=el('div','tile');t._u=u;
   t.innerHTML=`<img alt="Model photo" draggable="false" src="${u}"><span class="cvl">Cover</span><button class="x" aria-label="Delete photo">${ICON.x}</button>`;
-  const im=$('img',t);im.onload=()=>im.classList.add('on');im.onclick=()=>{if(t._dragged){t._dragged=false;return}viewer(ph,Math.max(0,ph.findIndex(q=>q.id===p.id)),im,r=>{const tt=tiles.get(r.id);if(!tt)return;URL.revokeObjectURL(tt._u);tt._u=URL.createObjectURL(r.blob);$('img',tt).src=tt._u})};
+  const im=$('img',t);im.onload=()=>im.classList.add('on');im.onclick=()=>{if(t._dragged){t._dragged=false;return}viewer(ph,Math.max(0,ph.findIndex(q=>q.id===p.id)),im,r=>{const tt=tiles.get(r.id);if(!tt)return;URL.revokeObjectURL(tt._u);tt._u=URL.createObjectURL(tb(r));$('img',tt).src=tt._u})};
   $('.x',t).onclick=guard(async()=>{if(t._dragged||drag)return;await M.out(t);
    try{await DB.delPhoto(p.id)}catch(e){t.getAnimations().forEach(a=>a.cancel());throw e}
    ph=ph.filter(q=>q.id!==p.id);tiles.delete(p.id);URL.revokeObjectURL(t._u);M.flip(grid,()=>{t.remove();layout()});
@@ -738,14 +923,14 @@ async function openSearch(){if($('.sheet.srch'))return;
  const where=id=>{const p=[];for(let x=map.get(id);x;x=map.get(x.parentId))p.unshift(x.name);return p.join(' / ')||'Vault'};
  const all=[...cols.map(c=>({k:'c',r:c,w:where(c.parentId)})),...items.map(i=>({k:'i',r:i,w:where(i.parentId)}))];
  const sh=el('div','sheet srch');
- sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close search">${ICON.down}</button><input type="search" class="q" placeholder="Search all collections and models" aria-label="Search everything"></div><div class="body res"></div>`;
+ sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close search">${ICON.down}</button><input type="search" class="q" placeholder="Search" aria-label="Search everything"></div><div class="body res"></div>`;
  const q=$('.q',sh),box=$('.res',sh);let urls=[],tk=0;const drop=()=>{urls.forEach(URL.revokeObjectURL);urls=[]};
  const close=async()=>{tk++;await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove();drop()};
  const draw=()=>{const t=q.value.trim().toLowerCase(),my=++tk;drop();box.replaceChildren();if(!t)return box.append(el('p','muted','Type a name, note, category or status.'));
   const rk=x=>{const n=x.r.name.toLowerCase();return n===t?0:n.startsWith(t)?1:n.includes(t)?2:3};
   const hits=all.filter(x=>matchQ(x.r,t)).sort((a,b)=>rk(a)-rk(b)||byName(a.r,b.r)).slice(0,80);
   if(!hits.length)return box.append(el('p','muted','No matches.'));
-  hits.forEach(x=>{const b=el('button','res-row',`<span class="rk">${x.k==='c'?ICON.folder:ICON.cube}</span><span><b>${esc(x.r.name)}</b><small>${esc(x.k==='i'?[stLab(stOf(x.r)),qtyOf(x.r)>1?'×'+qtyOf(x.r):'',(x.r.category||'').trim(),x.w].filter(Boolean).join(' · '):x.w)}</small></span>`);
+  hits.forEach(x=>{const b=el('button','res-row',`<span class="rk">${x.k==='c'?ICON.folder:ICON.cube}</span><span><b>${esc(x.r.name)}</b><small>${esc(x.k==='i'?[stText(x.r),qtyOf(x.r)>1?'×'+qtyOf(x.r):'',(x.r.category||'').trim(),x.w].filter(Boolean).join(' · '):x.w)}</small></span>`);
    const put=ib=>{if(!(ib instanceof Blob)||!b.isConnected)return;const u=URL.createObjectURL(ib);urls.push(u);$('.rk',b).innerHTML=`<img alt="" decoding="async" src="${u}">`};
    if(x.k==='c')put(x.r.icon);else b._put=put;
    b.onclick=guard(async()=>{await close();await go(x.k==='c'?x.r.id:x.r.parentId,1);if(x.k==='i')openItem(x.r.id)});box.append(b)});
@@ -761,16 +946,22 @@ const d2b=u=>{const[h,b]=u.split(','),bin=atob(b),a=new Uint8Array(bin.length);f
 const afterReplace=async()=>{document.querySelectorAll('.sheet:not(.set)').forEach(x=>x.remove());await go(ROOT,0)};
 const plug=n=>(window.Capacitor&&window.Capacitor.Plugins||{})[n]||null;
 const isNative=()=>{const c=window.Capacitor;return !!(c&&(c.isNativePlatform?c.isNativePlatform():c.getPlatform&&c.getPlatform()!=='web'))};
-async function exportDB(){
- const stamp=new Date().toISOString(),file=`hobby-vault-${stamp.slice(0,10)}.json`;
+async function* exportChunks(stamp,withBin){
  const[c,i,keys]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoKeys()]);
- const cols=[];for(const x of c)cols.push(x.icon instanceof Blob?{...x,icon:await b2d(x.icon)}:x);
+ const enc=async cols=>{const o=[];for(const x of cols)o.push(x.icon instanceof Blob?{...x,icon:await b2d(x.icon)}:x);return o};
  /* one photo is read and encoded at a time, so memory use stays flat however big the vault is */
- const photo=async k=>{const x=await DB.get('photos',k);return x&&x.blob?JSON.stringify({...x,blob:await b2d(x.blob),thumb:x.thumb?await b2d(x.thumb):null}):null};
- const head=`{"app":"hobby-vault","version":1,"exported":${JSON.stringify(stamp)},"collections":${JSON.stringify(cols)},"items":${JSON.stringify(i)},"photos":[`;
- if(!isNative()){toast('Preparing backup…');const parts=[new Blob([head])];let buf='',n=0;
-  for(const k of keys){const x=await photo(k);if(x==null)continue;buf+=(n++?',':'')+x;if(buf.length>4e6){parts.push(new Blob([buf]));buf=''}}
-  parts.push(new Blob([buf+']}']));
+ const photo=async(st,k)=>{const x=await DB.get(st,k);return x&&x.blob?JSON.stringify({...x,blob:await b2d(x.blob),thumb:x.thumb?await b2d(x.thumb):null}):null};
+ yield `{"app":"hobby-vault","version":1,"exported":${JSON.stringify(stamp)},"collections":${JSON.stringify(await enc(c))},"items":${JSON.stringify(i)},"photos":[`;
+ let n=0;for(const k of keys){const x=await photo('photos',k);if(x==null)continue;yield(n++?',':'')+x}
+ if(withBin){const be=[];for(const e of await DB.all('bin'))be.push({...e,cols:await enc(e.cols)});
+  yield `],"bin":${JSON.stringify(be)},"binPhotos":[`;
+  n=0;for(const k of await DB.binPhotoKeys()){const x=await photo('binPhotos',k);if(x==null)continue;yield(n++?',':'')+x}}
+ yield ']}'}
+async function exportDB(withBin){
+ const stamp=new Date().toISOString(),file=`hobby-vault-${stamp.slice(0,10)}.json`,gen=exportChunks(stamp,!!withBin);
+ if(!isNative()){toast('Preparing backup…');const parts=[];let buf='';
+  for await(const x of gen){buf+=x;if(buf.length>4e6){parts.push(new Blob([buf]));buf=''}}
+  parts.push(new Blob([buf]));
   const a=el('a');a.href=URL.createObjectURL(new Blob(parts,{type:'application/json'}));a.download=file;document.body.append(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),5e3);toast('Backup exported');return}
  /* Android/iOS app: a blob download link does nothing in a webview, so write the file natively and open the share sheet */
@@ -778,21 +969,20 @@ async function exportDB(){
  if(!FS||!SH)throw new Error('Export needs the Capacitor Filesystem and Share plugins (npm i @capacitor/filesystem @capacitor/share, then npx cap sync)');
  toast('Preparing backup…');
  const at={path:file,directory:'CACHE',encoding:'utf8'};
- await FS.writeFile({...at,data:head});
- let buf='',n=0;const flush=async()=>{if(buf){await FS.appendFile({...at,data:buf});buf=''}};
- for(const k of keys){const x=await photo(k);if(x==null)continue;buf+=(n++?',':'')+x;if(buf.length>3e6)await flush()}
- buf+=']}';await flush();
+ let buf='',first=true;const flush=async()=>{if(!buf)return;if(first){await FS.writeFile({...at,data:buf});first=false}else await FS.appendFile({...at,data:buf});buf=''};
+ for await(const x of gen){buf+=x;if(buf.length>3e6)await flush()}
+ await flush();
  const{uri}=await FS.getUri({path:file,directory:'CACHE'});
  try{await SH.share({title:'Hobby Vault backup',dialogTitle:'Save or send your backup',files:[uri]})}catch(e){if(!/cancel/i.test(String(e&&e.message||e)))throw e}
  toast('Backup ready')}
 
 /* ---------- readable text report: collections, how many models, and their status (no photos) ---------- */
 async function buildReport(f){
- const[cols,allItems]=await Promise.all([DB.all('collections'),DB.all('items')]);
+ const[cols,rawItems]=await Promise.all([DB.all('collections'),DB.all('items')]),allItems=expand(rawItems);
  const W=60,rule=c=>c.repeat(W),L=[],pl=(n,w)=>n+' '+w+(n===1?'':'s'),cid=new Set(cols.map(c=>c.id));
  const pk=i=>(i.parentId===ROOT||cid.has(i.parentId))?(i.parentId||ROOT):'__unfiled';
  const keep=i=>!f||(f.cols.has(pk(i))&&f.sts.has(stOf(i))&&f.cats.has(ckr(i))),narrow=!!(f&&f.narrow);
- const items=allItems.filter(keep);
+ const items=allItems.filter(keep),nEnt=new Set(items.map(i=>i.id)).size;
  const kids=new Map(),own=new Map(),push=(m,k,v)=>(m.get(k)||m.set(k,[]).get(k)).push(v);
  cols.forEach(c=>push(kids,c.parentId||ROOT,c));
  items.forEach(i=>push(own,pk(i),i));
@@ -811,7 +1001,7 @@ async function buildReport(f){
  L.push(rule('='),'OVERALL SUMMARY',rule('-'));
  if(!all)L.push(narrow?'No models match these filters.':'No models yet.');
  else{const nc=narrow?cols.filter(c=>progress(sub(c.id))).length:cols.length;
-  L.push(`Collections:  ${nc}`,`Models:       ${all.total}${all.total!==items.length?`  (${pl(items.length,'entry').replace('entrys','entries')})`:''}`,`Completion:   ${pctOf(all)}%  ${bar(all)}`,'');stTable(all,'  ')}
+  L.push(`Collections:  ${nc}`,`Models:       ${all.total}${all.total!==nEnt?`  (${pl(nEnt,'entry').replace('entrys','entries')})`:''}`,`Completion:   ${pctOf(all)}%  ${bar(all)}`,'');stTable(all,'  ')}
  const section=(title,id)=>{
   const P=progress(sub(id)),mine=(own.get(id)||[]).slice().sort(byName),ind='  ';
   if(!P&&narrow)return;
@@ -836,7 +1026,7 @@ async function buildReport(f){
 
 /* popup that lets you choose which collections, statuses and categories go into the .TXT report */
 function reportDialog(){return new Promise(async res=>{
- const[cols,items]=await Promise.all([DB.all('collections'),DB.all('items')]);
+ const[cols,rawI]=await Promise.all([DB.all('collections'),DB.all('items')]),items=expand(rawI);
  if(!cols.length&&!items.length){toast('Nothing to export yet');return res(null)}
  const pl=(n,w)=>n+' '+w+(n===1?'':'s'),cid=new Set(cols.map(c=>c.id)),pk=i=>(i.parentId===ROOT||cid.has(i.parentId))?(i.parentId||ROOT):'__unfiled';
  const kids=new Map(),push=(m,k,v)=>(m.get(k)||m.set(k,[]).get(k)).push(v);cols.forEach(c=>push(kids,cid.has(c.parentId)?c.parentId:ROOT,c));
@@ -893,6 +1083,47 @@ async function rebuildThumbs(manual){if(thBusy)return;thBusy=true;
   const v=live();v&&await fill(v,{quiet:1});toast('Thumbnails improved')}
  finally{thBusy=false}}
 
+/* ---------- check and repair ---------- */
+async function scanVault(){
+ const[cols,items,keys]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoKeys()]);
+ const cid=new Set(cols.map(c=>c.id)),iid=new Set(items.map(i=>i.id)),byId=new Map(cols.map(c=>[c.id,c]));
+ const R={cols,items,nPh:keys.length,orphan:[],damaged:[],noThumb:[],order:new Set(),itemsLost:[],colsLost:[],colsLoop:[],badData:[]};
+ cols.forEach(c=>{if(c.parentId!==ROOT&&!cid.has(c.parentId)){R.colsLost.push(c);return}
+  let x=byId.get(c.parentId),n=0;for(;x&&n<5000;x=byId.get(x.parentId),n++)if(x.id===c.id){R.colsLoop.push(c);break}});
+ items.forEach(i=>{if(i.parentId!==ROOT&&!cid.has(i.parentId))R.itemsLost.push(i);
+  const q=i.qty,badQ=q!==undefined&&(!Number.isInteger(q)||q<0||q>999),badS=i.status!==undefined&&i.status!=='based'&&!STATUS.some(x=>x[0]===i.status);
+  let badSp=false;if(i.split!==undefined&&i.split!==null){badSp=typeof i.split!=='object'||STATUS.reduce((a,[k])=>a+Math.max(0,Math.floor(+i.split[k]||0)),0)!==sq0(i)}
+  if(badQ||badS||badSp)R.badData.push(i)});
+ const per=new Map();
+ for(const k of keys){const x=await DB.get('photos',k);if(!x)continue;
+  if(!iid.has(x.itemId)){R.orphan.push(k);continue}
+  if(!(x.blob instanceof Blob)||x.blob.size===0){R.damaged.push(k);continue}
+  if(!(x.thumb instanceof Blob)||x.thumb.size===0)R.noThumb.push(k);
+  (per.get(x.itemId)||per.set(x.itemId,[]).get(x.itemId)).push(x.sortOrder)}
+ per.forEach((l,id)=>{if(l.some(v=>!Number.isFinite(v))||new Set(l).size!==l.length)R.order.add(id)});
+ return R}
+async function checkRepair(){
+ toast('Checking your vault…');const R=await scanVault(),pl=(n,w)=>n+' '+w+(n===1?'':'s');
+ const L=[];
+ if(R.orphan.length)L.push(`${pl(R.orphan.length,'photo')} belong to models that no longer exist and will be deleted.`);
+ if(R.damaged.length)L.push(`${pl(R.damaged.length,'photo')} are unreadable and will be deleted.`);
+ if(R.noThumb.length)L.push(`${pl(R.noThumb.length,'photo')} are missing a thumbnail, which will be rebuilt.`);
+ if(R.itemsLost.length||R.colsLost.length||R.colsLoop.length)L.push(`${pl(R.itemsLost.length+R.colsLost.length+R.colsLoop.length,'entry').replace('entrys','entries')} sit in a missing or circular collection and will move to the top level.`);
+ if(R.badData.length)L.push(`${pl(R.badData.length,'model')} have an invalid quantity, status or split, which will be tidied.`);
+ if(R.order.size)L.push(`${pl(R.order.size,'model')} have photos with a broken order, which will be renumbered.`);
+ if(!L.length){toast(`No problems found (${pl(R.cols.length,'collection')}, ${pl(R.items.length,'model')}, ${pl(R.nPh,'photo')} checked)`);return}
+ if(!await dlg({title:'Problems found',msg:L.join('\n')+'\nFix them now? Consider exporting a backup first.',ok:'Fix problems'}))return;
+ toast('Repairing…');
+ for(const k of [...R.orphan,...R.damaged])await DB.delPhoto(k);
+ for(const c of [...R.colsLost,...R.colsLoop]){c.parentId=ROOT;await DB.put('collections',c)}
+ for(const i of R.itemsLost){i.parentId=ROOT;await DB.put('items',i)}
+ for(const i of R.badData){if(!Number.isInteger(i.qty)&&i.qty!==undefined||i.qty<0||i.qty>999)i.qty=Math.max(0,Math.min(999,Number.isInteger(i.qty)?i.qty:1));
+  if(i.status!==undefined&&i.status!=='based'&&!STATUS.some(x=>x[0]===i.status))i.status='unbuilt';
+  if(i.split!==undefined)fitSplit(i);if(i.split===null)delete i.split;await DB.put('items',i)}
+ for(const k of R.noThumb){try{const x=await DB.get('photos',k);if(x&&x.blob)await DB.setThumb(k,await shrink(await load(x.blob),640,.82))}catch(e){}}
+ for(const id of R.order){const l=await DB.photos(id);l.sort((a,b)=>(Number.isFinite(a.sortOrder)?a.sortOrder:1e9)-(Number.isFinite(b.sortOrder)?b.sortOrder:1e9));l.forEach((p,n)=>p.sortOrder=n);await DB.putPhotos(l)}
+ const v=live();v&&await fill(v,{quiet:1});toast('Repairs finished')}
+
 /* ---------- import check ---------- */
 async function checkBackup(d,size){
  const[cc,ci,ck]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoKeys()]);
@@ -910,6 +1141,7 @@ async function checkBackup(d,size){
  if(skipped)L.push(`${pl(skipped,'photo')} with damaged data or no model will be skipped.`);
  if(free!=null&&size*1.5>free)L.push(`Warning: low storage. The app has about ${fmtB(Math.max(0,free))} available and this import may need about ${fmtB(Math.round(size*1.5))}.`);
  L.push('Importing deletes all current data.');
+ L.push(Array.isArray(d.bin)&&d.bin.length?`The backup also holds ${plu(d.bin.length,'recycling-bin item')}, which will replace the current bin.`:'The current recycling bin will be emptied.');
  return{msg:L.join('\n'),fix(){badC.forEach(c=>c.parentId=ROOT);badI.forEach(x=>x.parentId=ROOT);d.photos=good}}}
 
 /* ---------- automatic backup (Android app only; manual export above is untouched) ---------- */
@@ -950,6 +1182,54 @@ const abCheck=()=>{const s=abGet(),now=Date.now();
  if(!isNative()||!s.on||now-s.last<s.days*864e5||now-s.tried<6*36e5)return;
  autoBackup(false).catch(e=>toast('Automatic backup failed: '+(e&&e.message||e),true))};
 
+/* ---------- missing information: models without a photo or category, collections without an icon ---------- */
+const GAPS=[['photo','No photo'],['cat','No category'],['icon','No icon']];
+async function scanMissing(){
+ const[cols,items,pc]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoCounts()]);
+ const byId=new Map(cols.map(c=>[c.id,c]));
+ const mi=items.map(i=>{const g=[];if(!pc.get(i.id))g.push('photo');if(!(i.category||'').trim())g.push('cat');return{rec:i,gaps:g}}).filter(x=>x.gaps.length);
+ const mc=cols.filter(c=>!(c.icon instanceof Blob)).map(c=>({rec:c,gaps:['icon']}));
+ return{byId,mi,mc}}
+const pathName=(byId,id)=>{if(id===ROOT)return'Vault (top level)';const p=[];let n=0;for(let x=byId.get(id);x&&n<50;x=byId.get(x.parentId),n++)p.unshift(x.name||'Untitled');return p.length?p.join(' / '):'Unfiled models'};
+async function openMissing(){if($('.sheet.miss'))return;
+ const sh=el('div','sheet miss');sh.style.zIndex=26;sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-labelledby','mi-title');
+ sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close missing information">${ICON.down}</button><h2 id="mi-title">Missing information</h2></div><div class="body"><div><b>Show</b><div class="chips wrap gc"></div></div><div><b>Status</b><small class="muted" style="display:block">Applies to models only. Choose none to include every status.</small><div class="chips wrap sc"></div></div><p class="muted sum" aria-live="polite" style="margin:0"></p><div class="mlist"></div></div>`;
+ const gaps=new Set(GAPS.map(x=>x[0])),sts=new Set(),gc=$('.gc',sh),sc=$('.sc',sh),sum=$('.sum',sh),list=$('.mlist',sh);
+ let data=null,tm=new Map(),urls=[];const drop=()=>{urls.forEach(URL.revokeObjectURL);urls=[]};
+ const inp=el('input');inp.type='file';inp.accept='image/*';
+ const okSt=m=>!sts.size||segs(m.rec).some(x=>sts.has(x.status));
+ const tags=x=>`<span class="mtags">${x.gaps.map(k=>`<span class="mtag">${GAPS.find(g=>g[0]===k)[1]}</span>`).join('')}</span>`;
+ const render=()=>{if(!data)return;const top=sh.scrollTop;drop();
+  const mi=data.mi.filter(okSt),items=mi.filter(m=>m.gaps.some(g=>gaps.has(g))),cols=gaps.has('icon')?data.mc:[];
+  const cnt={photo:mi.filter(m=>m.gaps.includes('photo')).length,cat:mi.filter(m=>m.gaps.includes('cat')).length,icon:data.mc.length};
+  gc.replaceChildren();GAPS.forEach(([k,l])=>{const b=el('button','chip'+(gaps.has(k)?' on':''),`${esc(l)} (${cnt[k]})`);b.setAttribute('aria-pressed',gaps.has(k));b.onclick=()=>{gaps.has(k)?gaps.delete(k):gaps.add(k);render()};gc.append(b)});
+  sc.replaceChildren();STATUS.forEach(([k,l])=>{const b=el('button','chip'+(sts.has(k)?' on':''),esc(l));b.setAttribute('aria-pressed',sts.has(k));b.onclick=()=>{sts.has(k)?sts.delete(k):sts.add(k);render()};sc.append(b)});
+  const pl=(n,w)=>n+' '+w+(n===1?'':'s');
+  sum.textContent=items.length+cols.length?`${pl(items.length,'model')} and ${pl(cols.length,'collection')} with something missing.`:'';
+  list.replaceChildren();
+  if(!items.length&&!cols.length){list.append(el('p','muted',data.mi.length+data.mc.length?'Nothing matches these filters.':'Nothing is missing. Every model has a photo and a category, and every collection has an icon.'));sh.scrollTop=top;return}
+  const gk=pid=>pid===ROOT||data.byId.has(pid)?pid:'__unfiled',groups=new Map(),grp=pid=>{const k=gk(pid);return groups.get(k)||groups.set(k,{name:k==='__unfiled'?'Unfiled models':pathName(data.byId,k),root:k===ROOT,cols:[],items:[]}).get(k)};
+  cols.forEach(x=>grp(x.rec.parentId).cols.push(x));items.forEach(x=>grp(x.rec.parentId).items.push(x));
+  [...groups.values()].sort((a,b)=>a.root?-1:b.root?1:a.name.localeCompare(b.name)).forEach(g=>{
+   list.append(el('div','mgh',`<span>${esc(g.name)}</span><small>${g.cols.length+g.items.length}</small>`));
+   g.cols.slice().sort((a,b)=>byName(a.rec,b.rec)).forEach(x=>{
+    const b=el('button','res-row',`<span class="rk">${ICON.folder}</span><span><b>${esc(x.rec.name)}</b><small>Collection · tap to choose an icon</small>${tags(x)}</span>`);
+    b.onclick=()=>{inp._id=x.rec.id;inp.click()};list.append(b)});
+   g.items.slice().sort((a,b)=>byName(a.rec,b.rec)).forEach(x=>{
+    const q=qtyOf(x.rec),b=el('button','res-row',`<span class="rk">${ICON.cube}</span><span><b>${esc(x.rec.name)}</b><small>${esc(stText(x.rec)+(q>1?' · ×'+q:''))}</small>${tags(x)}</span>`);
+    const th=tm.get(x.rec.id);if(th instanceof Blob){const u=URL.createObjectURL(th);urls.push(u);$('.rk',b).innerHTML=`<img alt="" decoding="async" src="${u}">`}
+    b.onclick=guard(async()=>{await openItem(x.rec.id);const s=[...document.querySelectorAll('.sheet')].pop();if(!s||s===sh)return;s.style.zIndex=28;
+     const mo=new MutationObserver(()=>{if(!s.isConnected){mo.disconnect();if(sh.isConnected)refresh()}});mo.observe(document.body,{childList:true})});
+    list.append(b)})});
+  sh.scrollTop=top};
+ const refresh=guard(async()=>{data=await scanMissing();tm=await DB.thumbs(data.mi.map(m=>m.rec.id));if(!sh.isConnected)return;render()});
+ inp.onchange=guard(async()=>{const f=inp.files[0],id=inp._id;inp.value='';if(!f||!id)return;const b=await cropSquare(f);if(!b)return;
+  const r=await DB.get('collections',id);if(!r)return;r.icon=b;await DB.put('collections',r);toast('Icon updated');await refresh();const v=live();v&&fill(v,{quiet:1})});
+ const close=guard(async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove();drop();const v=live();v&&fill(v,{quiet:1})});
+ $('.back',sh).onclick=close;sh.onkeydown=e=>{if(e.key==='Escape'){e.stopPropagation();$('.back',sh).click()}};
+ document.body.append(sh);M.run(sh,[{transform:'translateY(100%)'},{transform:'none'}],'slow');$('.back',sh).focus();
+ list.append(el('p','muted','Checking…'));await refresh()}
+
 function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set');
  sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close settings">${ICON.down}</button><h2>Settings</h2></div><div class="body">
  <section><h3>Appearance</h3>
@@ -960,16 +1240,18 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   <div class="srow r-motion" role="switch" tabindex="0"><div><b>Animations</b><small>Turn off for instant screen changes</small></div><span class="sw"></span></div></section>
  <section><h3>Collections</h3><div><b>Default sort</b><div class="chips wrap sortc"></div></div><div><b>Default view</b><div class="chips wrap viewc"></div></div><div><b>Layout</b><small class="muted" style="display:block">Pinch a collection to switch between list and grid</small><div class="chips wrap layc"></div></div></section>
  <section><h3>Photos</h3><button class="btn ghost sm rth">Rebuild thumbnails</button><div><b>Photo quality</b><small class="muted" style="display:block">Applies to photos you add from now on</small><div class="chips wrap qc"></div></div></section>
+ <section><h3>Missing information</h3><p class="muted mish" style="margin:0">Checking…</p><p class="muted" style="margin:0">Find models without a photo or category, and collections without an icon, and fix them from one list.</p><button class="btn ghost sm mis">Open missing information</button></section>
+ <section><h3>Recycling bin</h3><p class="muted binh" style="margin:0">Checking…</p><div><b>Keep deleted items for</b><small class="muted" style="display:block">Deleted collections and models, with their photos, can be restored until this time is up. A change also applies to items already in the bin.</small><div class="chips wrap binc"></div></div><button class="btn ghost sm binopen">Open recycling bin</button></section>
  <section><h3>Automatic backup</h3><div class="ab"></div></section>
  <section><h3>Your data</h3><p class="muted usage" style="margin:0">Calculating storage…</p><p class="muted" style="margin:0">A backup is one file with every collection, model and photo.</p>
-  <div class="dbtn"><button class="btn ghost rep">Export .TXT file</button><button class="btn ghost exp">Export database</button><button class="btn ghost imp">Import database</button></div>
+  <div class="dbtn"><button class="btn ghost rep">Export .TXT file</button><button class="btn ghost exp">Export database</button><button class="btn ghost imp">Import database</button><button class="btn ghost chk">Check and repair</button></div>
   <button class="btn danger del">Delete all data</button></section></div>`;
  const am=$('.r-amoled',sh),th=$('.r-theme',sh),mo=$('.r-motion',sh),sws=$('.sws',sh),phone=$('.phone',sh);
  const sync=()=>{const s=SET.get(),t=SET.theme();am.setAttribute('aria-checked',!!s.amoled);$('.am-h',sh).textContent=t==='dark'?'Pure black background in dark mode':'Only applies in dark mode';th.setAttribute('aria-checked',t==='dark');mo.setAttribute('aria-checked',s.motion);
   $('.hint',sh).textContent=s.theme?'Set by you':'Following your phone';phone.hidden=!s.theme;sws.replaceChildren();
   Object.entries(ACC).forEach(([k,a])=>{const b=el('button','swt');b.style.background=a[t][0];b.setAttribute('aria-label',k+' accent');b.setAttribute('aria-pressed',s.accent===k);
    b.onclick=()=>{SET.set('accent',k);sync()};sws.append(b)});
-  sortDD($('.sortc',sh),s.sort,k=>{SET.set('sort',k);sync()});
+  sortDD($('.sortc',sh),s.sort,k=>{SET.set('sort',k);sync()},SORTS.filter(x=>x[0]!=='manual'));
   seg($('.viewc',sh),[[false,'Grouped'],[true,'Flat list']],s.flat,k=>SET.set('flat',k),sync);
   seg($('.layc',sh),[['list','List'],['grid','Grid']],s.layout,k=>SET.set('layout',k),sync);
   seg($('.qc',sh),[['saver','Data saver'],['standard','Standard'],['high','High detail']],s.quality,k=>SET.set('quality',k),sync)};
@@ -995,8 +1277,20 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  abDraw();
  DB.usage().then(u=>{const u0=$('.usage',sh);if(!u0)return;let t=`Vault storage: ${fmtB(u.b)} across ${u.n} photo${u.n===1?'':'s'}.`;
   return(navigator.storage&&navigator.storage.estimate?navigator.storage.estimate():Promise.resolve(null)).then(e=>{if(e&&e.quota)t+=` About ${fmtB(Math.max(0,e.quota-(e.usage||0)))} still available to the app.`}).catch(()=>{}).then(()=>{u0.textContent=t})}).catch(()=>{const u0=$('.usage',sh);if(u0)u0.textContent='Storage use unavailable.'});
- $('.exp',sh).onclick=guard(exportDB);$('.rep',sh).onclick=guard(exportReport);
- $('.rth',sh).onclick=guard(()=>rebuildThumbs(true));
+ $('.mis',sh).onclick=guard(openMissing);
+ const binh=$('.binh',sh),binc=$('.binc',sh);
+ const binInfo=async()=>{try{const n=(await DB.all('bin')).length,u=n?await DB.binUsage():null;if(binh.isConnected)binh.textContent=n?`${plu(n,'item')} in the bin, using ${fmtB(u.b)}.`:'The bin is empty.'}catch(_){if(binh.isConnected)binh.textContent=''}};
+ const binDraw=()=>seg(binc,BIN_OPTS,binDays(),guard(async k=>{if(k===binDays())return;
+   const all=await DB.all('bin'),hit=k===0?all.length:k>0?all.filter(e=>Date.now()-e.deletedAt>k*864e5).length:0;
+   if(hit&&!await dlg({title:k===0?'Turn off the recycling bin?':'Shorten the retention period?',msg:k===0?`All ${plu(hit,'item')} in the bin will be deleted for good.`:`${plu(hit,'item')} in the bin ${hit===1?'is':'are'} older than ${k} days and will be deleted for good.`,ok:'Delete and continue',danger:1}))return;
+   SET.set('binDays',k);if(k===0)await DB.binClear();else await binPurge(k);
+   binDraw();binInfo();toast(k===0?'Recycling bin turned off':k<0?'Deleted items are kept until you remove them':`Deleted items are kept for ${k} days`)}),()=>{});
+ binDraw();binInfo();$('.binopen',sh).onclick=guard(async()=>{await openBin();binInfo()});
+ scanMissing().then(d=>{const h=$('.mish',sh);if(!h)return;const n=d.mi.length+d.mc.length;h.textContent=n?`${n} item${n===1?'':'s'} with something missing.`:'Nothing is missing.'}).catch(()=>{const h=$('.mish',sh);if(h)h.textContent=''});
+ $('.exp',sh).onclick=guard(async()=>{let wb=false;const n=(await DB.all('bin')).length;
+  if(n){const o=await dlg({title:'Export database',msg:`The recycling bin holds ${plu(n,'deleted item')}. Include ${n===1?'it':'them'} in this backup? The file gets larger.`,choices:[{label:'Include recycling bin',value:'y'},{label:'Vault only',value:'n'}]});if(!o)return;wb=o==='y'}
+  await exportDB(wb)});$('.rep',sh).onclick=guard(exportReport);
+ $('.rth',sh).onclick=guard(()=>rebuildThumbs(true));$('.chk',sh).onclick=guard(checkRepair);
  const imp=el('input');imp.type='file';imp.accept='application/json,.json';
  imp.onchange=guard(async()=>{const f=imp.files[0];imp.value='';if(!f)return;let d;
   try{d=JSON.parse(await f.text())}catch(e){throw new Error('That file is not a valid backup')}
@@ -1004,10 +1298,12 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   const rp=await checkBackup(d,f.size);if(!await dlg({title:'Replace everything?',msg:rp.msg,ok:'Replace',danger:true}))return;rp.fix();
   d.collections=d.collections.map(x=>{const{icon,...r}=x;return typeof icon==='string'?{...r,icon:d2b(icon)}:r});
   d.photos=d.photos.map(p=>({...p,blob:d2b(p.blob),thumb:p.thumb?d2b(p.thumb):undefined}));
-  await DB.replaceAll(d);await afterReplace();toast('Backup imported')});
+  const be=(Array.isArray(d.bin)?d.bin:[]).filter(e=>e&&e.id&&Array.isArray(e.cols)&&Array.isArray(e.items)).map(e=>({...e,cols:e.cols.map(x=>{const{icon,...r}=x;return typeof icon==='string'?{...r,icon:d2b(icon)}:r})})),bid=new Set(be.map(e=>e.id));
+  const bp=(Array.isArray(d.binPhotos)?d.binPhotos:[]).filter(x=>x&&bid.has(x.binId)&&typeof x.blob==='string'&&x.blob.startsWith('data:')).map(x=>({...x,blob:d2b(x.blob),thumb:x.thumb?d2b(x.thumb):undefined}));
+  await DB.replaceAll(d);await DB.binReplace(be,bp);await afterReplace();toast('Backup imported')});
  $('.imp',sh).onclick=()=>imp.click();
- $('.del',sh).onclick=guard(async()=>{if(!await dlg({title:'Delete all data?',msg:'Every collection, model and photo will be permanently removed. Export a backup first if you may want them back.',ok:'Delete everything',danger:true}))return;
-  await DB.replaceAll({});await afterReplace();toast('All data deleted')});
+ $('.del',sh).onclick=guard(async()=>{if(!await dlg({title:'Delete all data?',msg:'Every collection, model and photo will be permanently removed. The recycling bin is emptied too. Export a backup first if you may want them back.',ok:'Delete everything',danger:true}))return;
+  await DB.replaceAll({});await DB.binClear();await afterReplace();toast('All data deleted')});
  $('.back',sh).onclick=async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove()};
  document.body.append(sh);M.run(sh,[{transform:'translateY(100%)'},{transform:'none'}],'slow')}
 
@@ -1030,7 +1326,7 @@ function handleBack(){
  const bd=$('.backdrop');if(bd){bd.click();return true}
  const sheets=[...document.querySelectorAll('.sheet')];
  if(sheets.length){const open=sheets.filter(x=>!x.dataset.closing);if(!open.length)return true;
-  const top=open.find(x=>x.classList.contains('set'))||open[open.length-1],b=$('.back',top);
+  const z=x=>+getComputedStyle(x).zIndex||0,top=open.reduce((a,x)=>z(x)>=z(a)?x:a),b=$('.back',top);
   if(b){top.dataset.closing='1';b.click();return true}}
  if(SEL.size){clearSel();return true}
  if(cur!==ROOT){const b=[...crumbs.querySelectorAll('button')];if(b.length>1){b[b.length-2].click();return true}}
@@ -1038,9 +1334,9 @@ function handleBack(){
 (()=>{const A=plug('App');if(!A||!A.addListener)return;let last=0;
  A.addListener('backButton',()=>{if(handleBack())return;const t=Date.now();if(t-last<2000){A.exitApp&&A.exitApp();return}last=t;toast('Press back again to exit')})})();
 
-(()=>{const A=plug('App');if(!A||!A.addListener)return;A.addListener('appStateChange',st=>{if(st&&st.isActive)setTimeout(abCheck,1500)})})();
+(()=>{const A=plug('App');if(!A||!A.addListener)return;A.addListener('appStateChange',st=>{if(st&&st.isActive)setTimeout(()=>{abCheck();binPurge().catch(()=>{})},1500)})})();
 
 /* ---------- start ---------- */
 (async()=>{try{await DB.open()}catch(e){stage.innerHTML=`<div class="empty"><h2>Storage unavailable</h2><p>${esc(e.message)}</p></div>`;toast(e.message,true);return}
- go(ROOT,0);setTimeout(abCheck,4000);setTimeout(()=>{let d='';try{d=localStorage.getItem('hv-th')}catch(_){}if(d!=='2')rebuildThumbs(false).catch(()=>{})},2500)})();
+ await migrateSorts().catch(()=>{});go(ROOT,0);binPurge().catch(()=>{});setTimeout(abCheck,4000);setTimeout(()=>{let d='';try{d=localStorage.getItem('hv-th')}catch(_){}if(d!=='2')rebuildThumbs(false).catch(()=>{})},2500)})();
 </script></body></html>
