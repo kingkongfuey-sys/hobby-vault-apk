@@ -59,7 +59,7 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 .tile{position:relative;aspect-ratio:1;border-radius:var(--radius-control);overflow:hidden;background:var(--s2)}
 .tile img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;opacity:0;transition:opacity var(--dur-slow) var(--ease)}.tile img.on{opacity:1}
 .tile button{position:absolute;width:44px;height:44px;border:0;border-radius:50%;background:var(--ovl);color:var(--ovlx);display:grid;place-items:center;cursor:pointer;transition:transform var(--dur-fast) var(--ease)}
-.tile button:active{transform:scale(.9)}.tile button:disabled{opacity:.3}.tile svg{width:18px}
+.tile button:active{transform:scale(.9)}.tile svg{width:18px}
 .x{top:2px;right:2px}.l{bottom:2px;left:2px}.r{bottom:2px;right:2px}
 .lb{position:fixed;inset:0;z-index:40;display:grid;place-items:center}
 #toasts{position:fixed;left:0;right:0;bottom:calc(92px + env(safe-area-inset-bottom));display:grid;justify-items:center;gap:8px;pointer-events:none;z-index:50}
@@ -144,12 +144,11 @@ body.selmode #selbar{display:flex}
 .vw{position:relative;width:min(92vw,560px);height:min(72vh,640px);background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.45);touch-action:none;user-select:none;-webkit-user-select:none;outline:0}
 .vwtrack{display:flex;height:100%;will-change:transform}.vwslide{flex:none;width:100%;height:100%;display:grid;place-items:center;overflow:hidden}
 .vwslide img{max-width:100%;max-height:100%;object-fit:contain;display:block;-webkit-user-drag:none;will-change:transform}
-.vwx,.vwn{position:absolute;width:44px;height:44px;border:0;border-radius:50%;background:var(--ovl);color:var(--ovlx);display:grid;place-items:center;cursor:pointer}
-.vwx{top:10px;right:10px}.vwn{top:50%;margin-top:-22px}.vwp{left:8px}.vwq{right:8px}.vwx svg,.vwn svg{width:20px}
+.vwx,.vwn,.vwr{position:absolute;width:44px;height:44px;border:0;border-radius:50%;background:var(--ovl);color:var(--ovlx);display:grid;place-items:center;cursor:pointer}
+.vwx{top:10px;right:10px}.vwn{top:50%;margin-top:-22px}.vwp{left:8px}.vwq{right:8px}.vwx svg,.vwn svg,.vwr svg{width:20px}.vwr{top:10px;left:10px}.vwr:disabled{opacity:.5}
 .vwc{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:0 12px;height:28px;line-height:28px;border-radius:14px;background:var(--ovl);color:var(--ovlx);font:600 var(--t-sm) var(--sans)}.vwc:empty{display:none}
-.tile{touch-action:pan-y}.tile .cv{top:2px;left:2px}.tile.first .cv{display:none}
+.tile{touch-action:pan-y}
 .tile .cvl{position:absolute;top:8px;left:8px;padding:0 10px;height:26px;line-height:26px;border-radius:13px;background:var(--ac);color:var(--acx);font:600 var(--t-xs) var(--sans)}.tile:not(.first) .cvl{display:none}
-.tile.drag{z-index:5;transition:none;box-shadow:0 12px 28px rgba(0,0,0,.4);opacity:.92}.tile.over{outline:2px solid var(--ac);outline-offset:-2px}
 .ddbg{position:fixed;inset:0;z-index:35}
 .dd{position:fixed;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.35);max-height:70vh;overflow-y:auto;transform-origin:top right}
 .ddi{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:0 12px;border:0;border-radius:var(--radius-control);background:none;color:var(--tx);font:var(--t-md) var(--sans);text-align:left;cursor:pointer}
@@ -159,6 +158,26 @@ body.selmode #selbar{display:flex}
 .cropv{position:relative;overflow:hidden;border-radius:var(--radius-card);border:1px solid var(--line);margin:10px auto;touch-action:none;background:var(--s2);cursor:grab}
 .cropv img{position:absolute;left:50%;top:50%;max-width:none;user-select:none;-webkit-user-drag:none}
 .dlg input.cz{min-height:32px;padding:0;border:0;background:none;accent-color:var(--ac)}
+
+.pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.phint{margin:-8px 0 0;color:var(--mu);font-size:var(--t-sm)}
+.tile{border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.16);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:box-shadow var(--dur-med) var(--ease),border-color var(--dur-med) var(--ease)}
+.tile img{cursor:pointer;-webkit-user-drag:none}
+.tile button{width:32px;height:32px;background:rgba(10,14,18,.58);color:#fff;border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:transform var(--dur-fast) var(--ease),opacity var(--dur-med) var(--ease)}
+.tile .x::after{content:none}
+.tile svg{width:16px}.tile .x{top:8px;right:8px}
+.tile .cvl{top:auto;bottom:8px;left:8px;height:24px;line-height:24px;padding:0 10px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tile.drag{z-index:5;border-color:var(--ac);box-shadow:0 16px 36px rgba(0,0,0,.45);opacity:1;cursor:grabbing;transition:none}.tile.drag button{opacity:0;pointer-events:none}
+#stage{touch-action:pan-y}.top h1{-webkit-user-select:none;user-select:none}
+.dlg{max-height:90vh;overflow-y:auto}.dlg p{white-space:pre-line}
+:root[data-layout=grid] .grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+:root[data-layout=grid] .card{flex-direction:column;min-height:0}
+:root[data-layout=grid] .ph{width:100%;min-height:0;aspect-ratio:1}:root[data-layout=grid] .ph svg{width:38%}:root[data-layout=grid] .ph.it>svg{margin:0}
+:root[data-layout=grid] .ph .addp svg{width:14px}
+:root[data-layout=grid] .lab{align-self:stretch;padding:6px 8px 8px}:root[data-layout=grid] .lab b{font-size:var(--t-sm)}
+:root[data-layout=grid] .lab small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:var(--t-xs)}
+:root[data-layout=grid] .more,:root[data-layout=grid] .card.hasq .more{top:0;right:0;bottom:auto;width:34px;height:34px;background:var(--ovl);border-radius:0 0 0 10px}
+:root[data-layout=grid] .qp{top:6px;left:6px;right:auto;bottom:auto}
+:root[data-layout=grid] .ck{top:6px;right:6px;transform:none}
 </style></head><body>
 <header class="top"><h1>Hobby Vault</h1><div class="tr"><button class="ib" id="srch" aria-label="Search everything"></button><button class="ib" id="cog" aria-label="Settings"></button></div></header><nav id="crumbs" aria-label="Location"></nav>
 <main id="stage"></main>
@@ -173,6 +192,7 @@ const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=nu
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
 const byName=(a,b)=>a.name.localeCompare(b.name);
+const fmtB=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':b<1073741824?(b/1048576).toFixed(1)+' MB':(b/1073741824).toFixed(2)+' GB';
 const matchQ=(r,q)=>{const h=(r.name+' '+(r.category||'')+' '+(r.notes||'')+' '+(r.notes!=null?stLab(stOf(r)):'')).toLowerCase();return q.split(/\s+/).filter(Boolean).every(t=>h.includes(t))};
 const svg=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const ICON={folder:svg('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
@@ -182,12 +202,13 @@ x:svg('<path d="M6 6l12 12M18 6 6 18"/>'),plus:svg('<path d="M12 5v14M5 12h14"/>
 prev:svg('<path d="M15 6l-6 6 6 6"/>'),next:svg('<path d="M9 6l6 6-6 6"/>')};
 ICON.cog=svg('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>');
 ICON.search=svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>');
-ICON.minus=svg('<path d="M5 12h14"/>');ICON.star=svg('<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/>');ICON.check=svg('<path d="M5 12.5l4.5 4.5L19 7"/>');
+ICON.minus=svg('<path d="M5 12h14"/>');ICON.check=svg('<path d="M5 12.5l4.5 4.5L19 7"/>');
+ICON.rot=svg('<path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v4.5h-4.5"/>');
 const ACC={brass:{dark:['#c8974a','#1a1408'],light:['#9c6a17','#ffffff']},verdigris:{dark:['#4fb3a0','#04211c'],light:['#1f7a6a','#ffffff']},azure:{dark:['#6ea8e8','#071a30'],light:['#2a63b0','#ffffff']},violet:{dark:['#a992e6','#140c2b'],light:['#6a4bb5','#ffffff']}};
-const SET=(()=>{const K='hv-settings';let s={theme:null,accent:'brass',motion:true,sort:'az',flat:false,quality:'standard'};
+const SET=(()=>{const K='hv-settings';let s={theme:null,accent:'brass',motion:true,sort:'az',flat:false,quality:'standard',layout:'list'};
  try{Object.assign(s,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
  const sys=matchMedia('(prefers-color-scheme: light)'),theme=()=>s.theme||(sys.matches?'light':'dark');
- const apply=()=>{const t=theme(),r=document.documentElement,a=(ACC[s.accent]||ACC.brass)[t];r.dataset.theme=t;r.dataset.motion=s.motion?'on':'off';
+ const apply=()=>{const t=theme(),r=document.documentElement,a=(ACC[s.accent]||ACC.brass)[t];r.dataset.theme=t;r.dataset.motion=s.motion?'on':'off';r.dataset.layout=s.layout==='grid'?'grid':'list';
   r.style.setProperty('--ac',a[0]);r.style.setProperty('--acx',a[1]);$('meta[name=theme-color]').content=getComputedStyle(r).getPropertyValue('--bg').trim()};
  const set=(k,v)=>{s[k]=v;try{localStorage.setItem(K,JSON.stringify(s))}catch(e){}apply()};
  sys.addEventListener&&sys.addEventListener('change',()=>{if(!s.theme)apply()});apply();
@@ -231,6 +252,12 @@ const thumbs=ids=>new Promise((ok,no)=>{const m=new Map();ids=[...new Set(ids)];
    const n=ii.count(IDBKeyRange.only(id));n.onsuccess=()=>{if(!n.result)return fin();
     const g=ii.getAll(IDBKeyRange.only(id));g.onsuccess=()=>{const l=g.result.sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0))[0];if(l)m.set(id,l.thumb||l.blob);fin()}}}})});
 const all=s=>R(T(s).objectStore(s).getAll());
+const usage=async()=>{const r=await new Promise((ok,no)=>{let n=0,b=0;const q=T('photos').objectStore('photos').openCursor();
+ q.onsuccess=()=>{const c=q.result;if(!c)return ok({n,b});const v=c.value;n++;b+=(v.blob?v.blob.size:0)+(v.thumb?v.thumb.size:0);c.continue()};q.onerror=()=>no(q.error)});
+ (await all('collections')).forEach(c=>{if(c.icon instanceof Blob)r.b+=c.icon.size});return r};
+const setThumb=(id,thumb)=>new Promise((ok,no)=>{const t=T('photos','readwrite'),st=t.objectStore('photos'),g=st.get(id);
+ g.onsuccess=()=>{const v=g.result;if(v){v.thumb=thumb;v.th=2;st.put(v)}};t.oncomplete=()=>ok();t.onerror=()=>no(t.error);t.onabort=()=>no(t.error||new Error('Transaction aborted'))});
+const photoKeys=()=>R(T('photos').objectStore('photos').getAllKeys());
 const replaceAll=async d=>{const t=T(['collections','items','photos'],'readwrite');
  for(const n of ['collections','items','photos']){const o=t.objectStore(n);o.clear();(d[n]||[]).forEach(r=>o.put(r))}await done(t)};
 const delItem=id=>wipe([],[id]);
@@ -238,7 +265,7 @@ const delCollection=async id=>{const cols=[id],items=[];
  for(let n=0;n<cols.length;n++){(await by('collections','parentId',cols[n])).forEach(c=>cols.push(c.id));
   (await by('items','parentId',cols[n])).forEach(x=>items.push(x.id))}
  await wipe(cols,items)};
-return{thumbs,all,replaceAll,open,get,put,by,count,photoCounts,photos,delPhoto,putPhotos,delItem,delCollection}})();
+return{setThumb,usage,photoKeys,thumbs,all,replaceAll,open,get,put,by,count,photoCounts,photos,delPhoto,putPhotos,delItem,delCollection}})();
 
 /* ---------- motion system (tokens live in CSS) ---------- */
 const M=(()=>{const RMQ=matchMedia('(prefers-reduced-motion: reduce)'),RM={get matches(){return RMQ.matches||document.documentElement.dataset.motion==='off'}};
@@ -278,6 +305,10 @@ function dlg({title,msg,input,ok='OK',danger,choices}){return new Promise(res=>{
  bd.append(d);document.body.append(bd);M.fade(bd,0,1);
  M.run(d,[{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`},{opacity:1,transform:'none'}],'slow');
  (inp||$('.btn',d)).focus();inp&&inp.select()})}
+
+async function okName(name,parentId,kind,skipId){const k=name.trim().toLowerCase(),list=await DB.by(kind==='c'?'collections':'items','parentId',parentId);
+ if(!list.some(x=>x.id!==skipId&&String(x.name).trim().toLowerCase()===k))return true;
+ return !!await dlg({title:'Name already used',msg:`There is already ${kind==='c'?'a collection':'a model'} called “${name}” here. Use the name anyway?`,ok:'Use anyway'})}
 
 /* ---------- navigation & grid ---------- */
 let cur=ROOT,nav=0;const stage=$('#stage'),crumbs=$('#crumbs');
@@ -351,7 +382,7 @@ function card(kind,rec,sub,thumb,v,photo){const c=el('div','card');c.tabIndex=0;
   if(!photo)ph.insertAdjacentHTML('beforeend',`<span class="addp">${ICON.plus}</span>`)}
  c.onclick=guard(async e=>{if(c._lp){c._lp=false;return}if(SEL.size){if(kind==='i')toggleSel(rec.id,c);return}if(e.target.closest('.more'))return menu(kind,rec,c,v);
   if(kind==='i'&&e.target.closest('.ph')){
-   if(photo)return viewer(await DB.photos(rec.id),0,$('.ph img',c)||$('.ph',c));
+   if(photo)return viewer(await DB.photos(rec.id),0,$('.ph img',c)||$('.ph',c),()=>{const lv=live();lv&&fill(lv,{quiet:1})});
    const inp=el('input');inp.type='file';inp.accept='image/*';inp.multiple=true;
    inp.onchange=guard(async()=>{const fs=[...inp.files];if(!fs.length)return;toast(`Adding ${fs.length} photo${fs.length>1?'s':''}`);
     const n=await importFiles(rec.id,fs);if(n){toast(`Added ${n} photo${n>1?'s':''}`);await fill(v,{quiet:1})}});
@@ -523,7 +554,7 @@ async function menu(kind,rec,cardEl,v){const store=kind==='c'?'collections':'ite
  if(a&&a.file){const b=await cropSquare(a.file);if(b){rec.icon=b;await DB.put(store,rec);await fill(v,{quiet:1});toast('Icon updated')}}
  if(a==='ri'){delete rec.icon;await DB.put(store,rec);await fill(v,{quiet:1});toast('Icon removed')}
  if(a==='r'){const n=await dlg({title:'Rename',input:rec.name,ok:'Save'});
-  if(n){rec.name=n;await DB.put(store,rec);await fill(v,{quiet:1});toast('Renamed')}}
+  if(n&&await okName(n,rec.parentId,kind,rec.id)){rec.name=n;await DB.put(store,rec);await fill(v,{quiet:1});toast('Renamed')}}
  if(a==='m'){const cols=await DB.all('collections'),map=new Map(cols.map(c=>[c.id,c])),bad=new Set();
   if(kind==='c'){bad.add(rec.id);for(let more=true;more;){more=false;cols.forEach(c=>{if(!bad.has(c.id)&&bad.has(c.parentId)){bad.add(c.id);more=true}})}}
   const nm=c=>{const p=[];for(let x=c;x;x=map.get(x.parentId))p.unshift(x.name);return p.join(' / ')};
@@ -544,25 +575,26 @@ async function menu(kind,rec,cardEl,v){const store=kind==='c'?'collections':'ite
 $('#add').onclick=guard(async()=>{
  const k=await dlg({title:'Add here',choices:[{label:'New collection',value:'c'},{label:'New model',value:'i'}]});if(!k)return;
  const n=await dlg({title:k==='c'?'New collection':'New model',input:'',ok:'Create'});if(!n)return;
+ if(!await okName(n,cur,k))return;
  const rec={id:uid(),name:n,parentId:cur};if(k==='i'){rec.notes='';rec.createdAt=Date.now()}
  await DB.put(k==='c'?'collections':'items',rec);await fill(live(),{pop:rec.id})});
 
 /* ---------- item sheet & photos ---------- */
 const load=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>no(new Error('Could not read that image'));i.src=u});
 const shrink=(img,max,q)=>{const s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');
- c.width=Math.round(img.naturalWidth*s);c.height=Math.round(img.naturalHeight*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+ c.width=Math.round(img.naturalWidth*s);c.height=Math.round(img.naturalHeight*s);{const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(img,0,0,c.width,c.height)}
  return new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error('Image compression failed')),'image/jpeg',q))};
 
 const PQ={saver:[900,.7],standard:[1200,.8],high:[1800,.9]},pq=()=>PQ[SET.get().quality]||PQ.standard;
 async function importFiles(id,fs,start=0){let n=0;
- for(const f of fs){try{const img=await load(f),blob=await shrink(img,...pq()),thumb=await shrink(img,360,.75);
-  await DB.putPhotos([{id:uid(),itemId:id,blob,thumb,sortOrder:start+n}]);n++}catch(e){toast(e.message||'Could not add photo',true)}}return n}
+ for(const f of fs){try{const img=await load(f),blob=await shrink(img,...pq()),thumb=await shrink(img,640,.82);
+  await DB.putPhotos([{id:uid(),itemId:id,blob,thumb,sortOrder:start+n,th:2}]);n++}catch(e){toast(e.message||'Could not add photo',true)}}return n}
 
 async function openItem(id){const it=await DB.get('items',id);if(!it)return;let ph=await DB.photos(id);
  const sh=el('div','sheet');
  sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close">${ICON.down}</button><h2>${esc(it.name)}</h2><button class="btn ghost ren">Rename</button><button class="ib cog" aria-label="Settings">${ICON.cog}</button></div>
  <div class="body"><div class="qrow"><div><b>Quantity</b><small class="muted" style="display:block">How many of this model or unit you own</small></div><span class="qslot"></span></div><label>Category<input class="cat" maxlength="40" placeholder="e.g. Vehicles or Infantry"></label><div class="chips sug"></div><div><b>Painting status</b><div class="chips wrap stc"></div></div><label>Notes<textarea maxlength="2000" placeholder="Paint scheme, basing, what is left to do"></textarea></label>
- <div class="phead"><h3>Photos</h3><button class="btn add">Add photos</button></div><div class="pgrid"></div><input type="file" accept="image/*" multiple hidden></div>`;
+ <div class="phead"><h3>Photos</h3><button class="btn add">Add photos</button></div><p class="phint">Hold and drag a photo to reorder. The first photo is the cover.</p><div class="pgrid"></div><input type="file" accept="image/*" multiple hidden></div>`;
  $('.qslot',sh).replaceWith(qtyCtl(it));const ta=$('textarea',sh),grid=$('.pgrid',sh),file=$('input[type=file]',sh),tiles=new Map();ta.value=it.notes||'';
  const known=new Map();(await DB.by('items','parentId',it.parentId)).forEach(x=>{const c=(x.category||'').trim();if(c&&x.id!==id&&!known.has(c.toLowerCase()))known.set(c.toLowerCase(),c)});
  const ci=$('.cat',sh),sug=$('.sug',sh);ci.value=it.category||'';
@@ -575,35 +607,43 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
   b.onclick=guard(async()=>{it.status=k;await DB.put('items',it);drawSt()});stc.append(b)})};drawSt();
  ta.oninput=guard(async()=>{it.notes=ta.value;await DB.put('items',it)});
  $('.ren',sh).onclick=guard(async()=>{const n=await dlg({title:'Rename model',input:it.name,ok:'Save'});
-  if(n){it.name=n;await DB.put('items',it);$('h2',sh).textContent=n;toast('Renamed')}});
+  if(n&&await okName(n,it.parentId,'i',it.id)){it.name=n;await DB.put('items',it);$('h2',sh).textContent=n;toast('Renamed')}});
  const layout=()=>{const note=$('.muted',grid);if(!ph.length){if(!note)grid.append(el('p','muted','No photos yet. Add some to see them here.'));return}
-  note&&note.remove();ph.forEach((p,i)=>{const t=tiles.get(p.id);grid.append(t);t.classList.toggle('first',i===0);$('.l',t).disabled=i===0;$('.r',t).disabled=i===ph.length-1})};
- let drag=null;const over=e=>document.elementsFromPoint(e.clientX,e.clientY).map(n=>n.closest&&n.closest('.tile')).find(n=>n&&n!==drag.t);
- const lp=(t,p)=>{let to,x0=0,y0=0;
-  t.addEventListener('pointerdown',e=>{t._dragged=false;if(e.target.closest('button'))return;x0=e.clientX;y0=e.clientY;clearTimeout(to);
-   to=setTimeout(()=>{drag={t,p};t.classList.add('drag');try{t.setPointerCapture(e.pointerId);navigator.vibrate&&navigator.vibrate(12)}catch(_){}},320)});
-  t.addEventListener('pointermove',e=>{if(!drag||drag.t!==t){if(Math.hypot(e.clientX-x0,e.clientY-y0)>8)clearTimeout(to);return}
-   t.style.transform=`translate(${e.clientX-x0}px,${e.clientY-y0}px) scale(1.05)`;grid.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));const o=over(e);o&&o.classList.add('over')});
-  const up=async e=>{clearTimeout(to);if(!drag||drag.t!==t)return;const o=over(e);drag=null;t._dragged=true;t.classList.remove('drag');t.style.transform='';grid.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));
-   if(o){const a=ph.findIndex(q=>q.id===p.id),b=ph.findIndex(q=>tiles.get(q.id)===o);if(b>=0&&b!==a){ph.splice(b,0,ph.splice(a,1)[0]);ph.forEach((q,n)=>q.sortOrder=n);await DB.putPhotos(ph);M.flip(grid,layout)}}};
-  t.addEventListener('pointerup',guard(up));t.addEventListener('pointercancel',guard(up));
-  t.addEventListener('touchmove',e=>{if(drag&&drag.t===t)e.preventDefault()},{passive:false})};
+  note&&note.remove();ph.forEach((p,i)=>{const t=tiles.get(p.id);grid.append(t);t.classList.toggle('first',i===0)})};
+ let drag=null,to=0,x0=0,y0=0,lx=0,ly=0,gx=0,gy=0,swapAt=0;
+ const follow=()=>{const t=drag.t;t.style.transform='none';const r=t.getBoundingClientRect();t.style.transform=`translate(${lx-gx-r.left}px,${ly-gy-r.top}px) scale(1.05)`};
+ const overAt=()=>{const t=drag.t;return document.elementsFromPoint(lx,ly).map(n=>n.closest&&n.closest('.tile')).find(n=>n&&n!==t)};
+ const step=()=>{if(!drag)return;follow();const o=overAt(),t=drag.t,p=drag.p;
+  if(!o||performance.now()-swapAt<140)return;
+  const a=ph.findIndex(q=>q.id===p.id),b=ph.findIndex(q=>tiles.get(q.id)===o);if(b<0||b===a)return;swapAt=performance.now();
+  const first=new Map([...grid.children].filter(c=>c!==t).map(c=>[c,c.getBoundingClientRect()]));
+  ph.splice(b,0,ph.splice(a,1)[0]);layout();follow();
+  first.forEach((f,c)=>{const l=c.getBoundingClientRect(),dx=f.left-l.left,dy=f.top-l.top;if(dx||dy)M.run(c,[{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],'med')})};
+ const auto=()=>{if(!drag)return;if(ly>innerHeight-90)sh.scrollTop+=10;else if(ly<110)sh.scrollTop-=10;step();requestAnimationFrame(auto)};
+ const lp=(t,p)=>t.addEventListener('pointerdown',e=>{t._dragged=false;if(e.button>0||e.target.closest('button'))return;x0=lx=e.clientX;y0=ly=e.clientY;clearTimeout(to);
+  to=setTimeout(()=>{const r=t.getBoundingClientRect();gx=lx-r.left;gy=ly-r.top;drag={t,p};t.classList.add('drag');
+   try{grid.setPointerCapture(e.pointerId);navigator.vibrate&&navigator.vibrate(12)}catch(_){}requestAnimationFrame(auto)},260)});
+ grid.addEventListener('pointermove',e=>{lx=e.clientX;ly=e.clientY;if(!drag&&Math.hypot(lx-x0,ly-y0)>8)clearTimeout(to)});
+ const end=guard(async()=>{clearTimeout(to);if(!drag)return;const t=drag.t;drag=null;t._dragged=true;
+  const a=t.getBoundingClientRect();t.classList.remove('drag');t.style.transform='none';const b=t.getBoundingClientRect();
+  M.run(t,[{transform:`translate(${a.left-b.left}px,${a.top-b.top}px) scale(1.05)`},{transform:'none'}],'med');
+  ph.forEach((q,n)=>q.sortOrder=n);await DB.putPhotos(ph)});
+ grid.addEventListener('pointerup',end);grid.addEventListener('pointercancel',end);
+ grid.addEventListener('touchmove',e=>{if(drag)e.preventDefault()},{passive:false});
+ grid.addEventListener('contextmenu',e=>e.preventDefault());
  const mk=p=>{const u=URL.createObjectURL(p.blob),t=el('div','tile');t._u=u;
-  t.innerHTML=`<img alt="Model photo" src="${u}"><button class="cv" aria-label="Make cover photo">${ICON.star}</button><span class="cvl">Cover</span><button class="x" aria-label="Delete photo">${ICON.x}</button><button class="mv l" aria-label="Move earlier">${ICON.prev}</button><button class="mv r" aria-label="Move later">${ICON.next}</button>`;
-  const im=$('img',t);im.onload=()=>im.classList.add('on');im.onclick=()=>{if(t._dragged){t._dragged=false;return}viewer(ph,Math.max(0,ph.findIndex(q=>q.id===p.id)),im)};
-  $('.x',t).onclick=guard(async()=>{await M.out(t);
+  t.innerHTML=`<img alt="Model photo" draggable="false" src="${u}"><span class="cvl">Cover</span><button class="x" aria-label="Delete photo">${ICON.x}</button>`;
+  const im=$('img',t);im.onload=()=>im.classList.add('on');im.onclick=()=>{if(t._dragged){t._dragged=false;return}viewer(ph,Math.max(0,ph.findIndex(q=>q.id===p.id)),im,r=>{const tt=tiles.get(r.id);if(!tt)return;URL.revokeObjectURL(tt._u);tt._u=URL.createObjectURL(r.blob);$('img',tt).src=tt._u})};
+  $('.x',t).onclick=guard(async()=>{if(t._dragged||drag)return;await M.out(t);
    try{await DB.delPhoto(p.id)}catch(e){t.getAnimations().forEach(a=>a.cancel());throw e}
-   ph=ph.filter(q=>q.id!==p.id);tiles.delete(p.id);URL.revokeObjectURL(u);M.flip(grid,()=>{t.remove();layout()});
+   ph=ph.filter(q=>q.id!==p.id);tiles.delete(p.id);URL.revokeObjectURL(t._u);M.flip(grid,()=>{t.remove();layout()});
    toast('Photo deleted',false,async()=>{await DB.putPhotos([p]);if(!sh.isConnected)return;ph.push(p);ph.sort((a,b)=>a.sortOrder-b.sortOrder);const nt=mk(p);layout();M.pop(nt)})});
-  const move=d=>guard(async()=>{const i=ph.findIndex(q=>q.id===p.id),j=i+d;if(j<0||j>=ph.length)return;
-   [ph[i],ph[j]]=[ph[j],ph[i]];ph.forEach((q,n)=>q.sortOrder=n);await DB.putPhotos(ph);M.flip(grid,layout)});
-  $('.l',t).onclick=move(-1);$('.r',t).onclick=move(1);
-  $('.cv',t).onclick=guard(async()=>{const i=ph.findIndex(q=>q.id===p.id);if(i<1)return;ph.unshift(ph.splice(i,1)[0]);ph.forEach((q,n)=>q.sortOrder=n);await DB.putPhotos(ph);M.flip(grid,layout);toast('Cover photo set')});lp(t,p);tiles.set(p.id,t);return t};
+  lp(t,p);tiles.set(p.id,t);return t};
  ph.forEach(mk);layout();
  $('.add',sh).onclick=()=>file.click();
  file.onchange=guard(async()=>{const fs=[...file.files];file.value='';if(!fs.length)return;toast(`Adding ${fs.length} photo${fs.length>1?'s':''}`);let n=0;
-  for(const f of fs){try{const img=await load(f),blob=await shrink(img,...pq()),thumb=await shrink(img,360,.75);
-   const p={id:uid(),itemId:id,blob,thumb,sortOrder:ph.length?ph[ph.length-1].sortOrder+1:0};
+  for(const f of fs){try{const img=await load(f),blob=await shrink(img,...pq()),thumb=await shrink(img,640,.82);
+   const p={id:uid(),itemId:id,blob,thumb,sortOrder:ph.length?ph[ph.length-1].sortOrder+1:0,th:2};
    await DB.putPhotos([p]);ph.push(p);const t=mk(p);layout();M.pop(t);n++}catch(e){toast(e.message||'Could not add photo',true)}}
   if(n)toast(`Added ${n} photo${n>1?'s':''}`)});
  const close=guard(async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});
@@ -611,17 +651,23 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
  $('.back',sh).onclick=close;$('.cog',sh).onclick=()=>openSettings();
  document.body.append(sh);M.run(sh,[{transform:'translateY(100%)'},{transform:'none'}],'slow')}
 
-async function viewer(list,start,thumb){
+async function rot90(blob){const img=await load(blob),c=document.createElement('canvas');c.width=img.naturalHeight;c.height=img.naturalWidth;
+ const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(img,0,0);
+ const enc=(cv,q)=>new Promise((ok,no)=>cv.toBlob(b=>b?ok(b):no(new Error('Could not rotate the photo')),'image/jpeg',q));
+ const k=Math.min(1,640/Math.max(c.width,c.height)),t=document.createElement('canvas');t.width=Math.round(c.width*k);t.height=Math.round(c.height*k);{const y=t.getContext('2d');y.imageSmoothingQuality='high';y.drawImage(c,0,0,t.width,t.height)}
+ return{blob:await enc(c,.9),thumb:await enc(t,.82)}}
+async function viewer(list,start,thumb,onRot){
  if(!list.length)return;
  let i=Math.max(0,Math.min(start,list.length-1)),z=1,tx=0,ty=0,dx=0,closing=false;
- const urls=list.map(p=>URL.createObjectURL(p.blob)),root=el('div','lb vwbg'),box=el('div','vw');
+ const urls=[],root=el('div','lb vwbg'),box=el('div','vw');
  box.tabIndex=-1;box.setAttribute('role','dialog');box.setAttribute('aria-label','Photo viewer');
- box.innerHTML=`<div class="vwtrack">${urls.map(u=>`<div class="vwslide"><img alt="Model photo" draggable="false" src="${u}"></div>`).join('')}</div><button class="vwx" aria-label="Close">${ICON.x}</button>${list.length>1?`<button class="vwn vwp" aria-label="Previous photo">${ICON.prev}</button><button class="vwn vwq" aria-label="Next photo">${ICON.next}</button>`:''}<div class="vwc"></div>`;
+ box.innerHTML=`<div class="vwtrack">${list.map(()=>'<div class="vwslide"><img alt="" draggable="false"></div>').join('')}</div><button class="vwx" aria-label="Close">${ICON.x}</button><button class="vwr" aria-label="Rotate photo">${ICON.rot}</button>${list.length>1?`<button class="vwn vwp" aria-label="Previous photo">${ICON.prev}</button><button class="vwn vwq" aria-label="Next photo">${ICON.next}</button>`:''}<div class="vwc"></div>`;
  root.append(box);document.body.append(root);
  const tr=$('.vwtrack',box),cap=$('.vwc',box),im=()=>tr.children[i].firstChild;
+ const show=()=>{for(let k=i-1;k<=i+1;k++){if(k<0||k>=list.length||urls[k])continue;urls[k]=URL.createObjectURL(list[k].blob);const m=tr.children[k].firstChild;m.alt='Model photo';m.src=urls[k]}};
  const zoom=a=>{const m=im();m.style.transition=a?'transform .25s var(--ease)':'none';m.style.transform=z>1?`translate(${tx}px,${ty}px) scale(${z})`:''};
  const place=a=>{tr.style.transition=a?'transform .32s var(--ease)':'none';tr.style.transform=`translateX(calc(${-i*100}% + ${dx}px))`;cap.textContent=list.length>1?`${i+1} / ${list.length}`:''};
- const step=n=>{n=Math.max(0,Math.min(list.length-1,n));if(n!==i){z=1;tx=ty=0;zoom(0);i=n}dx=0;place(1)};place(0);
+ const step=n=>{n=Math.max(0,Math.min(list.length-1,n));if(n!==i){z=1;tx=ty=0;zoom(0);i=n}dx=0;show();place(1)};show();place(0);
  const pts=new Map(),dist=()=>{const[a,b]=[...pts.values()];return Math.hypot(a[0]-b[0],a[1]-b[1])};
  let sx=0,sy=0,bx=0,by=0,d0=1,z0=1,mv=0,last=0;
  box.onpointerdown=e=>{if(e.target.closest('button'))return;box.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);if(pts.size===2){d0=dist()||1;z0=z}sx=e.clientX;sy=e.clientY;bx=tx;by=ty;mv=0};
@@ -634,6 +680,11 @@ async function viewer(list,start,thumb){
   else{dx=0;place(1)}
   if(mv<8){const n=Date.now();if(n-last<300){last=0;z=z>1?1:2.5;tx=ty=0;zoom(1)}else last=n}};
  box.onpointerup=up;box.onpointercancel=up;
+ let spin=false;const rb=$('.vwr',box);
+ rb.onclick=async()=>{if(spin)return;spin=true;rb.disabled=true;
+  try{const p=list[i],r=await rot90(p.blob);p.blob=r.blob;p.thumb=r.thumb;p.th=2;await DB.putPhotos([p]);
+   if(urls[i])URL.revokeObjectURL(urls[i]);urls[i]=URL.createObjectURL(p.blob);z=1;tx=ty=0;zoom(0);im().src=urls[i];onRot&&onRot(p)}
+  catch(e){toast(e&&e.message||'Could not rotate the photo',true)}finally{spin=false;rb.disabled=false}};
  $('.vwx',box).onclick=()=>close();if(list.length>1){$('.vwp',box).onclick=()=>step(i-1);$('.vwq',box).onclick=()=>step(i+1)}
  root.onclick=e=>{if(e.target===root)close()};
  root.onkeydown=e=>{if(e.key==='Escape')close();if(e.key==='ArrowLeft')step(i-1);if(e.key==='ArrowRight')step(i+1)};
@@ -654,8 +705,8 @@ function cropSquare(file){return new Promise(res=>{
  box.onpointerdown=e=>{box.setPointerCapture(e.pointerId);p0=[e.clientX-ox,e.clientY-oy]};
  box.onpointermove=e=>{if(!p0)return;ox=e.clientX-p0[0];oy=e.clientY-p0[1];place()};box.onpointerup=box.onpointercancel=()=>{p0=null};
  $('.no',d).onclick=()=>done(null);bd.onclick=e=>{if(e.target===bd)done(null)};
- $('.ok',d).onclick=()=>{const s=k*z,side=V/s,cx=im.naturalWidth/2-ox/s,cy=im.naturalHeight/2-oy/s,c=document.createElement('canvas');c.width=c.height=360;
-  c.getContext('2d').drawImage(im,cx-side/2,cy-side/2,side,side,0,0,360,360);c.toBlob(b=>done(b),'image/jpeg',.8)};
+ $('.ok',d).onclick=()=>{const s=k*z,side=V/s,cx=im.naturalWidth/2-ox/s,cy=im.naturalHeight/2-oy/s,c=document.createElement('canvas');c.width=c.height=512;
+  {const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(im,cx-side/2,cy-side/2,side,side,0,0,512,512)}c.toBlob(b=>done(b),'image/jpeg',.88)};
  bd.append(d);document.body.append(bd);M.fade(bd,0,1);M.run(d,[{opacity:0,transform:'scale(.94)'},{opacity:1,transform:'none'}],'slow')})}
 
 /* ---------- search everything ---------- */
@@ -689,11 +740,14 @@ const plug=n=>(window.Capacitor&&window.Capacitor.Plugins||{})[n]||null;
 const isNative=()=>{const c=window.Capacitor;return !!(c&&(c.isNativePlatform?c.isNativePlatform():c.getPlatform&&c.getPlatform()!=='web'))};
 async function exportDB(){
  const stamp=new Date().toISOString(),file=`hobby-vault-${stamp.slice(0,10)}.json`;
- const[c,i,p]=await Promise.all([DB.all('collections'),DB.all('items'),DB.all('photos')]);
+ const[c,i,keys]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoKeys()]);
  const cols=[];for(const x of c)cols.push(x.icon instanceof Blob?{...x,icon:await b2d(x.icon)}:x);
- const photo=async x=>JSON.stringify({...x,blob:await b2d(x.blob),thumb:x.thumb?await b2d(x.thumb):null});
+ /* one photo is read and encoded at a time, so memory use stays flat however big the vault is */
+ const photo=async k=>{const x=await DB.get('photos',k);return x&&x.blob?JSON.stringify({...x,blob:await b2d(x.blob),thumb:x.thumb?await b2d(x.thumb):null}):null};
  const head=`{"app":"hobby-vault","version":1,"exported":${JSON.stringify(stamp)},"collections":${JSON.stringify(cols)},"items":${JSON.stringify(i)},"photos":[`;
- if(!isNative()){const parts=[head];for(let k=0;k<p.length;k++)parts.push((k?',':'')+await photo(p[k]));parts.push(']}');
+ if(!isNative()){toast('Preparing backup…');const parts=[new Blob([head])];let buf='',n=0;
+  for(const k of keys){const x=await photo(k);if(x==null)continue;buf+=(n++?',':'')+x;if(buf.length>4e6){parts.push(new Blob([buf]));buf=''}}
+  parts.push(new Blob([buf+']}']));
   const a=el('a');a.href=URL.createObjectURL(new Blob(parts,{type:'application/json'}));a.download=file;document.body.append(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),5e3);toast('Backup exported');return}
  /* Android/iOS app: a blob download link does nothing in a webview, so write the file natively and open the share sheet */
@@ -702,12 +756,81 @@ async function exportDB(){
  toast('Preparing backup…');
  const at={path:file,directory:'CACHE',encoding:'utf8'};
  await FS.writeFile({...at,data:head});
- let buf='';const flush=async()=>{if(buf){await FS.appendFile({...at,data:buf});buf=''}};
- for(let k=0;k<p.length;k++){buf+=(k?',':'')+await photo(p[k]);if(buf.length>3e6)await flush()}
+ let buf='',n=0;const flush=async()=>{if(buf){await FS.appendFile({...at,data:buf});buf=''}};
+ for(const k of keys){const x=await photo(k);if(x==null)continue;buf+=(n++?',':'')+x;if(buf.length>3e6)await flush()}
  buf+=']}';await flush();
  const{uri}=await FS.getUri({path:file,directory:'CACHE'});
  try{await SH.share({title:'Hobby Vault backup',dialogTitle:'Save or send your backup',files:[uri]})}catch(e){if(!/cancel/i.test(String(e&&e.message||e)))throw e}
  toast('Backup ready')}
+
+/* ---------- rebuild older low-resolution thumbnails from the stored full photos ---------- */
+let thBusy=false;
+async function rebuildThumbs(manual){if(thBusy)return;thBusy=true;
+ try{const keys=await DB.photoKeys();let todo=[];for(const k of keys){const x=await DB.get('photos',k);if(x&&x.blob&&x.th!==2)todo.push(k)}
+  if(!todo.length){if(manual)toast('Thumbnails are already sharp');try{localStorage.setItem('hv-th','2')}catch(_){}return}
+  toast(`Improving ${todo.length} thumbnail${todo.length===1?'':'s'}…`);let n=0;
+  for(const k of todo){try{const x=await DB.get('photos',k);if(!x||!x.blob)continue;const img=await load(x.blob);await DB.setThumb(k,await shrink(img,640,.82));n++}catch(e){}
+   if(n%8===0)await new Promise(r=>setTimeout(r,0))}
+  try{localStorage.setItem('hv-th','2')}catch(_){}
+  const v=live();v&&await fill(v,{quiet:1});toast('Thumbnails improved')}
+ finally{thBusy=false}}
+
+/* ---------- import check ---------- */
+async function checkBackup(d,size){
+ const[cc,ci,ck]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoKeys()]);
+ const cid=new Set(d.collections.map(c=>c&&c.id)),iid=new Set(d.items.map(x=>x&&x.id)),okP=id=>id===ROOT||cid.has(id);
+ const badC=d.collections.filter(c=>c&&!okP(c.parentId)),badI=d.items.filter(x=>x&&!okP(x.parentId));
+ const good=d.photos.filter(p=>p&&iid.has(p.itemId)&&typeof p.blob==='string'&&p.blob.startsWith('data:')),skipped=d.photos.length-good.length;
+ let free=null;try{const e=await navigator.storage.estimate();if(e&&e.quota)free=e.quota-(e.usage||0)}catch(_){}
+ const when=new Date(d.exported),L=[],pl=(n,w)=>n+' '+w+(n===1?'':'s');
+ L.push(isNaN(when)?`File size ${fmtB(size)}.`:`Backup made ${when.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}, file size ${fmtB(size)}.`);
+ L.push(`In the backup: ${pl(d.collections.length,'collection')}, ${pl(d.items.length,'model')}, ${pl(good.length,'photo')}.`);
+ L.push(`You have now: ${pl(cc.length,'collection')}, ${pl(ci.length,'model')}, ${pl(ck.length,'photo')}.`);
+ const lessI=ci.length-d.items.length,lessP=ck.length-good.length;
+ if(lessI>0||lessP>0)L.push(`Warning: the backup has ${[lessI>0?lessI+' fewer model'+(lessI===1?'':'s'):'',lessP>0?lessP+' fewer photo'+(lessP===1?'':'s'):''].filter(Boolean).join(' and ')} than you have now. Anything added since will be lost.`);
+ if(badC.length+badI.length){const n=badC.length+badI.length;L.push(`${n} entr${n===1?'y sits':'ies sit'} inside collections that are missing from the backup and will be moved to the top level.`)}
+ if(skipped)L.push(`${pl(skipped,'photo')} with damaged data or no model will be skipped.`);
+ if(free!=null&&size*1.5>free)L.push(`Warning: low storage. The app has about ${fmtB(Math.max(0,free))} available and this import may need about ${fmtB(Math.round(size*1.5))}.`);
+ L.push('Importing deletes all current data.');
+ return{msg:L.join('\n'),fix(){badC.forEach(c=>c.parentId=ROOT);badI.forEach(x=>x.parentId=ROOT);d.photos=good}}}
+
+/* ---------- automatic backup (Android app only; manual export above is untouched) ---------- */
+const AB='hv-autobackup',AB_KEEP=3;
+const abClean=p=>{p=String(p||'').replace(/\\/g,'/').split('/').map(x=>x.trim()).filter(Boolean);return(!p.length||p.some(x=>x==='.'||x==='..'||/[:*?"<>|]/.test(x)))?null:p.join('/')};
+/* a path under Documents uses Capacitor's DOCUMENTS directory (as before); any other path is taken from the root of shared storage */
+const abTarget=p=>{const c=abClean(p);if(!c)return null;const m=c.match(/^documents\/(.+)$/i);return m?{dir:'DOCUMENTS',sub:m[1],path:c}:{dir:'EXTERNAL_STORAGE',sub:c,path:c}};
+const abGet=()=>{const s={on:false,days:7,last:0,tried:0,path:'Documents/HobbyVault'};try{Object.assign(s,JSON.parse(localStorage.getItem(AB)||'{}'))}catch(e){}return s};
+const abSet=o=>{try{localStorage.setItem(AB,JSON.stringify({...abGet(),...o}))}catch(e){}};
+let abBusy=false;
+async function autoBackup(manual){
+ const FS=plug('Filesystem');if(!isNative()||!FS)throw new Error('Automatic backup needs the Android app with the Filesystem plugin');
+ const tg=abTarget(abGet().path);if(!tg)throw new Error('Choose a valid backup folder in Settings');
+ if(abBusy)return;abBusy=true;abSet({tried:Date.now()});
+ try{
+  const[c,i,keys]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoKeys()]);
+  if(!c.length&&!i.length){if(manual)toast('Nothing to back up yet');return}
+  try{if(FS.checkPermissions){const st=await FS.checkPermissions();if(st&&st.publicStorage&&st.publicStorage!=='granted'&&FS.requestPermissions)await FS.requestPermissions()}}catch(_){}
+  const now=new Date(),stamp=now.toISOString(),pd=n=>String(n).padStart(2,'0'),
+   name=`hobby-vault-auto-${now.getFullYear()}-${pd(now.getMonth()+1)}-${pd(now.getDate())}-${pd(now.getHours())}${pd(now.getMinutes())}.json`;
+  const cols=[];for(const x of c)cols.push(x.icon instanceof Blob?{...x,icon:await b2d(x.icon)}:x);
+  const photo=async k=>{const x=await DB.get('photos',k);return x&&x.blob?JSON.stringify({...x,blob:await b2d(x.blob),thumb:x.thumb?await b2d(x.thumb):null}):null};
+  const head=`{"app":"hobby-vault","version":1,"exported":${JSON.stringify(stamp)},"collections":${JSON.stringify(cols)},"items":${JSON.stringify(i)},"photos":[`;
+  const dir=tg.dir,tmp=`${tg.sub}/${name}.part`,fin=`${tg.sub}/${name}`,at={path:tmp,directory:dir,encoding:'utf8',recursive:true};
+  try{
+   await FS.writeFile({...at,data:head});
+   let buf='',n=0;const flush=async()=>{if(buf){await FS.appendFile({...at,data:buf});buf=''}};
+   for(const k of keys){const x=await photo(k);if(x==null)continue;buf+=(n++?',':'')+x;if(buf.length>3e6)await flush()}
+   buf+=']}';await flush();
+   /* written under a temporary name and renamed at the end, so a half-finished file is never mistaken for a backup */
+   await FS.rename({from:tmp,to:fin,directory:dir,toDirectory:dir});
+  }catch(e){try{await FS.deleteFile({path:tmp,directory:dir})}catch(_){}throw e}
+  try{const r=await FS.readdir({path:tg.sub,directory:dir}),names=(r.files||[]).map(f=>typeof f==='string'?f:f.name).filter(x=>/^hobby-vault-auto-.*\.json$/.test(x)).sort();
+   for(const x of names.slice(0,Math.max(0,names.length-AB_KEEP)))await FS.deleteFile({path:`${tg.sub}/${x}`,directory:dir})}catch(_){}
+  abSet({last:Date.now()});toast(`Backup saved to ${tg.path}`)
+ }finally{abBusy=false}}
+const abCheck=()=>{const s=abGet(),now=Date.now();
+ if(!isNative()||!s.on||now-s.last<s.days*864e5||now-s.tried<6*36e5)return;
+ autoBackup(false).catch(e=>toast('Automatic backup failed: '+(e&&e.message||e),true))};
 
 function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set');
  sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close settings">${ICON.down}</button><h2>Settings</h2></div><div class="body">
@@ -716,9 +839,10 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   <button class="btn ghost sm phone">Use my phone's setting</button>
   <div><b>Accent colour</b><div class="sws"></div></div>
   <div class="srow r-motion" role="switch" tabindex="0"><div><b>Animations</b><small>Turn off for instant screen changes</small></div><span class="sw"></span></div></section>
- <section><h3>Collections</h3><div><b>Default sort</b><div class="chips wrap sortc"></div></div><div><b>Default view</b><div class="chips wrap viewc"></div></div></section>
- <section><h3>Photos</h3><div><b>Photo quality</b><small class="muted" style="display:block">Applies to photos you add from now on</small><div class="chips wrap qc"></div></div></section>
- <section><h3>Your data</h3><p class="muted" style="margin:0">A backup is one file with every collection, model and photo.</p>
+ <section><h3>Collections</h3><div><b>Default sort</b><div class="chips wrap sortc"></div></div><div><b>Default view</b><div class="chips wrap viewc"></div></div><div><b>Layout</b><small class="muted" style="display:block">Pinch a collection to switch between list and grid</small><div class="chips wrap layc"></div></div></section>
+ <section><h3>Photos</h3><button class="btn ghost sm rth">Rebuild thumbnails</button><div><b>Photo quality</b><small class="muted" style="display:block">Applies to photos you add from now on</small><div class="chips wrap qc"></div></div></section>
+ <section><h3>Automatic backup</h3><div class="ab"></div></section>
+ <section><h3>Your data</h3><p class="muted usage" style="margin:0">Calculating storage…</p><p class="muted" style="margin:0">A backup is one file with every collection, model and photo.</p>
   <div class="tb"><button class="btn ghost exp">Export database</button><button class="btn ghost imp">Import database</button></div>
   <button class="btn danger del">Delete all data</button></section></div>`;
  const th=$('.r-theme',sh),mo=$('.r-motion',sh),sws=$('.sws',sh),phone=$('.phone',sh);
@@ -728,17 +852,36 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
    b.onclick=()=>{SET.set('accent',k);sync()};sws.append(b)});
   sortDD($('.sortc',sh),s.sort,k=>{SET.set('sort',k);sync()});
   seg($('.viewc',sh),[[false,'Grouped'],[true,'Flat list']],s.flat,k=>SET.set('flat',k),sync);
+  seg($('.layc',sh),[['list','List'],['grid','Grid']],s.layout,k=>SET.set('layout',k),sync);
   seg($('.qc',sh),[['saver','Data saver'],['standard','Standard'],['high','High detail']],s.quality,k=>SET.set('quality',k),sync)};
  const tog=(r,f)=>{r.onclick=f;r.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();f()}}};
  tog(th,()=>{SET.set('theme',SET.theme()==='dark'?'light':'dark');sync()});
  tog(mo,()=>{SET.set('motion',!SET.get().motion);sync()});
  phone.onclick=()=>{SET.set('theme',null);sync()};sync();
+ const abBox=$('.ab',sh),ago=t=>{const n=Math.floor((Date.now()-t)/864e5);return n<=0?'today':n===1?'yesterday':n+' days ago'};let abRun=false;
+ const runNow=guard(async()=>{if(abRun)return;abRun=true;abDraw();try{await autoBackup(true)}finally{abRun=false;if(sh.isConnected)abDraw()}});
+ function abDraw(){const a=abGet();abBox.replaceChildren();
+  if(!isNative()||!plug('Filesystem')){abBox.append(el('p','muted',isNative()?'Automatic backup needs the Capacitor Filesystem plugin.':'Automatic backup works in the Android app only.'));return}
+  const row=el('div','srow',`<div><b>Back up automatically</b><small class="hint">${a.on?'On':'Off'}</small></div><span class="sw"></span>`);row.setAttribute('role','switch');row.tabIndex=0;row.setAttribute('aria-checked',a.on);
+  tog(row,()=>{abSet({on:!abGet().on});abDraw();if(abGet().on&&!abGet().last)runNow()});abBox.append(row);
+  const pc=el('div','chips wrap'),pi=el('input','cat');
+  [['Documents/HobbyVault','Documents'],['Download/HobbyVault','Downloads']].forEach(([v,l])=>{const b=el('button','chip'+(String(a.path).toLowerCase()===v.toLowerCase()?' on':''),esc(l));b.onclick=()=>{abSet({path:v});abDraw()};pc.append(b)});
+  pi.value=a.path;pi.maxLength=120;pi.autocapitalize='off';pi.spellcheck=false;pi.setAttribute('aria-label','Backup folder');
+  pi.onchange=()=>{pi.onchange=null;const c=abClean(pi.value);if(!c){toast('Enter a valid folder path, for example Documents/HobbyVault',true);abDraw();return}abSet({path:c});abDraw()};
+  abBox.append(el('div','','<b>Backup folder</b><small class="muted" style="display:block">A path inside your phone storage. Missing folders are created.</small>'),pc,pi);
+  const fc=el('div','chips wrap');seg(fc,[[1,'Daily'],[7,'Weekly'],[30,'Monthly']],a.days,k=>abSet({days:k}),abDraw);abBox.append(fc);
+  abBox.append(el('p','muted',(a.last?'Last automatic backup: '+ago(a.last)+'. ':'No automatic backup yet. ')+`Saved to ${(abTarget(a.path)||{path:'(invalid folder)'}).path}, newest ${AB_KEEP} kept. Old backups are not moved if you change folder. It runs when the app opens and a backup is due.`));
+  const b=el('button','btn ghost sm','Back up now');b.disabled=abRun;b.onclick=runNow;abBox.append(b)}
+ abDraw();
+ DB.usage().then(u=>{const u0=$('.usage',sh);if(!u0)return;let t=`Vault storage: ${fmtB(u.b)} across ${u.n} photo${u.n===1?'':'s'}.`;
+  return(navigator.storage&&navigator.storage.estimate?navigator.storage.estimate():Promise.resolve(null)).then(e=>{if(e&&e.quota)t+=` About ${fmtB(Math.max(0,e.quota-(e.usage||0)))} still available to the app.`}).catch(()=>{}).then(()=>{u0.textContent=t})}).catch(()=>{const u0=$('.usage',sh);if(u0)u0.textContent='Storage use unavailable.'});
  $('.exp',sh).onclick=guard(exportDB);
+ $('.rth',sh).onclick=guard(()=>rebuildThumbs(true));
  const imp=el('input');imp.type='file';imp.accept='application/json,.json';
  imp.onchange=guard(async()=>{const f=imp.files[0];imp.value='';if(!f)return;let d;
   try{d=JSON.parse(await f.text())}catch(e){throw new Error('That file is not a valid backup')}
   if(d.app!=='hobby-vault'||![d.collections,d.items,d.photos].every(Array.isArray))throw new Error('That file is not a Hobby Vault backup');
-  if(!await dlg({title:'Replace everything?',msg:`This deletes all current data and loads the backup: ${d.collections.length} collections, ${d.items.length} models, ${d.photos.length} photos.`,ok:'Replace',danger:true}))return;
+  const rp=await checkBackup(d,f.size);if(!await dlg({title:'Replace everything?',msg:rp.msg,ok:'Replace',danger:true}))return;rp.fix();
   d.collections=d.collections.map(x=>{const{icon,...r}=x;return typeof icon==='string'?{...r,icon:d2b(icon)}:r});
   d.photos=d.photos.map(p=>({...p,blob:d2b(p.blob),thumb:p.thumb?d2b(p.thumb):undefined}));
   await DB.replaceAll(d);await afterReplace();toast('Backup imported')});
@@ -747,6 +890,18 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   await DB.replaceAll({});await afterReplace();toast('All data deleted')});
  $('.back',sh).onclick=async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove()};
  document.body.append(sh);M.run(sh,[{transform:'translateY(100%)'},{transform:'none'}],'slow')}
+
+/* ---------- gestures: pinch for list/grid, tap the title or breadcrumb bar to jump to the top ---------- */
+function setLayout(l){if(SET.get().layout===l)return;SET.set('layout',l);try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}
+ const v=live(),b=v&&$('.content',v);b&&M.run(b,[{opacity:.2,transform:'scale(.97)'},{opacity:1,transform:'none'}],'med')}
+(()=>{const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);let d0=0,fired=false,wAt=0;
+ stage.addEventListener('touchstart',e=>{if(e.touches.length===2){d0=dist(e.touches);fired=false}else d0=0},{passive:true});
+ stage.addEventListener('touchmove',e=>{if(e.touches.length!==2||!d0||fired)return;const r=dist(e.touches)/d0;
+  if(r<.78){fired=true;setLayout('grid')}else if(r>1.28){fired=true;setLayout('list')}},{passive:true});
+ stage.addEventListener('touchend',e=>{if(e.touches.length<2)d0=0},{passive:true});
+ stage.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const n=Date.now();if(n-wAt<450)return;wAt=n;setLayout(e.deltaY>0?'grid':'list')},{passive:false});
+ const toTop=()=>scrollTo({top:0,behavior:document.documentElement.dataset.motion==='off'?'auto':'smooth'});
+ const h=$('.top h1');h.onclick=toTop;h.style.cursor='pointer';crumbs.addEventListener('click',e=>{if(e.target===crumbs)toTop()})})();
 
 /* ---------- back button (Android hardware/gesture back in Capacitor) ---------- */
 function handleBack(){
@@ -763,7 +918,9 @@ function handleBack(){
 (()=>{const A=plug('App');if(!A||!A.addListener)return;let last=0;
  A.addListener('backButton',()=>{if(handleBack())return;const t=Date.now();if(t-last<2000){A.exitApp&&A.exitApp();return}last=t;toast('Press back again to exit')})})();
 
+(()=>{const A=plug('App');if(!A||!A.addListener)return;A.addListener('appStateChange',st=>{if(st&&st.isActive)setTimeout(abCheck,1500)})})();
+
 /* ---------- start ---------- */
 (async()=>{try{await DB.open()}catch(e){stage.innerHTML=`<div class="empty"><h2>Storage unavailable</h2><p>${esc(e.message)}</p></div>`;toast(e.message,true);return}
- go(ROOT,0)})();
+ go(ROOT,0);setTimeout(abCheck,4000);setTimeout(()=>{let d='';try{d=localStorage.getItem('hv-th')}catch(_){}if(d!=='2')rebuildThumbs(false).catch(()=>{})},2500)})();
 </script></body></html>
