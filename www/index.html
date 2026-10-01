@@ -213,7 +213,7 @@ body.selmode #selbar{display:flex}
 .card[data-sw]::after{content:attr(data-lab);position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:6px;font:600 var(--t-sm) var(--sans);color:#fff;opacity:var(--sw,0);z-index:4;pointer-events:none}
 .card[data-sw=del]::after{background:rgba(185,59,40,.92)}
 .card.drag{z-index:5;box-shadow:0 14px 32px rgba(0,0,0,.4);transition:none}
-.card.cc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--cc);z-index:2}
+.card.cc::before{content:"";position:absolute;right:0;top:0;bottom:0;width:6px;background:var(--cc);z-index:2}
 :root[data-layout=grid] .card.cc::before{left:0;right:0;top:auto;bottom:0;width:auto;height:6px}
 .cols{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:6px}
 .cwatch{aspect-ratio:1;border-radius:50%;border:2px solid transparent;cursor:pointer;min-height:44px;transition:transform var(--dur-fast) var(--ease)}.cwatch:active{transform:scale(.92)}.cwatch.on{border-color:var(--tx);box-shadow:0 0 0 2px var(--bg) inset}
