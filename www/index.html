@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#14181d"><script>try{var q=JSON.parse(localStorage.getItem("hv-settings")||"{}");document.documentElement.dataset.theme=q.theme||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}catch(e){}</script><title>Hobby Vault</title>
+<meta name="theme-color" content="#14181d"><script>try{var q=JSON.parse(localStorage.getItem("hv-settings")||"{}");var t=q.theme||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=t;document.documentElement.dataset.amoled=(q.amoled&&t==="dark")?"on":"off"}catch(e){}</script><title>Hobby Vault</title>
 <style>
 :root{
   --radius-control:12px;
@@ -178,6 +178,17 @@ body.selmode #selbar{display:flex}
 :root[data-layout=grid] .more,:root[data-layout=grid] .card.hasq .more{top:0;right:0;bottom:auto;width:34px;height:34px;background:var(--ovl);border-radius:0 0 0 10px}
 :root[data-layout=grid] .qp{top:6px;left:6px;right:auto;bottom:auto}
 :root[data-layout=grid] .ck{top:6px;right:6px;transform:none}
+:root[data-theme=dark][data-amoled=on]{--bg:#000;--s1:#0c0e11;--s2:#171b20;--line:#262d35;--scrim:rgba(0,0,0,.8)}
+.dbtn{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dbtn .btn{width:100%;min-width:0;flex:none}.dbtn .rep{grid-column:1/-1}
+.dlg.rpt{width:min(100%,420px);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.dlg.rpt .row{flex:none}
+.rpt .rb{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:16px;margin:0 -8px 8px;padding:0 8px}
+.rpt .gh2{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.rpt .gh2 span{display:flex}
+.rpt .lnk{background:none;border:0;color:var(--ac);font:600 var(--t-sm) var(--sans);padding:0 8px;min-height:36px;cursor:pointer}
+.rpt .clist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rpt .crow{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px;background:var(--s1);border:0;border-bottom:1px solid var(--line);color:var(--tx);font:var(--t-md) var(--sans);text-align:left;cursor:pointer}.rpt .crow:last-child{border-bottom:0}
+.rpt .cb{flex:none;width:22px;height:22px;border:1.5px solid var(--line);border-radius:6px;display:grid;place-items:center;transition:background var(--dur-med) var(--ease),border-color var(--dur-med) var(--ease)}
+.rpt .crow.on .cb{background:var(--ac);border-color:var(--ac);color:var(--acx)}.rpt .cb svg{width:14px}
+.rpt .cn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rpt .crow small{color:var(--mu)}.rpt .rcount{margin:0 0 10px}
 </style></head><body>
 <header class="top"><h1>Hobby Vault</h1><div class="tr"><button class="ib" id="srch" aria-label="Search everything"></button><button class="ib" id="cog" aria-label="Settings"></button></div></header><nav id="crumbs" aria-label="Location"></nav>
 <main id="stage"></main>
@@ -205,10 +216,10 @@ ICON.search=svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>');
 ICON.minus=svg('<path d="M5 12h14"/>');ICON.check=svg('<path d="M5 12.5l4.5 4.5L19 7"/>');
 ICON.rot=svg('<path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v4.5h-4.5"/>');
 const ACC={brass:{dark:['#c8974a','#1a1408'],light:['#9c6a17','#ffffff']},verdigris:{dark:['#4fb3a0','#04211c'],light:['#1f7a6a','#ffffff']},azure:{dark:['#6ea8e8','#071a30'],light:['#2a63b0','#ffffff']},violet:{dark:['#a992e6','#140c2b'],light:['#6a4bb5','#ffffff']}};
-const SET=(()=>{const K='hv-settings';let s={theme:null,accent:'brass',motion:true,sort:'az',flat:false,quality:'standard',layout:'list'};
+const SET=(()=>{const K='hv-settings';let s={theme:null,accent:'brass',motion:true,sort:'az',flat:false,quality:'standard',layout:'list',amoled:false};
  try{Object.assign(s,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
  const sys=matchMedia('(prefers-color-scheme: light)'),theme=()=>s.theme||(sys.matches?'light':'dark');
- const apply=()=>{const t=theme(),r=document.documentElement,a=(ACC[s.accent]||ACC.brass)[t];r.dataset.theme=t;r.dataset.motion=s.motion?'on':'off';r.dataset.layout=s.layout==='grid'?'grid':'list';
+ const apply=()=>{const t=theme(),r=document.documentElement,a=(ACC[s.accent]||ACC.brass)[t];r.dataset.theme=t;r.dataset.amoled=(s.amoled&&t==='dark')?'on':'off';r.dataset.motion=s.motion?'on':'off';r.dataset.layout=s.layout==='grid'?'grid':'list';
   r.style.setProperty('--ac',a[0]);r.style.setProperty('--acx',a[1]);$('meta[name=theme-color]').content=getComputedStyle(r).getPropertyValue('--bg').trim()};
  const set=(k,v)=>{s[k]=v;try{localStorage.setItem(K,JSON.stringify(s))}catch(e){}apply()};
  sys.addEventListener&&sys.addEventListener('change',()=>{if(!s.theme)apply()});apply();
@@ -586,9 +597,21 @@ const shrink=(img,max,q)=>{const s=Math.min(1,max/Math.max(img.naturalWidth,img.
  return new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error('Image compression failed')),'image/jpeg',q))};
 
 const PQ={saver:[900,.7],standard:[1200,.8],high:[1800,.9]},pq=()=>PQ[SET.get().quality]||PQ.standard;
+/* short fingerprint of a file's bytes, used to spot photos that are already on a model */
+async function hashBlob(b){try{const d=await crypto.subtle.digest('SHA-256',await b.arrayBuffer());return[...new Uint8Array(d)].slice(0,12).map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return null}}
+/* compress and fingerprint each file, flag ones already on this model (or repeated in the same batch), and ask once what to do with them */
+async function prepPhotos(itemId,fs){
+ const seen=new Set();for(const p of await DB.photos(itemId)){if(p.sh)seen.add(p.sh);const h=p.bh||await hashBlob(p.blob);if(h)seen.add(h)}
+ const out=[];
+ for(const f of fs){try{const img=await load(f),blob=await shrink(img,...pq()),thumb=await shrink(img,640,.82),sh=await hashBlob(f),bh=await hashBlob(blob);
+  const dup=!!((sh&&seen.has(sh))||(bh&&seen.has(bh)));if(sh)seen.add(sh);if(bh)seen.add(bh);out.push({f,blob,thumb,sh,bh,dup})}catch(e){toast(e.message||'Could not add photo',true)}}
+ const d=out.filter(x=>x.dup);
+ if(d.length){const names=d.slice(0,3).map(x=>x.f.name||'photo').join(', ')+(d.length>3?` and ${d.length-3} more`:'');
+  const keep=await dlg({title:'Duplicate photo',msg:`${d.length===1?'This photo looks':d.length+' photos look'} the same as ${d.length===1?'one':'ones'} already on this model: ${names}.\nAdd ${d.length===1?'it':'them'} anyway? Cancel skips ${d.length===1?'it':'them'}.`,ok:'Add anyway'});
+  if(!keep)return out.filter(x=>!x.dup)}
+ return out}
 async function importFiles(id,fs,start=0){let n=0;
- for(const f of fs){try{const img=await load(f),blob=await shrink(img,...pq()),thumb=await shrink(img,640,.82);
-  await DB.putPhotos([{id:uid(),itemId:id,blob,thumb,sortOrder:start+n,th:2}]);n++}catch(e){toast(e.message||'Could not add photo',true)}}return n}
+ for(const x of await prepPhotos(id,fs)){try{await DB.putPhotos([{id:uid(),itemId:id,blob:x.blob,thumb:x.thumb,sortOrder:start+n,th:2,sh:x.sh,bh:x.bh}]);n++}catch(e){toast(e.message||'Could not add photo',true)}}return n}
 
 async function openItem(id){const it=await DB.get('items',id);if(!it)return;let ph=await DB.photos(id);
  const sh=el('div','sheet');
@@ -642,8 +665,8 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
  ph.forEach(mk);layout();
  $('.add',sh).onclick=()=>file.click();
  file.onchange=guard(async()=>{const fs=[...file.files];file.value='';if(!fs.length)return;toast(`Adding ${fs.length} photo${fs.length>1?'s':''}`);let n=0;
-  for(const f of fs){try{const img=await load(f),blob=await shrink(img,...pq()),thumb=await shrink(img,640,.82);
-   const p={id:uid(),itemId:id,blob,thumb,sortOrder:ph.length?ph[ph.length-1].sortOrder+1:0,th:2};
+  for(const x of await prepPhotos(id,fs)){try{
+   const p={id:uid(),itemId:id,blob:x.blob,thumb:x.thumb,sortOrder:ph.length?ph[ph.length-1].sortOrder+1:0,th:2,sh:x.sh,bh:x.bh};
    await DB.putPhotos([p]);ph.push(p);const t=mk(p);layout();M.pop(t);n++}catch(e){toast(e.message||'Could not add photo',true)}}
   if(n)toast(`Added ${n} photo${n>1?'s':''}`)});
  const close=guard(async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});
@@ -682,7 +705,7 @@ async function viewer(list,start,thumb,onRot){
  box.onpointerup=up;box.onpointercancel=up;
  let spin=false;const rb=$('.vwr',box);
  rb.onclick=async()=>{if(spin)return;spin=true;rb.disabled=true;
-  try{const p=list[i],r=await rot90(p.blob);p.blob=r.blob;p.thumb=r.thumb;p.th=2;await DB.putPhotos([p]);
+  try{const p=list[i],r=await rot90(p.blob);p.blob=r.blob;p.thumb=r.thumb;p.th=2;p.sh=p.bh=null;await DB.putPhotos([p]);
    if(urls[i])URL.revokeObjectURL(urls[i]);urls[i]=URL.createObjectURL(p.blob);z=1;tx=ty=0;zoom(0);im().src=urls[i];onRot&&onRot(p)}
   catch(e){toast(e&&e.message||'Could not rotate the photo',true)}finally{spin=false;rb.disabled=false}};
  $('.vwx',box).onclick=()=>close();if(list.length>1){$('.vwp',box).onclick=()=>step(i-1);$('.vwq',box).onclick=()=>step(i+1)}
@@ -763,6 +786,101 @@ async function exportDB(){
  try{await SH.share({title:'Hobby Vault backup',dialogTitle:'Save or send your backup',files:[uri]})}catch(e){if(!/cancel/i.test(String(e&&e.message||e)))throw e}
  toast('Backup ready')}
 
+/* ---------- readable text report: collections, how many models, and their status (no photos) ---------- */
+async function buildReport(f){
+ const[cols,allItems]=await Promise.all([DB.all('collections'),DB.all('items')]);
+ const W=60,rule=c=>c.repeat(W),L=[],pl=(n,w)=>n+' '+w+(n===1?'':'s'),cid=new Set(cols.map(c=>c.id));
+ const pk=i=>(i.parentId===ROOT||cid.has(i.parentId))?(i.parentId||ROOT):'__unfiled';
+ const keep=i=>!f||(f.cols.has(pk(i))&&f.sts.has(stOf(i))&&f.cats.has(ckr(i))),narrow=!!(f&&f.narrow);
+ const items=allItems.filter(keep);
+ const kids=new Map(),own=new Map(),push=(m,k,v)=>(m.get(k)||m.set(k,[]).get(k)).push(v);
+ cols.forEach(c=>push(kids,c.parentId||ROOT,c));
+ items.forEach(i=>push(own,pk(i),i));
+ const seen=new Set(),sub=(id,g=new Set())=>{if(g.has(id))return[];g.add(id);const o=[...(own.get(id)||[])];(kids.get(id)||[]).forEach(c=>o.push(...sub(c.id,g)));return o};
+ const bar=P=>{const k=Math.round(pctOf(P)/5);return'█'.repeat(k)+'░'.repeat(20-k)};
+ const stTable=(P,ind)=>STATUS.forEach(([k,l])=>{if(P.n[k])L.push(`${ind}${l.padEnd(10)}${String(P.n[k]).padStart(5)}   ${String(Math.round(P.n[k]/P.total*100)).padStart(3)}%`)});
+ const date=new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+ const all=progress(items);
+ L.push('HOBBY VAULT','Collection report','Exported '+date,'');
+ if(narrow){
+  const ck=new Map();allItems.forEach(i=>{const k=ckr(i);if(!ck.has(k))ck.set(k,k===''?'Uncategorised':(i.category||'').trim())});
+  const cs=[...ck.entries()].filter(([k])=>f.cats.has(k)).map(x=>x[1]);
+  L.push('Filters applied',`  Collections:  ${cols.filter(c=>f.cols.has(c.id)).length} of ${cols.length}`,
+   `  Statuses:     ${f.sts.size===STATUS.length?'All':STATUS.filter(([k])=>f.sts.has(k)).map(x=>x[1]).join(', ')||'None'}`,
+   `  Categories:   ${cs.length===ck.size?'All':cs.join(', ')||'None'}`,'')}
+ L.push(rule('='),'OVERALL SUMMARY',rule('-'));
+ if(!all)L.push(narrow?'No models match these filters.':'No models yet.');
+ else{const nc=narrow?cols.filter(c=>progress(sub(c.id))).length:cols.length;
+  L.push(`Collections:  ${nc}`,`Models:       ${all.total}${all.total!==items.length?`  (${pl(items.length,'entry').replace('entrys','entries')})`:''}`,`Completion:   ${pctOf(all)}%  ${bar(all)}`,'');stTable(all,'  ')}
+ const section=(title,id)=>{
+  const P=progress(sub(id)),mine=(own.get(id)||[]).slice().sort(byName),ind='  ';
+  if(!P&&narrow)return;
+  L.push('',rule('='),title,rule('-'));
+  if(!P)L.push(ind+'(empty)');
+  else{const nc=cols.filter(c=>c.parentId===id&&(!narrow||progress(sub(c.id)))).length;
+   L.push(`${ind}${pl(P.total,'model')}${nc?` (including ${pl(nc,'sub-collection')})`:''}  ·  ${pctOf(P)}% complete`,`${ind}${bar(P)}`,'');stTable(P,ind)}
+  if(mine.length){
+   const groups=new Map();mine.forEach(i=>{const k=ckr(i);(groups.get(k)||groups.set(k,{name:k===''?'Uncategorised':(i.category||'').trim(),list:[]}).get(k)).list.push(i)});
+   const order=[...groups.entries()].sort((a,b)=>a[0]===''?1:b[0]===''?-1:a[1].name.localeCompare(b[1].name)).map(x=>x[1]);
+   const nw=Math.min(36,Math.max(...mine.map(i=>(i.name||'').length)));
+   L.push('',ind+'Models in this collection:');
+   order.forEach(g=>{if(order.length>1||g.name!=='Uncategorised')L.push('',`${ind}  ${g.name} (${g.list.reduce((a,i)=>a+sq(i),0)})`);
+    g.list.forEach(i=>L.push(`${ind}    • ${(i.name||'Untitled').padEnd(nw)}  ×${String(sq(i)).padEnd(3)} ${stLab(stOf(i))}`))})}
+  (kids.get(id)||[]).slice().sort(byName).forEach(c=>{if(!seen.has(c.id)){seen.add(c.id);section(`${title}  ›  ${c.name}`,c.id)}})};
+ if((own.get(ROOT)||[]).length)section('Vault (top level)',ROOT);
+ (kids.get(ROOT)||[]).slice().sort(byName).forEach(c=>{if(!seen.has(c.id)){seen.add(c.id);section(c.name,c.id)}});
+ cols.filter(c=>!seen.has(c.id)&&c.parentId!==ROOT&&!cid.has(c.parentId)).forEach(c=>{seen.add(c.id);section(c.name,c.id)});
+ if((own.get('__unfiled')||[]).length)section('Unfiled models','__unfiled');
+ L.push('',rule('='),'End of report','');
+ return L.join('\n')}
+
+/* popup that lets you choose which collections, statuses and categories go into the .TXT report */
+function reportDialog(){return new Promise(async res=>{
+ const[cols,items]=await Promise.all([DB.all('collections'),DB.all('items')]);
+ if(!cols.length&&!items.length){toast('Nothing to export yet');return res(null)}
+ const pl=(n,w)=>n+' '+w+(n===1?'':'s'),cid=new Set(cols.map(c=>c.id)),pk=i=>(i.parentId===ROOT||cid.has(i.parentId))?(i.parentId||ROOT):'__unfiled';
+ const kids=new Map(),push=(m,k,v)=>(m.get(k)||m.set(k,[]).get(k)).push(v);cols.forEach(c=>push(kids,cid.has(c.parentId)?c.parentId:ROOT,c));
+ const direct=new Map();items.forEach(i=>direct.set(pk(i),(direct.get(pk(i))||0)+sq(i)));
+ const rows=[];if(direct.has(ROOT))rows.push({id:ROOT,name:'Vault (top level)',d:0,sp:1});if(direct.has('__unfiled'))rows.push({id:'__unfiled',name:'Unfiled models',d:0,sp:1});
+ const seen=new Set(),walk=(pid,d)=>(kids.get(pid)||[]).slice().sort(byName).forEach(c=>{if(seen.has(c.id))return;seen.add(c.id);rows.push({id:c.id,name:c.name||'Untitled',d});walk(c.id,d+1)});walk(ROOT,0);
+ const desc=id=>{const o=[],st=[id],g=new Set([id]);while(st.length){const x=st.pop();(kids.get(x)||[]).forEach(c=>{if(!g.has(c.id)){g.add(c.id);o.push(c.id);st.push(c.id)}})}return o};
+ const on=new Set(rows.map(r=>r.id)),sts=new Set(STATUS.map(x=>x[0])),cm=new Map();
+ items.forEach(i=>{const k=ckr(i);if(!cm.has(k))cm.set(k,k===''?'Uncategorised':(i.category||'').trim())});
+ const catOpts=[...cm.entries()].sort((a,b)=>a[0]===''?1:b[0]===''?-1:a[1].localeCompare(b[1])),cats=new Set(cm.keys());
+ const bd=el('div','backdrop'),d=el('div','dlg rpt');d.setAttribute('role','dialog');d.setAttribute('aria-label','Export .TXT file');
+ d.innerHTML=`<h2>Export .TXT file</h2><div class="rb">
+  <div><div class="gh2"><b>Collections</b><span><button class="lnk" data-g="c1">All</button><button class="lnk" data-g="c0">None</button></span></div><div class="clist"></div></div>
+  <div><div class="gh2"><b>Statuses</b><span><button class="lnk" data-g="s1">All</button><button class="lnk" data-g="s0">None</button></span></div><div class="chips wrap sch"></div></div>
+  <div><div class="gh2"><b>Categories</b><span><button class="lnk" data-g="k1">All</button><button class="lnk" data-g="k0">None</button></span></div><div class="chips wrap cch"></div></div></div>
+  <p class="muted rcount" aria-live="polite"></p><div class="row h"><button class="btn ghost no">Cancel</button><button class="btn go">Export</button></div>`;
+ const clist=$('.clist',d),sbox=$('.sch',d),cbox=$('.cch',d),cnt=$('.rcount',d),go=$('.go',d);
+ const keep=i=>on.has(pk(i))&&sts.has(stOf(i))&&cats.has(ckr(i));
+ const upd=()=>{const k=items.filter(keep),n=k.reduce((a,i)=>a+sq(i),0);cnt.textContent=k.length?`${pl(n,'model')} will be included.`:'No models match these filters.';go.disabled=!k.length};
+ const drawC=()=>{clist.replaceChildren();rows.forEach(r=>{const o=on.has(r.id),b=el('button','crow'+(o?' on':''),`<span class="cb">${o?ICON.check:''}</span><span class="cn">${esc(r.name)}</span><small>${direct.get(r.id)||0}</small>`);
+  b.style.paddingLeft=(12+r.d*20)+'px';b.setAttribute('role','checkbox');b.setAttribute('aria-checked',o);
+  b.onclick=()=>{const ids=[r.id,...(r.sp?[]:desc(r.id))],set=!on.has(r.id);ids.forEach(x=>set?on.add(x):on.delete(x));drawC();upd()};clist.append(b)})};
+ const drawChips=(box,opts,set)=>{box.replaceChildren();opts.forEach(([k,l])=>{const b=el('button','chip'+(set.has(k)?' on':''),esc(l));b.setAttribute('aria-pressed',set.has(k));
+  b.onclick=()=>{set.has(k)?set.delete(k):set.add(k);b.classList.toggle('on',set.has(k));b.setAttribute('aria-pressed',set.has(k));upd()};box.append(b)})};
+ const drawAll=()=>{drawC();drawChips(sbox,STATUS.map(([k,l])=>[k,l]),sts);drawChips(cbox,catOpts,cats);upd()};
+ d.querySelectorAll('.lnk').forEach(b=>b.onclick=()=>{const g=b.dataset.g[0],v=b.dataset.g[1]==='1';
+  if(g==='c'){on.clear();if(v)rows.forEach(r=>on.add(r.id))}else if(g==='s'){sts.clear();if(v)STATUS.forEach(x=>sts.add(x[0]))}else{cats.clear();if(v)cm.forEach((_,k)=>cats.add(k))}drawAll()});
+ drawAll();
+ let fin=false;const close=async v=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});
+  await M.run(d,[{opacity:1,transform:'none'},{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`}],'med',{fill:'forwards'});bd.remove();res(v)};
+ $('.no',d).onclick=()=>close(null);bd.onclick=e=>{if(e.target===bd)close(null)};bd.onkeydown=e=>{if(e.key==='Escape')close(null)};
+ go.onclick=()=>close({cols:new Set(on),sts:new Set(sts),cats:new Set(cats),narrow:on.size<rows.length||sts.size<STATUS.length||cats.size<cm.size});
+ bd.append(d);document.body.append(bd);M.fade(bd,0,1);M.run(d,[{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`},{opacity:1,transform:'none'}],'slow');go.focus()})}
+async function exportReport(){
+ const f=await reportDialog();if(!f)return;
+ const text=await buildReport(f),file=`hobby-vault-report-${new Date().toISOString().slice(0,10)}.txt`;
+ if(!isNative()){const a=el('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+text],{type:'text/plain;charset=utf-8'}));a.download=file;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5e3);toast('Report exported');return}
+ const FS=plug('Filesystem'),SH=plug('Share');
+ if(!FS||!SH)throw new Error('Export needs the Capacitor Filesystem and Share plugins');
+ await FS.writeFile({path:file,directory:'CACHE',encoding:'utf8',data:text});
+ const{uri}=await FS.getUri({path:file,directory:'CACHE'});
+ try{await SH.share({title:'Hobby Vault report',dialogTitle:'Save or send your report',files:[uri]})}catch(e){if(!/cancel/i.test(String(e&&e.message||e)))throw e}
+ toast('Report ready')}
+
 /* ---------- rebuild older low-resolution thumbnails from the stored full photos ---------- */
 let thBusy=false;
 async function rebuildThumbs(manual){if(thBusy)return;thBusy=true;
@@ -836,6 +954,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close settings">${ICON.down}</button><h2>Settings</h2></div><div class="body">
  <section><h3>Appearance</h3>
   <div class="srow r-theme" role="switch" tabindex="0"><div><b>Dark mode</b><small class="hint"></small></div><span class="sw"></span></div>
+  <div class="srow r-amoled" role="switch" tabindex="0"><div><b>AMOLED black</b><small class="muted am-h"></small></div><span class="sw"></span></div>
   <button class="btn ghost sm phone">Use my phone's setting</button>
   <div><b>Accent colour</b><div class="sws"></div></div>
   <div class="srow r-motion" role="switch" tabindex="0"><div><b>Animations</b><small>Turn off for instant screen changes</small></div><span class="sw"></span></div></section>
@@ -843,10 +962,10 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  <section><h3>Photos</h3><button class="btn ghost sm rth">Rebuild thumbnails</button><div><b>Photo quality</b><small class="muted" style="display:block">Applies to photos you add from now on</small><div class="chips wrap qc"></div></div></section>
  <section><h3>Automatic backup</h3><div class="ab"></div></section>
  <section><h3>Your data</h3><p class="muted usage" style="margin:0">Calculating storage…</p><p class="muted" style="margin:0">A backup is one file with every collection, model and photo.</p>
-  <div class="tb"><button class="btn ghost exp">Export database</button><button class="btn ghost imp">Import database</button></div>
+  <div class="dbtn"><button class="btn ghost rep">Export .TXT file</button><button class="btn ghost exp">Export database</button><button class="btn ghost imp">Import database</button></div>
   <button class="btn danger del">Delete all data</button></section></div>`;
- const th=$('.r-theme',sh),mo=$('.r-motion',sh),sws=$('.sws',sh),phone=$('.phone',sh);
- const sync=()=>{const s=SET.get(),t=SET.theme();th.setAttribute('aria-checked',t==='dark');mo.setAttribute('aria-checked',s.motion);
+ const am=$('.r-amoled',sh),th=$('.r-theme',sh),mo=$('.r-motion',sh),sws=$('.sws',sh),phone=$('.phone',sh);
+ const sync=()=>{const s=SET.get(),t=SET.theme();am.setAttribute('aria-checked',!!s.amoled);$('.am-h',sh).textContent=t==='dark'?'Pure black background in dark mode':'Only applies in dark mode';th.setAttribute('aria-checked',t==='dark');mo.setAttribute('aria-checked',s.motion);
   $('.hint',sh).textContent=s.theme?'Set by you':'Following your phone';phone.hidden=!s.theme;sws.replaceChildren();
   Object.entries(ACC).forEach(([k,a])=>{const b=el('button','swt');b.style.background=a[t][0];b.setAttribute('aria-label',k+' accent');b.setAttribute('aria-pressed',s.accent===k);
    b.onclick=()=>{SET.set('accent',k);sync()};sws.append(b)});
@@ -855,6 +974,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   seg($('.layc',sh),[['list','List'],['grid','Grid']],s.layout,k=>SET.set('layout',k),sync);
   seg($('.qc',sh),[['saver','Data saver'],['standard','Standard'],['high','High detail']],s.quality,k=>SET.set('quality',k),sync)};
  const tog=(r,f)=>{r.onclick=f;r.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();f()}}};
+ tog(am,()=>{SET.set('amoled',!SET.get().amoled);sync()});
  tog(th,()=>{SET.set('theme',SET.theme()==='dark'?'light':'dark');sync()});
  tog(mo,()=>{SET.set('motion',!SET.get().motion);sync()});
  phone.onclick=()=>{SET.set('theme',null);sync()};sync();
@@ -875,7 +995,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  abDraw();
  DB.usage().then(u=>{const u0=$('.usage',sh);if(!u0)return;let t=`Vault storage: ${fmtB(u.b)} across ${u.n} photo${u.n===1?'':'s'}.`;
   return(navigator.storage&&navigator.storage.estimate?navigator.storage.estimate():Promise.resolve(null)).then(e=>{if(e&&e.quota)t+=` About ${fmtB(Math.max(0,e.quota-(e.usage||0)))} still available to the app.`}).catch(()=>{}).then(()=>{u0.textContent=t})}).catch(()=>{const u0=$('.usage',sh);if(u0)u0.textContent='Storage use unavailable.'});
- $('.exp',sh).onclick=guard(exportDB);
+ $('.exp',sh).onclick=guard(exportDB);$('.rep',sh).onclick=guard(exportReport);
  $('.rth',sh).onclick=guard(()=>rebuildThumbs(true));
  const imp=el('input');imp.type='file';imp.accept='application/json,.json';
  imp.onchange=guard(async()=>{const f=imp.files[0];imp.value='';if(!f)return;let d;
