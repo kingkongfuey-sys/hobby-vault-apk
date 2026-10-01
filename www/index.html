@@ -86,6 +86,10 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 .qty{display:inline-flex;align-items:center;gap:6px;margin-top:6px}
 .qty button{width:44px;height:44px;border-radius:var(--radius-control);border:1px solid var(--line);background:var(--s2);color:var(--tx);display:grid;place-items:center;cursor:pointer;transition:transform var(--dur-fast) var(--ease)}
 .qty button:active{transform:scale(.94)}.qty button svg{width:18px}
+.bulk-pulse{animation:statusPulse var(--dur-med) var(--ease)}
+@keyframes statusPulse{0%{transform:scale(1)}45%{transform:scale(.94)}100%{transform:scale(1)}}
+.status-confirm{animation:statusConfirm var(--dur-med) var(--ease)}
+@keyframes statusConfirm{0%{transform:scale(1)}45%{transform:scale(.985)}100%{transform:scale(1)}}
 .qty input{width:56px;height:44px;text-align:center;background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-control);color:var(--tx);font:600 var(--t-md) var(--sans);-moz-appearance:textfield;appearance:textfield}
 .qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .qrow{display:flex;justify-content:space-between;align-items:center;gap:12px}.qrow .qty{margin:0}
@@ -120,7 +124,7 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 .kpi{background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-card);padding:12px 14px}.kpi b{display:block;font:600 var(--t-2xl) var(--serif)}.kpi small{color:var(--mu)}
 .strow{display:grid;gap:6px;padding:8px 0}.strow .sth{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.strow .sth span{min-width:0;overflow-wrap:anywhere}.strow .sth small{color:var(--mu);white-space:nowrap}
 .trk{height:10px;border-radius:5px;background:var(--s2);overflow:hidden}.trk i{display:block;height:100%;border-radius:5px}.trk i.ac{background:var(--ac)}
-img.sico{display:inline-block;width:24px;height:24px;border-radius:6px;object-fit:cover;vertical-align:middle;margin:0 8px 2px 0}button.strow{width:100%;background:none;border:0;border-bottom:1px solid var(--line);color:var(--tx);font:inherit;text-align:left;cursor:pointer}button.strow:hover,button.strow:active{background:var(--s1)}
+img.sico{display:inline-block;width:24px;height:24px;border-radius:6px;object-fit:cover;vertical-align:middle;margin:0 8px 2px 0}button.strow{width:100%;background:none;border:0;border-bottom:1px solid var(--line);color:var(--tx);font:inherit;text-align:left;cursor:pointer;transition:transform var(--dur-fast) var(--ease),background var(--dur-med) var(--ease)}button.strow:hover,button.strow:active{background:var(--s1)}button.strow:active{transform:scale(.985)}
 .stats .chip.dim{opacity:.55}.stats .note{margin:0;font-size:var(--t-sm)}
 .stats .kpis .kpi:last-child:nth-child(odd){grid-column:1/-1}
 .stats ul,.stats ol{list-style:none;margin:0;padding:0}
@@ -145,7 +149,7 @@ body.selmode #selbar{display:flex}
 .vw{position:relative;width:min(92vw,560px);height:min(72vh,640px);background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.45);touch-action:none;user-select:none;-webkit-user-select:none;outline:0}
 .vwtrack{display:flex;height:100%;will-change:transform}.vwslide{flex:none;width:100%;height:100%;display:grid;place-items:center;overflow:hidden}
 .vwslide img{max-width:100%;max-height:100%;object-fit:contain;display:block;-webkit-user-drag:none;will-change:transform}
-.vwx,.vwn,.vwr{position:absolute;width:44px;height:44px;border:0;border-radius:50%;background:var(--ovl);color:var(--ovlx);display:grid;place-items:center;cursor:pointer}
+.vwx,.vwn,.vwr{position:absolute;width:44px;height:44px;border:0;border-radius:50%;background:var(--ovl);color:var(--ovlx);display:grid;place-items:center;cursor:pointer;transition:transform var(--dur-fast) var(--ease),opacity var(--dur-fast) var(--ease)}.vwx:active,.vwn:active,.vwr:active{transform:scale(.92)}
 .vwx{top:10px;right:10px}.vwn{top:50%;margin-top:-22px}.vwp{left:8px}.vwq{right:8px}.vwx svg,.vwn svg,.vwr svg{width:20px}.vwr{top:10px;left:10px}.vwr:disabled{opacity:.5}
 .vwc{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:0 12px;height:28px;line-height:28px;border-radius:var(--radius-card);background:var(--ovl);color:var(--ovlx);font:600 var(--t-sm) var(--sans)}.vwc:empty{display:none}
 
@@ -210,6 +214,7 @@ body.selmode #selbar{display:flex}
 .card{content-visibility:auto;contain-intrinsic-size:auto 72px}:root[data-layout=grid] .card{contain-intrinsic-size:auto 170px}
 .ab{display:grid;gap:12px}.ab p{margin:0}
 .tools>.chips{margin:0 -12px;padding:0 12px}
+.miss .gc .chip,.miss .sc .chip{transition:transform var(--dur-fast) var(--ease),background var(--dur-med) var(--ease)}.miss .gc .chip:active,.miss .sc .chip:active{transform:scale(.97)}
 </style></head><body>
 <header class="top"><h1>Hobby Vault</h1><div class="tr"><button class="ib" id="srch" aria-label="Search everything"></button><button class="ib" id="cog" aria-label="Settings"></button></div></header><nav id="crumbs" aria-label="Location"></nav>
 <main id="stage"></main>
@@ -338,7 +343,7 @@ const guard=fn=>async(...a)=>{try{return await fn(...a)}catch(e){console.error(e
 
 function dlg({title,msg,input,ok='OK',danger,choices,again}){return new Promise(res=>{
  const bd=el('div','backdrop'),d=el('div','dlg');d.setAttribute('role','dialog');
- d.innerHTML=`<h2>${esc(title)}</h2>${msg?`<p>${esc(msg)}</p>`:''}${input!=null?`<input maxlength="80" placeholder="Name" value="${esc(input)}">`:''}<div class="row${choices?'':' h'}"></div>`;
+ d.innerHTML=`<h2>${esc(title)}</h2>${msg?`<p>${esc(msg)}</p>`:''}${input!=null?`<input maxlength="80" placeholder="Name" autocapitalize="words" value="${esc(input)}">`:''}<div class="row${choices?'':' h'}"></div>`;
  const row=$('.row',d),inp=$('input',d);let fin=false;
  const close=async v=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});
   await M.run(d,[{opacity:1,transform:'none'},{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`}],'med',{fill:'forwards'});bd.remove();res(v)};
@@ -821,10 +826,14 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
   const upd=()=>{const t=sum();info.textContent=t===q?`All ${q} models assigned.`:`${t<q?(q-t)+' still to assign':(t-q)+' too many'}. Changes save once the counts add up to ${q}.`;info.classList.toggle('bad',t!==q);
    rows.forEach(([k,v,m,p])=>{v.textContent=cnt[k];m.disabled=cnt[k]<=0;p.disabled=t>=q})};
   const rows=STATUS.map(([k,l])=>{const r=el('div','srw',`<span class="sl">${esc(l)}</span><div class="qty"><button type="button" aria-label="One fewer ${esc(l)}">${ICON.minus}</button><span class="sv" aria-live="polite"></span><button type="button" aria-label="One more ${esc(l)}">${ICON.plus}</button></div>`);
-   const[m,p]=r.querySelectorAll('button'),v=$('.sv',r),chg=guard(async d=>{cnt[k]+=d;upd();if(sum()===q){setSplit(it,cnt);await DB.put('items',it)}});
+   const[m,p]=r.querySelectorAll('button'),v=$('.sv',r),chg=guard(async d=>{cnt[k]+=d;upd();if(sum()===q){r.classList.remove('status-confirm');void r.offsetWidth;r.classList.add('status-confirm');await new Promise(resolve=>setTimeout(resolve,140));setSplit(it,cnt);await DB.put('items',it)}});
    m.onclick=()=>chg(-1);p.onclick=()=>chg(1);stc.append(r);return[k,v,m,p]});
   const sa=el('div','setall',`<span class="muted">Set all ${q} to</span>`),sac=el('div','chips wrap');
-  STATUS.forEach(([k,l])=>{const b=el('button','chip',esc(l));b.onclick=guard(async()=>{STATUS.forEach(([j])=>{cnt[j]=0});cnt[k]=q;setSplit(it,cnt);await DB.put('items',it);cnt=null;drawSt()});sac.append(b)});sa.append(sac);
+  STATUS.forEach(([k,l])=>{const b=el('button','chip',esc(l));b.onclick=guard(async()=>{
+    b.classList.remove('bulk-pulse');void b.offsetWidth;b.classList.add('bulk-pulse');
+    await new Promise(resolve=>setTimeout(resolve,140));
+    STATUS.forEach(([j])=>{cnt[j]=0});cnt[k]=q;setSplit(it,cnt);await DB.put('items',it);cnt=null;drawSt()
+  });sac.append(b)});sa.append(sac);
   stc.append(info,sa);upd()};drawSt();
  ta.oninput=guard(async()=>{it.notes=ta.value;await DB.put('items',it)});
  $('.ren',sh).onclick=guard(async()=>{const n=await dlg({title:'Rename model',input:it.name,ok:'Save'});
