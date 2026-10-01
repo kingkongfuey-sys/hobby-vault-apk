@@ -790,7 +790,7 @@ function addFlow(title,create){return new Promise(res=>{
  const clip=()=>{const f=fab.getBoundingClientRect(),c=d.getBoundingClientRect();return `inset(${f.top-c.top}px ${c.right-f.right}px ${c.bottom-f.bottom}px ${f.left-c.left}px round 30px)`};
  const full='inset(0px 0px 0px 0px round 22px)';
  /* name card sits just above the keyboard: use the visible area when the browser reports it, otherwise assume the keyboard covers the lower ~40% */
- const vv=window.visualViewport,kbTop=()=>{const h=innerHeight,t=vv?vv.height+vv.offsetTop:h;return t<h-120?t:h*.6};
+ const base0=innerHeight,vv=window.visualViewport,kbTop=()=>{const h=innerHeight,t=Math.min(h,vv?vv.height+vv.offsetTop:h);/* keyboard detected either by visualViewport shrinking or by the webview itself resizing (Android adjustResize) */ if(t<h-120)return t;if(h<base0-120)return h;return base0*.6};
  const place=()=>{if(phase!=='name'||fin)return;const h=d.getBoundingClientRect().height;d.style.top=Math.max(24,kbTop()-14-h)+'px'};
  const unplace=()=>{vv&&vv.removeEventListener('resize',place);removeEventListener('resize',place)};
  const done=()=>{unplace();bd.remove();fab.style.visibility='';M.fade(fab,0,1,'fast');res()};
