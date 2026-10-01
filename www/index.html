@@ -139,7 +139,7 @@ body.selmode #add{display:none}body.selmode .view{padding-bottom:160px}body.selm
 #selbar{position:fixed;left:0;right:0;bottom:0;z-index:12;background:var(--s1);border-top:1px solid var(--line);padding:8px 12px calc(10px + env(safe-area-inset-bottom));display:none;flex-direction:column;gap:8px}
 body.selmode #selbar{display:flex}
 #selbar .r1{display:flex;align-items:center;gap:8px}#selbar .r1 b{flex:1;font:600 var(--t-md) var(--serif)}
-#selbar .r2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}#selbar .btn{min-height:46px}
+#selbar .r2{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}#selbar .btn{min-height:46px}
 
 .vwbg{background:var(--scrim);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .vw{position:relative;width:min(92vw,560px);height:min(72vh,640px);background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.45);touch-action:none;user-select:none;-webkit-user-select:none;outline:0}
@@ -180,6 +180,7 @@ body.selmode #selbar{display:flex}
 :root[data-layout=grid] .qp{top:6px;left:6px;right:auto;bottom:auto}
 :root[data-layout=grid] .ck{top:6px;right:6px;transform:none}
 :root[data-theme=dark][data-amoled=on]{--bg:#000;--s1:#0c0e11;--s2:#171b20;--line:#262d35;--scrim:rgba(0,0,0,.8)}
+.shg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.shg>div{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-control);padding:10px 12px}.shg b{display:block;font:600 var(--t-xl) var(--sans)}.shg small{color:var(--mu);font:var(--t-xs) var(--sans)}
 .dbtn{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dbtn .btn{width:100%;min-width:0;flex:none}.dbtn .rep,.dbtn .chk{grid-column:1/-1}
 .dlg.rpt{width:min(100%,420px);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.dlg.rpt .row{flex:none}
 .rpt .rb{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:16px;margin:0 -8px 8px;padding:0 8px}
@@ -195,7 +196,7 @@ body.selmode #selbar{display:flex}
 .card[data-sw=del]::after{background:rgba(185,59,40,.92)}
 .card.drag{z-index:5;box-shadow:0 14px 32px rgba(0,0,0,.4);transition:none}
 .card.cc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--cc);z-index:2}
-:root[data-layout=grid] .card.cc::before{right:0;bottom:auto;width:auto;height:6px}
+:root[data-layout=grid] .card.cc::before{left:0;right:0;top:auto;bottom:0;width:auto;height:6px}
 .cols{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:6px}
 .cwatch{aspect-ratio:1;border-radius:50%;border:2px solid transparent;cursor:pointer;min-height:44px;transition:transform var(--dur-fast) var(--ease)}.cwatch:active{transform:scale(.92)}.cwatch.on{border-color:var(--tx);box-shadow:0 0 0 2px var(--bg) inset}
 .splitc{display:flex;flex-direction:column;gap:6px;margin-top:6px}.srw{display:flex;align-items:center;justify-content:space-between;gap:12px}.srw .qty{margin:0}
@@ -214,7 +215,7 @@ body.selmode #selbar{display:flex}
 <main id="stage"></main>
 <button id="add" aria-label="Add"></button>
 <div id="toasts" role="status" aria-live="polite"></div>
-<div id="selbar" role="toolbar" aria-label="Selected models"><div class="r1"><button class="ib" id="sx" aria-label="Cancel selection"></button><b id="sn" aria-live="polite">0 selected</b><button class="btn ghost sm" id="sall">Select all</button></div><div class="r2"><button class="btn ghost sm" data-a="st">Status</button><button class="btn ghost sm" data-a="mv">Move</button><button class="btn ghost sm danger" data-a="del">Delete</button></div></div>
+<div id="selbar" role="toolbar" aria-label="Selected models"><div class="r1"><button class="ib" id="sx" aria-label="Cancel selection"></button><b id="sn" aria-live="polite">0 selected</b><button class="btn ghost sm" id="sall">Select all</button></div><div class="r2"><button class="btn ghost sm" data-a="st">Status</button><button class="btn ghost sm" data-a="cat">Category</button><button class="btn ghost sm" data-a="mv">Move</button><button class="btn ghost sm danger" data-a="del">Delete</button></div></div>
 <script>
 'use strict';
 /* ---------- helpers & icons ---------- */
@@ -235,6 +236,7 @@ ICON.cog=svg('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a
 ICON.search=svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>');
 ICON.minus=svg('<path d="M5 12h14"/>');ICON.check=svg('<path d="M5 12.5l4.5 4.5L19 7"/>');
 ICON.rot=svg('<path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v4.5h-4.5"/>');
+const colHex=k=>COLORS[k]||(/^#[0-9a-f]{6}$/i.test(k||'')?k:null);
 const COLORS={red:'#d9534f',orange:'#e8893a',yellow:'#d4ae2f',green:'#4caf6a',teal:'#3fb0a0',blue:'#4a8de0',purple:'#9b6fd6',pink:'#d9689f',grey:'#8a949f'};
 const ACC={brass:{dark:['#c8974a','#1a1408'],light:['#9c6a17','#ffffff']},verdigris:{dark:['#4fb3a0','#04211c'],light:['#1f7a6a','#ffffff']},azure:{dark:['#6ea8e8','#071a30'],light:['#2a63b0','#ffffff']},violet:{dark:['#a992e6','#140c2b'],light:['#6a4bb5','#ffffff']}};
 const SET=(()=>{const K='hv-settings';let s={theme:null,accent:'brass',motion:true,sort:'az',flat:false,quality:'standard',layout:'list',amoled:false,binDays:30};
@@ -295,6 +297,7 @@ const setThumb=(id,thumb)=>new Promise((ok,no)=>{const t=T('photos','readwrite')
 const photoKeys=()=>R(T('photos').objectStore('photos').getAllKeys());
 const replaceAll=async d=>{const t=T(['collections','items','photos'],'readwrite');
  for(const n of ['collections','items','photos']){const o=t.objectStore(n);o.clear();(d[n]||[]).forEach(r=>o.put(r))}await done(t)};
+const putMany=async(cols,items,photos)=>{const t=T(['collections','items','photos'],'readwrite');cols.forEach(r=>t.objectStore('collections').put(r));items.forEach(r=>t.objectStore('items').put(r));photos.forEach(r=>t.objectStore('photos').put(r));await done(t)};
 const binAdd=async(e,list)=>{const t=T(['bin','binPhotos'],'readwrite');t.objectStore('bin').put(e);list.forEach(x=>t.objectStore('binPhotos').put({...x,binId:e.id}));await done(t)};
 const binDrop=async ids=>{const t=T(['bin','binPhotos'],'readwrite'),b=t.objectStore('bin'),q=t.objectStore('binPhotos'),ix=q.index('binId');
  for(const id of ids){b.delete(id);(await R(ix.getAllKeys(IDBKeyRange.only(id)))).forEach(k=>q.delete(k))}await done(t)};
@@ -309,7 +312,7 @@ const delCollection=async id=>{const cols=[id],items=[];
  for(let n=0;n<cols.length;n++){(await by('collections','parentId',cols[n])).forEach(c=>cols.push(c.id));
   (await by('items','parentId',cols[n])).forEach(x=>items.push(x.id))}
  await wipe(cols,items)};
-return{binAdd,binDrop,binPhotos,binClear,binPhotoKeys,binReplace,binUsage,setThumb,usage,photoKeys,thumbs,all,replaceAll,open,get,put,by,count,photoCounts,photos,delPhoto,putPhotos,delItem,delCollection}})();
+return{putMany,binAdd,binDrop,binPhotos,binClear,binPhotoKeys,binReplace,binUsage,setThumb,usage,photoKeys,thumbs,all,replaceAll,open,get,put,by,count,photoCounts,photos,delPhoto,putPhotos,delItem,delCollection}})();
 
 /* ---------- motion system (tokens live in CSS) ---------- */
 const M=(()=>{const RMQ=matchMedia('(prefers-reduced-motion: reduce)'),RM={get matches(){return RMQ.matches||document.documentElement.dataset.motion==='off'}};
@@ -352,9 +355,13 @@ function dlg({title,msg,input,ok='OK',danger,choices,again}){return new Promise(
  (inp||$('.btn',d)).focus();inp&&inp.select()})}
 
 function pickColour(cur){return new Promise(res=>{const bd=el('div','backdrop'),d=el('div','dlg');d.setAttribute('role','dialog');d.setAttribute('aria-label','Colour label');
- d.innerHTML='<h2>Colour label</h2><div class="cols"></div><div class="row h"><button class="btn ghost no">Cancel</button><button class="btn ghost none">No colour</button></div>';
+ d.innerHTML='<h2>Colour label</h2><div class="cols"></div><div class="row h"><button class="btn ghost no">Cancel</button><button class="btn ghost none">No colour</button><button class="btn ghost cust">Custom…</button></div><input type="color" class="cpick" tabindex="-1" aria-hidden="true" style="position:absolute;width:0;height:0;min-height:0;opacity:0;pointer-events:none;padding:0;border:0;margin:0">';
  let fin=false;const close=async v=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});await M.run(d,[{opacity:1,transform:'none'},{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`}],'med',{fill:'forwards'});bd.remove();res(v)};
  Object.entries(COLORS).forEach(([k,h])=>{const b=el('button','cwatch'+(cur===k?' on':''));b.style.background=h;b.setAttribute('aria-label',k);b.setAttribute('aria-pressed',cur===k);b.onclick=()=>close(k);$('.cols',d).append(b)});
+ const isCustom=cur&&!COLORS[cur]&&colHex(cur);
+ if(isCustom){const b=el('button','cwatch on');b.style.background=cur;b.setAttribute('aria-label','Current custom colour');b.setAttribute('aria-pressed',true);b.onclick=()=>close(cur);$('.cols',d).append(b)}
+ const cp=$('.cpick',d);cp.value=colHex(cur)||'#4a8de0';cp.onchange=()=>close(cp.value);
+ $('.cust',d).onclick=()=>{try{cp.showPicker?cp.showPicker():cp.click()}catch(e){cp.click()}};
  $('.no',d).onclick=()=>close(undefined);$('.none',d).onclick=()=>close('');bd.onclick=e=>{if(e.target===bd)close(undefined)};bd.onkeydown=e=>{if(e.key==='Escape')close(undefined)};
  bd.append(d);document.body.append(bd);M.fade(bd,0,1);M.run(d,[{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`},{opacity:1,transform:'none'}],'slow');(($('.on',d))||$('.cwatch',d)).focus()})}
 
@@ -492,6 +499,12 @@ async function bulk(a){
   const old=recs.map(r=>({id:r.id,status:r.status,split:r.split?{...r.split}:undefined}));
   for(const r of recs){r.status=k;delete r.split;await DB.put('items',r)}
   toast(`Status set to ${stLab(k)}`,false,async()=>{for(const o of old){const r=await DB.get('items',o.id);if(!r)continue;if(o.split)r.split=o.split;else delete r.split;if(o.status===undefined)delete r.status;else r.status=o.status;await DB.put('items',r)}const lv=live();lv&&await fill(lv,{quiet:1})});clearSel();await fill(v,{quiet:1});return}
+ if(a==='cat'){const r=await dlg({title:`Category for ${word}`,msg:'Replace all overwrites the category on every selected model. Fill empty only skips models that already have one.',input:'',ok:'Replace all',again:'Fill empty only'});
+  if(!r)return;const val=(typeof r==='string'?r:r.v).trim().slice(0,80),fillOnly=typeof r!=='string';
+  const old=recs.map(x=>({id:x.id,category:x.category}));let ch=0;
+  for(const x of recs){if(fillOnly&&(x.category||'').trim())continue;if((x.category||'')===val)continue;x.category=val;ch++;await DB.put('items',x)}
+  if(!ch){toast('No models needed changing');clearSel();return}
+  toast(`Category set on ${plu(ch,'model')}`,false,async()=>{for(const o of old){const x=await DB.get('items',o.id);if(!x)continue;if(o.category===undefined)delete x.category;else x.category=o.category;await DB.put('items',x)}const lv=live();lv&&await fill(lv,{quiet:1})});clearSel();await fill(v,{quiet:1});return}
  if(a==='mv'){const cols=await DB.all('collections'),map=new Map(cols.map(c=>[c.id,c])),nm=c=>{const p=[];for(let x=c;x;x=map.get(x.parentId))p.unshift(x.name);return p.join(' / ')};
   const same=recs.every(r=>r.parentId===recs[0].parentId)?recs[0].parentId:null;
   const choices=[{label:'Vault (top level)',value:ROOT},...cols.map(c=>({label:nm(c),value:c.id})).sort((x,y)=>x.label.localeCompare(y.label))].filter(c=>c.value!==same);
@@ -511,7 +524,7 @@ document.querySelectorAll('#selbar [data-a]').forEach(b=>{b.onclick=guard(()=>bu
 
 function card(kind,rec,sub,thumb,v,photo){const c=el('div','card');c.tabIndex=0;c.dataset.id=rec.id;
  c.innerHTML=`<div class="ph">${kind==='c'?ICON.folder:ICON.cube}</div><div class="lab"><b>${esc(rec.name)}</b><small>${sub}</small></div><button class="more" aria-label="Options for ${esc(rec.name)}">${ICON.dots}</button>`;
- if(kind==='c'&&COLORS[rec.color]){c.classList.add('cc');c.style.setProperty('--cc',COLORS[rec.color]);c.dataset.colour=rec.color}
+ if(kind==='c'&&colHex(rec.color)){c.classList.add('cc');c.style.setProperty('--cc',colHex(rec.color));c.dataset.colour=rec.color}
  if(thumb){const u=URL.createObjectURL(thumb);v._urls.push(u);const im=new Image();im.alt='';im.decoding='async';im.onload=()=>im.classList.add('on');im.src=u;$('.ph',c).append(im)}
  if(kind==='i'){const ph=$('.ph',c);ph.classList.add('it');c.classList.add('hasq');c.insertAdjacentHTML('beforeend',`<span class="qp" title="Quantity">×${qtyOf(rec)}</span><span class="ck" aria-hidden="true">${ICON.check}</span>`);if(SEL.has(rec.id))c.classList.add('sel');ph.setAttribute('role','button');ph.setAttribute('aria-label',photo?'View photo':'Add photo');
   if(!photo)ph.insertAdjacentHTML('beforeend',`<span class="addp">${ICON.plus}</span>`)}
@@ -947,19 +960,19 @@ let setRefresh=null;
 const afterReplace=async()=>{document.querySelectorAll('.sheet:not(.set)').forEach(x=>x.remove());await go(ROOT,0);setRefresh&&setRefresh()};
 const plug=n=>(window.Capacitor&&window.Capacitor.Plugins||{})[n]||null;
 const isNative=()=>{const c=window.Capacitor;return !!(c&&(c.isNativePlatform?c.isNativePlatform():c.getPlatform&&c.getPlatform()!=='web'))};
-async function* exportChunks(stamp,withBin){
+async function* exportChunks(stamp,withBin,noPhotos){
  const[c,i,keys]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoKeys()]);
  const enc=async cols=>{const o=[];for(const x of cols)o.push(x.icon instanceof Blob?{...x,icon:await b2d(x.icon)}:x);return o};
  /* one photo is read and encoded at a time, so memory use stays flat however big the vault is */
  const photo=async(st,k)=>{const x=await DB.get(st,k);return x&&x.blob?JSON.stringify({...x,blob:await b2d(x.blob),thumb:x.thumb?await b2d(x.thumb):null}):null};
  yield `{"app":"hobby-vault","version":1,"exported":${JSON.stringify(stamp)},"collections":${JSON.stringify(await enc(c))},"items":${JSON.stringify(i)},"photos":[`;
- let n=0;for(const k of keys){const x=await photo('photos',k);if(x==null)continue;yield(n++?',':'')+x}
+ let n=0;if(!noPhotos)for(const k of keys){const x=await photo('photos',k);if(x==null)continue;yield(n++?',':'')+x}
  if(withBin){const be=[];for(const e of await DB.all('bin'))be.push({...e,cols:await enc(e.cols)});
   yield `],"bin":${JSON.stringify(be)},"binPhotos":[`;
   n=0;for(const k of await DB.binPhotoKeys()){const x=await photo('binPhotos',k);if(x==null)continue;yield(n++?',':'')+x}}
  yield ']}'}
-async function exportDB(withBin){
- const stamp=new Date().toISOString(),file=`hobby-vault-${stamp.slice(0,10)}.json`,gen=exportChunks(stamp,!!withBin);
+async function exportDB(withBin,dataOnly){
+ const stamp=new Date().toISOString(),file=`hobby-vault-${dataOnly?'data-':''}${stamp.slice(0,10)}.json`,gen=exportChunks(stamp,!!withBin&&!dataOnly,!!dataOnly);
  if(!isNative()){toast('Preparing backup…');const parts=[];let buf='';
   for await(const x of gen){buf+=x;if(buf.length>4e6){parts.push(new Blob([buf]));buf=''}}
   parts.push(new Blob([buf]));
@@ -1061,6 +1074,53 @@ function reportDialog(){return new Promise(async res=>{
  $('.no',d).onclick=()=>close(null);bd.onclick=e=>{if(e.target===bd)close(null)};bd.onkeydown=e=>{if(e.key==='Escape')close(null)};
  go.onclick=()=>close({cols:new Set(on),sts:new Set(sts),cats:new Set(cats),narrow:on.size<rows.length||sts.size<STATUS.length||cats.size<cm.size});
  bd.append(d);document.body.append(bd);M.fade(bd,0,1);M.run(d,[{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`},{opacity:1,transform:'none'}],'slow');go.focus()})}
+/* ---------- Photos Only export: a ZIP whose folders match the collections (store-only ZIP writer, no library needed) ---------- */
+const CRCT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=u=>{let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRCT[(c^u[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
+const toAB=b=>b.arrayBuffer?b.arrayBuffer():new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(r.error);r.readAsArrayBuffer(b)});
+const u8b64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+async function* zipStream(entries){
+ const enc=new TextEncoder(),cen=[],d=new Date(),dt=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF,tm=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF;let off=0;
+ for await(const e of entries){
+  const data=new Uint8Array(await toAB(e.blob)),nm=enc.encode(e.name),crc=crc32(data),sz=data.length,h=new DataView(new ArrayBuffer(30));
+  h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,tm,true);h.setUint16(12,dt,true);h.setUint32(14,crc,true);h.setUint32(18,sz,true);h.setUint32(22,sz,true);h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+  yield new Uint8Array(h.buffer);yield nm;yield data;
+  cen.push({nm,crc,sz,off});off+=30+nm.length+sz;
+  if(off>0xFFFFFF00||cen.length>65000)throw new Error('Too many photos for one ZIP file. Use Full Backup instead')}
+ let cs=0;
+ for(const c of cen){const h=new DataView(new ArrayBuffer(46));
+  h.setUint32(0,0x02014b50,true);h.setUint16(4,20,true);h.setUint16(6,20,true);h.setUint16(8,0x0800,true);h.setUint16(10,0,true);h.setUint16(12,tm,true);h.setUint16(14,dt,true);h.setUint32(16,c.crc,true);h.setUint32(20,c.sz,true);h.setUint32(24,c.sz,true);h.setUint16(28,c.nm.length,true);
+  h.setUint32(42,c.off,true);yield new Uint8Array(h.buffer);yield c.nm;cs+=46+c.nm.length}
+ const e=new DataView(new ArrayBuffer(22));
+ e.setUint32(0,0x06054b50,true);e.setUint16(8,cen.length,true);e.setUint16(10,cen.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+ yield new Uint8Array(e.buffer)}
+const zipClean=s=>String(s||'').replace(/[\\\/:*?"<>|\u0000-\u001f]/g,'_').replace(/\s+/g,' ').trim().replace(/^\.+|\.+$/g,'').slice(0,80).trim()||'Untitled';
+const IMGEXT={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif','image/heic':'heic'};
+async function* photoEntries(){
+ const[cols,items]=await Promise.all([DB.all('collections'),DB.all('items')]);
+ const cm=new Map(cols.map(c=>[c.id,c])),used=new Set(),cache=new Map();
+ const uniq=(pp,name)=>{const b=zipClean(name);let n=b,i=2;while(used.has(((pp?pp+'/':'')+n).toLowerCase()))n=`${b} (${i++})`;const p=(pp?pp+'/':'')+n;used.add(p.toLowerCase());return p};
+ const cp=(id,dp=0)=>{if(id===ROOT||!cm.has(id)||dp>50)return'';if(cache.has(id))return cache.get(id);const c=cm.get(id),p=uniq(cp(c.parentId,dp+1),c.name);cache.set(id,p);return p};
+ const sorted=items.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+ for(const it of sorted){const ph=await DB.photos(it.id);if(!ph.length)continue;
+  const folder=uniq(cp(it.parentId)||'Vault (top level)',it.name),base=zipClean(it.name);
+  for(let i=0;i<ph.length;i++){const b=ph[i].blob;if(!b)continue;yield{name:`${folder}/${base}-${i+1}.${IMGEXT[b.type]||'jpg'}`,blob:b}}}}
+async function exportPhotos(){
+ if(!(await DB.photoKeys()).length){toast('There are no photos to export');return}
+ const file=`hobby-vault-photos-${new Date().toISOString().slice(0,10)}.zip`,gen=zipStream(photoEntries());
+ toast('Preparing photos…');
+ if(!isNative()){const parts=[];for await(const u of gen)parts.push(new Blob([u]));
+  const a=el('a');a.href=URL.createObjectURL(new Blob(parts,{type:'application/zip'}));a.download=file;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5e3);toast('Photos exported');return}
+ const FS=plug('Filesystem'),SH=plug('Share');
+ if(!FS||!SH)throw new Error('Export needs the Capacitor Filesystem and Share plugins (npm i @capacitor/filesystem @capacitor/share, then npx cap sync)');
+ const at={path:file,directory:'CACHE'};let first=true,acc=[],len=0;
+ const flush=async()=>{if(!len)return;const all=new Uint8Array(len);let o=0;acc.forEach(x=>{all.set(x,o);o+=x.length});acc=[];len=0;const data=u8b64(all);if(first){await FS.writeFile({...at,data});first=false}else await FS.appendFile({...at,data})};
+ for await(const u of gen){acc.push(u);len+=u.length;if(len>2e6)await flush()}
+ await flush();
+ const{uri}=await FS.getUri({path:file,directory:'CACHE'});
+ try{await SH.share({title:'Hobby Vault photos',dialogTitle:'Save or send your photos',files:[uri]})}catch(e){if(!/cancel/i.test(String(e&&e.message||e)))throw e}
+ toast('Photos ready')}
+
 async function exportReport(){
  const f=await reportDialog();if(!f)return;
  const text=await buildReport(f),file=`hobby-vault-report-${new Date().toISOString().slice(0,10)}.txt`;
@@ -1144,6 +1204,32 @@ async function checkBackup(d,size){
  L.push('Importing deletes all current data.');
  L.push(Array.isArray(d.bin)&&d.bin.length?`The backup also holds ${plu(d.bin.length,'recycling-bin item')}, which will replace the current bin.`:'The current recycling bin will be emptied.');
  return{msg:L.join('\n'),fix(){badC.forEach(c=>c.parentId=ROOT);badI.forEach(x=>x.parentId=ROOT);d.photos=good}}}
+
+/* ---------- Merge / Skip Duplicates import: models and collections match by ID, the backup wins on Merge ---------- */
+async function mergeBackup(d,size,skip){
+ const[cc,ci,ck]=await Promise.all([DB.all('collections'),DB.all('items'),DB.photoKeys()]);
+ const hc=new Set(cc.map(c=>c.id)),hi=new Set(ci.map(i=>i.id)),hp=new Set(ck);
+ const inC=d.collections.filter(c=>c&&c.id),inI=d.items.filter(x=>x&&x.id);
+ const dupC=inC.filter(c=>hc.has(c.id)),dupI=inI.filter(x=>hi.has(x.id)),newC=inC.filter(c=>!hc.has(c.id)),newI=inI.filter(x=>!hi.has(x.id));
+ const useC=(skip?newC:inC).map(c=>({...c})),useI=(skip?newI:inI).map(x=>({...x})),okI=new Set(useI.map(x=>x.id));
+ const photos=d.photos.filter(p=>p&&p.id&&okI.has(p.itemId)&&typeof p.blob==='string'&&p.blob.startsWith('data:')&&!(skip&&hp.has(p.id)));
+ const newP=photos.filter(p=>!hp.has(p.id)).length;
+ if(!useC.length&&!useI.length&&!photos.length){toast('Nothing to import: everything in the backup is already here');return}
+ const L=[`In the backup: ${plu(inC.length,'collection')}, ${plu(inI.length,'model')}, ${plu(d.photos.length,'photo')}.`,
+  `New: ${plu(newC.length,'collection')}, ${plu(newI.length,'model')}, ${plu(newP,'photo')}.`,
+  `Already here (same ID): ${plu(dupC.length,'collection')}, ${plu(dupI.length,'model')}, ${skip?'left untouched.':'updated from the backup.'}`,
+  'Nothing is deleted.'];
+ if(!d.photos.length)L.push('This backup has no photos, so current photos stay as they are.');
+ if(size>2e7)L.push(`Large file (${fmtB(size)}). This may take a moment.`);
+ if(!await dlg({title:skip?'Skip duplicates?':'Merge backup?',msg:L.join('\n'),ok:skip?'Import new only':'Merge'}))return;
+ const fin=new Map(cc.map(c=>[c.id,c]));useC.forEach(c=>fin.set(c.id,c));
+ useC.forEach(c=>{if(c.parentId!==ROOT&&!fin.has(c.parentId))c.parentId=ROOT});
+ useC.forEach(c=>{const seen=new Set([c.id]);for(let p=fin.get(c.parentId);p;p=fin.get(p.parentId)){if(seen.has(p.id)){c.parentId=ROOT;break}seen.add(p.id)}});
+ useI.forEach(x=>{if(x.parentId!==ROOT&&!fin.has(x.parentId))x.parentId=ROOT});
+ const cols=useC.map(x=>{const{icon,...r}=x;return typeof icon==='string'?{...r,icon:d2b(icon)}:r});
+ const ph=photos.map(p=>({...p,blob:d2b(p.blob),thumb:p.thumb?d2b(p.thumb):undefined}));
+ await DB.putMany(cols,useI,ph);await afterReplace();
+ toast(skip?`Added ${plu(newI.length,'new model')}`:`Merged: ${plu(newI.length,'new model')}, ${dupI.length} updated`)}
 
 /* ---------- automatic backup (Android app only; manual export above is untouched) ---------- */
 const AB='hv-autobackup',AB_KEEP=3;
@@ -1244,8 +1330,9 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  <section><h3>Missing information</h3><p class="muted mish" style="margin:0">Checking…</p><p class="muted" style="margin:0">Find models without a photo or category, and collections without an icon, and fix them from one list.</p><button class="btn ghost sm mis">Open missing information</button></section>
  <section><h3>Recycling bin</h3><p class="muted binh" style="margin:0">Checking…</p><div><b>Keep deleted items for</b><small class="muted" style="display:block">Deleted collections and models, with their photos, can be restored until this time is up. A change also applies to items already in the bin.</small><div class="chips wrap binc"></div></div><button class="btn ghost sm binopen">Open recycling bin</button></section>
  <section><h3>Automatic backup</h3><div class="ab"></div></section>
- <section><h3>Your data</h3><p class="muted usage" style="margin:0">Calculating storage…</p><p class="muted" style="margin:0">A backup is one file with every collection, model and photo.</p>
-  <div class="dbtn"><button class="btn ghost rep">Export .TXT file</button><button class="btn ghost exp">Export database</button><button class="btn ghost imp">Import database</button><button class="btn ghost chk">Check and repair</button></div>
+ <section><h3>Storage health</h3><div class="shg"><div><b class="sv-db">…</b><small>Database size</small></div><div><b class="sv-ph">…</b><small>Photos</small></div><div><b class="sv-co">…</b><small>Collections</small></div><div><b class="sv-mo">…</b><small>Models</small></div></div><p class="muted usage" style="margin:0"></p></section>
+ <section><h3>Your data</h3><p class="muted" style="margin:0">Export Data Only, Photos Only (a ZIP) or a Full Backup. Import can merge, replace or skip duplicates.</p>
+  <div class="dbtn"><button class="btn ghost rep">Export .TXT file</button><button class="btn ghost exp">Export</button><button class="btn ghost imp">Import</button><button class="btn ghost chk">Check and repair</button></div>
   <button class="btn danger del">Delete all data</button></section></div>`;
  const am=$('.r-amoled',sh),th=$('.r-theme',sh),mo=$('.r-motion',sh),sws=$('.sws',sh),phone=$('.phone',sh);
  const sync=()=>{const s=SET.get(),t=SET.theme();am.setAttribute('aria-checked',!!s.amoled);$('.am-h',sh).textContent=t==='dark'?'Pure black background in dark mode':'Only applies in dark mode';th.setAttribute('aria-checked',t==='dark');mo.setAttribute('aria-checked',s.motion);
@@ -1276,8 +1363,10 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   abBox.append(el('p','muted',(a.last?'Last automatic backup: '+ago(a.last)+'. ':'No automatic backup yet. ')+`Saved to ${(abTarget(a.path)||{path:'(invalid folder)'}).path}, newest ${AB_KEEP} kept. Old backups are not moved if you change folder. It runs when the app opens and a backup is due.`));
   const b=el('button','btn ghost sm','Back up now');b.disabled=abRun;b.onclick=runNow;abBox.append(b)}
  abDraw();
- const usageInfo=()=>DB.usage().then(u=>{const u0=$('.usage',sh);if(!u0)return;let t=`Vault storage: ${fmtB(u.b)} across ${u.n} photo${u.n===1?'':'s'}.`;
-  return(navigator.storage&&navigator.storage.estimate?navigator.storage.estimate():Promise.resolve(null)).then(e=>{if(e&&e.quota)t+=` About ${fmtB(Math.max(0,e.quota-(e.usage||0)))} still available to the app.`}).catch(()=>{}).then(()=>{u0.textContent=t})}).catch(()=>{const u0=$('.usage',sh);if(u0)u0.textContent='Storage use unavailable.'});
+ const usageInfo=()=>Promise.all([DB.usage(),DB.all('collections'),DB.all('items')]).then(([u,cs,is])=>{if(!sh.isConnected)return;
+  const meta=new Blob([JSON.stringify(cs.map(({icon,...r})=>r)),JSON.stringify(is)]).size,set=(c,t)=>{const e=$('.'+c,sh);if(e)e.textContent=t};
+  set('sv-db',fmtB(u.b+meta));set('sv-ph',String(u.n));set('sv-co',String(cs.length));set('sv-mo',String(is.length));
+  return(navigator.storage&&navigator.storage.estimate?navigator.storage.estimate():Promise.resolve(null)).then(e=>{const u0=$('.usage',sh);if(u0&&e&&e.quota)u0.textContent=`About ${fmtB(Math.max(0,e.quota-(e.usage||0)))} still available to the app.`}).catch(()=>{})}).catch(()=>{['sv-db','sv-ph','sv-co','sv-mo'].forEach(c=>{const e=$('.'+c,sh);if(e)e.textContent='n/a'})});
  $('.mis',sh).onclick=guard(openMissing);
  const binh=$('.binh',sh),binc=$('.binc',sh);
  const binInfo=async()=>{try{const n=(await DB.all('bin')).length,u=n?await DB.binUsage():null;if(binh.isConnected)binh.textContent=n?`${plu(n,'item')} in the bin, using ${fmtB(u.b)}.`:'The bin is empty.'}catch(_){if(binh.isConnected)binh.textContent=''}};
@@ -1292,7 +1381,10 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  let rt=0;const obs=new MutationObserver(m=>{if(!sh.isConnected){obs.disconnect();if(setRefresh===refresh)setRefresh=null;return}
   if(m.some(x=>[...x.removedNodes].some(n=>n.classList&&(n.classList.contains('sheet')||n.classList.contains('backdrop')))))clearTimeout(rt),rt=setTimeout(refresh,250)});obs.observe(document.body,{childList:true});
  const missInfo=()=>scanMissing().then(d=>{const h=$('.mish',sh);if(!h)return;const n=d.mi.length+d.mc.length;h.textContent=n?`${n} item${n===1?'':'s'} with something missing.`:'Nothing is missing.'}).catch(()=>{const h=$('.mish',sh);if(h)h.textContent=''});
- $('.exp',sh).onclick=guard(async()=>{let wb=false;const n=(await DB.all('bin')).length;
+ $('.exp',sh).onclick=guard(async()=>{
+  const mode=await dlg({title:'Export',msg:'Data Only: collections and models, no photos.\nPhotos Only: a ZIP of your pictures, in folders that match your collections.\nFull Backup: everything, to restore on another device.',choices:[{label:'Data Only',value:'d'},{label:'Photos Only',value:'p'},{label:'Full Backup',value:'f'}]});
+  if(!mode)return;if(mode==='d')return exportDB(false,true);if(mode==='p')return exportPhotos();
+  let wb=false;const n=(await DB.all('bin')).length;
   if(n){const o=await dlg({title:'Export database',msg:`The recycling bin holds ${plu(n,'deleted item')}. Include ${n===1?'it':'them'} in this backup? The file gets larger.`,choices:[{label:'Include recycling bin',value:'y'},{label:'Vault only',value:'n'}]});if(!o)return;wb=o==='y'}
   await exportDB(wb)});$('.rep',sh).onclick=guard(exportReport);
  $('.rth',sh).onclick=guard(async()=>{await rebuildThumbs(true);refresh()});$('.chk',sh).onclick=guard(async()=>{await checkRepair();refresh()});
@@ -1300,6 +1392,9 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  imp.onchange=guard(async()=>{const f=imp.files[0];imp.value='';if(!f)return;let d;
   try{d=JSON.parse(await f.text())}catch(e){throw new Error('That file is not a valid backup')}
   if(d.app!=='hobby-vault'||![d.collections,d.items,d.photos].every(Array.isArray))throw new Error('That file is not a Hobby Vault backup');
+  const mode=await dlg({title:'Import Backup',msg:'Merge: add new models and update matching ones from the backup.\nReplace Existing: delete everything here first, then restore the backup.\nSkip Duplicates: add only what is new and leave matching models alone.\nModels and collections match by their ID.',choices:[{label:'Merge',value:'m'},{label:'Replace Existing',value:'r',danger:1},{label:'Skip Duplicates',value:'s'}]});
+  if(!mode)return;
+  if(mode!=='r'){await mergeBackup(d,f.size,mode==='s');return}
   const rp=await checkBackup(d,f.size);if(!await dlg({title:'Replace everything?',msg:rp.msg,ok:'Replace',danger:true}))return;rp.fix();
   d.collections=d.collections.map(x=>{const{icon,...r}=x;return typeof icon==='string'?{...r,icon:d2b(icon)}:r});
   d.photos=d.photos.map(p=>({...p,blob:d2b(p.blob),thumb:p.thumb?d2b(p.thumb):undefined}));
