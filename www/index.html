@@ -45,6 +45,8 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
 .btn:active{transform:scale(.97)}.btn.ghost{background:var(--s2);color:var(--tx);border-color:var(--line)}.btn.danger{background:var(--dg);color:var(--dgx)}
 #add{position:fixed;right:calc(18px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;border:0;background:var(--ac);color:var(--acx);display:grid;place-items:center;z-index:10;cursor:pointer;transition:transform var(--dur-fast) var(--ease)}
 #add:active{transform:scale(.94)}#add svg{width:28px;transition:transform var(--dur-med) var(--ease)}#add:active svg{transform:rotate(90deg)}
+.backdrop.amenu{display:block;padding:0}.dlg.amcard.nm{top:calc(env(safe-area-inset-top,0px) + 72px);bottom:auto}.dlg.amcard{box-sizing:border-box;position:absolute;left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));max-width:440px;width:auto;margin:0 auto;padding:18px;border-radius:22px}.amcard h2{font-size:var(--t-lg);margin:0 0 2px}.amcard .row{margin-top:12px}
+.backdrop.top{grid-template-columns:minmax(0,1fr);place-items:start center;padding-top:calc(env(safe-area-inset-top,0px) + 72px)}.backdrop.top .dlg{max-height:calc(100dvh - 108px)}
 .backdrop{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;padding:20px;z-index:30}
 .dlg{background:var(--s1);border:1px solid var(--line);border-radius:var(--radius-modal);padding:20px;width:min(100%,380px)}
 .dlg h2{font:600 var(--t-xl) var(--serif);margin:0 0 8px}.dlg p{color:var(--mu);margin:0 0 8px}
@@ -77,7 +79,7 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 .gh svg{width:20px;flex:none;color:var(--ac);transition:transform var(--dur-med) var(--ease)}.gh.shut svg{transform:rotate(-90deg)}
 .gh small{color:var(--mu);font:var(--t-sm) var(--sans);margin-left:auto}.sec.shut .grid{display:none}
 .content>.grid+.grid{margin-top:10px}
-.sheet.set{z-index:25}.body section{display:grid;gap:12px}.body section h3{font:600 var(--t-lg) var(--serif);margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.sheet.set{z-index:25}.body section{display:grid;gap:12px}.body section+section{margin-top:14px}.body section h3{font:600 var(--t-lg) var(--serif);margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;cursor:pointer}.srow b{display:block;font-weight:600}.srow small{color:var(--mu);display:block}
 .sw{flex:none;width:52px;height:32px;border-radius:var(--radius-modal);border:1px solid var(--line);background:var(--s2);position:relative;transition:background var(--dur-med) var(--ease)}
 .sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--mu);transition:transform var(--dur-med) var(--ease)}
@@ -117,7 +119,7 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 .prog{margin:4px 0 8px}.prog .ph1{display:flex;justify-content:space-between;align-items:baseline;font-size:var(--t-sm);color:var(--mu)}.prog .ph1 b{font:600 var(--t-md) var(--serif);color:var(--tx)}
 .pbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line);margin:6px 0;transform-origin:left}.pbar i{display:block;flex-basis:0}
 .pc0{background:var(--line)}.pc1{background:var(--ac);opacity:.3}.pc2{background:var(--ac);opacity:.5}.pc3{background:var(--ac);opacity:.75}.pc4{background:var(--ac)}
-.pleg{display:flex;flex-wrap:wrap;gap:0 10px;font-size:var(--t-sm);color:var(--mu)}.pleg .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.pleg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 12px;font-size:var(--t-sm);color:var(--mu)}.pleg .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 /* statistics dashboard */
 .prog{cursor:pointer;border-radius:var(--radius-control);transition:background var(--dur-med) var(--ease),box-shadow var(--dur-med) var(--ease)}.prog:hover{background:var(--s1);box-shadow:0 0 0 6px var(--s1)}
 .stats .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -127,12 +129,24 @@ textarea{display:block;width:100%;min-height:96px;resize:vertical;background:var
 img.sico{display:inline-block;width:24px;height:24px;border-radius:6px;object-fit:cover;vertical-align:middle;margin:0 8px 2px 0}button.strow{width:100%;background:none;border:0;border-bottom:1px solid var(--line);color:var(--tx);font:inherit;text-align:left;cursor:pointer;transition:transform var(--dur-fast) var(--ease),background var(--dur-med) var(--ease)}button.strow:hover,button.strow:active{background:var(--s1)}button.strow:active{transform:scale(.985)}
 .stats .chip.dim{opacity:.55}.stats .note{margin:0;font-size:var(--t-sm)}
 .stats .kpis .kpi:last-child:nth-child(odd){grid-column:1/-1}
+.stats div.strow{border-bottom:1px solid var(--line)}
+.strow.rk .sth>span{display:flex;align-items:flex-start;gap:8px}.strow.rk .rn{flex:none;min-width:1.5em}.strow.rk img.sico{flex:none;margin:0}.strow.rk .rt{flex:1}
 .stats ul,.stats ol{list-style:none;margin:0;padding:0}
+.btn.plain{background:none;border-color:transparent;color:var(--mu)}.chip:disabled{opacity:.45;cursor:default}.chip:disabled:active{transform:none}
+.dz{margin-top:24px;padding-top:16px;border-top:1px solid var(--dg);display:grid;gap:8px}.dz .del{background:transparent;color:var(--dg);border-color:var(--dg)}
+.mline{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.mline .mtags{margin-top:0}
+.pleg .dot,.stlist .dot{opacity:1;box-shadow:inset 0 0 0 1.5px var(--ac)}
+.pleg .dot.pc0,.stlist .dot.pc0{background:var(--s2);box-shadow:inset 0 0 0 1.5px var(--mu)}
+.pleg .dot.pc1,.stlist .dot.pc1{background:var(--bg);background:color-mix(in srgb,var(--ac) 25%,var(--bg))}
+.pleg .dot.pc2,.stlist .dot.pc2{background:var(--bg);background:color-mix(in srgb,var(--ac) 50%,var(--bg))}
+.pleg .dot.pc3,.stlist .dot.pc3{background:var(--bg);background:color-mix(in srgb,var(--ac) 75%,var(--bg))}
+.tools>.chips.fr{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 36px),transparent)}
+.tools>.chips.fl{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 36px),transparent)}
+.tools>.chips.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent,#000 36px,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(to right,transparent,#000 36px,#000 calc(100% - 36px),transparent)}
 .pbar.stk{height:16px;border-radius:8px;margin:0 0 6px}
 .stlist li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
 .stlist .dot{flex:none;width:12px;height:12px;border-radius:50%}.stlist .sn{flex:1;min-width:0}.stlist .sv{color:var(--mu);font-size:var(--t-sm);text-align:right}
 .trk.mini{height:6px;border-radius:3px}.trk.mini i{border-radius:3px}
-.rec li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}.rec li span{min-width:0;overflow-wrap:anywhere}.rec li small{color:var(--mu);text-align:right}
 
 .ph img{-webkit-user-drag:none}
 .ck{display:none;position:absolute;right:15px;top:calc(50% - 14px);transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:2px solid var(--mu);background:var(--bg);place-items:center;color:transparent;pointer-events:none}.ck svg{width:15px;color:inherit;stroke-width:2.4}
@@ -206,7 +220,7 @@ body.selmode #selbar{display:flex}
 .splitc{display:flex;flex-direction:column;gap:6px;margin-top:6px}.srw{display:flex;align-items:center;justify-content:space-between;gap:12px}.srw .qty{margin:0}
 .srw .sl{font:var(--t-md) var(--sans)}.srw .sv{min-width:48px;text-align:center;font:600 var(--t-md) var(--sans)}.qty button:disabled{opacity:.35}
 .sinfo{margin:4px 0 0}.sinfo.bad{color:var(--dg)}
-.dlg .row.h{flex-wrap:wrap}
+.dlg .row.h{flex-wrap:wrap}.dlg .row.h.stack{flex-direction:column;flex-wrap:nowrap;gap:8px;margin-top:14px}.dlg .row.stack .btn{width:100%}.dlg .row.stack .btn:last-child{order:-1}.dlg .row.stack .btn:first-child{order:1;min-height:40px}
 .setall{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .mlist{display:grid;gap:8px}.bin .res-row{cursor:default}.bin .res-row:active{transform:none}.mgh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:600 var(--t-lg) var(--serif);border-bottom:1px solid var(--line);padding-bottom:6px;margin:14px 0 2px}.mgh small{font:var(--t-sm) var(--sans);color:var(--mu)}
 .mtags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.mtag{font:600 var(--t-xs) var(--sans);padding:2px 8px;border-radius:10px;background:var(--s2);border:1px solid var(--dg);color:var(--tx)}
@@ -341,9 +355,9 @@ function toast(m,err,undo){const t=el('div','toast'+(err?' err':'')),l=el('span'
  setTimeout(async()=>{if(!t.isConnected)return;await M.fade(t,1,0,'slow',{fill:'forwards'});t.remove()},undo?6000:3000)}
 const guard=fn=>async(...a)=>{try{return await fn(...a)}catch(e){console.error(e);toast(e&&e.message||'Something went wrong',true)}};
 
-function dlg({title,msg,input,ok='OK',danger,choices,again,capWords=false}){return new Promise(res=>{
- const bd=el('div','backdrop'),d=el('div','dlg');d.setAttribute('role','dialog');
- d.innerHTML=`<h2>${esc(title)}</h2>${msg?`<p>${esc(msg)}</p>`:''}${input!=null?`<input maxlength="80" placeholder="Name" value="${esc(input)}">`:''}<div class="row${choices?'':' h'}"></div>`;
+function dlg({title,msg,input,ok='OK',danger,choices,again,capWords=false,ph='Name',match,plainCancel}){return new Promise(res=>{
+ const bd=el('div','backdrop'+(input!=null?' top':'')),d=el('div','dlg');d.setAttribute('role','dialog');
+ d.innerHTML=`<h2>${esc(title)}</h2>${msg?`<p>${esc(msg)}</p>`:''}${input!=null?`<input maxlength="80" placeholder="${esc(ph)}" value="${esc(input)}">`:''}<div class="row${choices?'':' h'}${again?' stack':''}"></div>`;
  const row=$('.row',d),inp=$('input',d);let fin=false;
  if(capWords&&inp){inp.setAttribute('autocapitalize','words');inp.addEventListener('input',()=>{const v=inp.value,start=inp.selectionStart,end=inp.selectionEnd,nv=v.replace(/(^|\s)([a-z])/g,(m,p,c)=>p+c.toUpperCase());if(nv!==v){inp.value=nv;try{inp.setSelectionRange(start,end)}catch(e){}}})}
  const close=async v=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});
@@ -351,9 +365,10 @@ function dlg({title,msg,input,ok='OK',danger,choices,again,capWords=false}){retu
  const add=(l,v,c)=>{const b=el('button','btn '+c,esc(l));b.onclick=()=>close(v);row.append(b);return b};
  if(choices)choices.forEach(c=>{const b=add(c.label,c.value,'ghost'+(c.danger?' danger':''));
   if(c.pick)b.onclick=()=>{const f=el('input');f.type='file';f.accept='image/*';f.onchange=()=>{if(f.files[0])close({file:f.files[0]})};f.click()}});
- add('Cancel',null,'ghost');
+ add('Cancel',null,plainCancel||again?'plain':'ghost');
  if(again&&inp){const b2=add(again,null,'ghost');b2.onclick=()=>{const v=inp.value.trim();if(!v)return inp.focus();close({v,again:1})}}
  if(!choices){const b=add(ok,true,danger?'danger':'');b.onclick=()=>{if(inp){const v=inp.value.trim();if(!v)return inp.focus();close(v)}else close(true)}}
+ if(match&&inp){const okb=$('.btn:last-child',row);okb.disabled=true;inp.autocapitalize='characters';inp.addEventListener('input',()=>{okb.disabled=inp.value.trim().toUpperCase()!==match})}
  bd.onclick=e=>{if(e.target===bd)close(null)};
  bd.onkeydown=e=>{if(e.key==='Escape')close(null);if(e.key==='Enter'&&inp)$('.btn:last-child',row).click()};
  bd.append(d);document.body.append(bd);M.fade(bd,0,1);
@@ -594,7 +609,7 @@ async function fill(v,o={}){
  if(!v.isConnected||v.classList.contains('leaving'))return;
  (v._urls||[]).forEach(URL.revokeObjectURL);v._urls=[];
  const cnt=id=>allC.filter(c=>c.parentId===id).length+allI.filter(i=>i.parentId===id).length,
-  cntTxt=id=>[[allC.filter(c=>c.parentId===id).length,'collection'],[allI.filter(i=>i.parentId===id).length,'model']].filter(x=>x[0]).map(x=>plu(x[0],x[1])).join(' · ')||'Empty';
+  cntTxt=id=>{const nc=allC.filter(c=>c.parentId===id).length,ids=scopeIds(allC,id),its=allI.filter(i=>ids.has(i.parentId)),nm=its.reduce((a,i)=>a+sq(i),0);return[nc?plu(nc,'collection'):'',its.length?plu(nm,'model'):''].filter(Boolean).join(' · ')||'Empty'};
  const rel=id=>{const p=[];for(let x=allC.find(c=>c.id===id);x&&x.id!==cur;x=allC.find(c=>c.id===x.parentId))p.unshift(x.name);return p.join(' / ')};
  const D={subN:sub.length,cols:cols.map(c=>{const n=cnt(c.id);return{rec:c,el:card('c',c,n?cntTxt(c.id):'Empty',c.icon instanceof Blob?c.icon:null,v)}}),
   items:items.map(it=>{const th=tm.get(it.id),c=(it.category||'').trim(),loc=it.parentId!==cur?'<br>'+esc(rel(it.parentId)):'';
@@ -625,7 +640,6 @@ const sq=i=>Math.max(0,qtyOf(i)); // quantity floor: imported/odd data can never
 const pctOf=P=>P?Math.round(STATUS.reduce((a,[k])=>a+P.n[k]*STW[k],0)/P.total*100):0;
 const share=(n,t)=>t?Math.round(n/t*100):0,wid=(n,t)=>(t?n/t*100:0).toFixed(1)+'%';
 const scopeIds=(cols,root)=>{const ids=new Set([root]);for(let more=true;more;){more=false;cols.forEach(c=>{if(!ids.has(c.id)&&ids.has(c.parentId)){ids.add(c.id);more=true}})}return ids};
-const okTime=t=>Number.isFinite(t)&&t>0&&!isNaN(new Date(t));
 let statsBusy=false; // the sheet is built after async DB reads, so $('.sheet.stats') alone cannot stop a double-tap
 async function openStats(){if(statsBusy||$('.sheet.stats'))return;statsBusy=true;try{await buildStats()}finally{statsBusy=false}}
 async function buildStats(){
@@ -660,17 +674,13 @@ async function buildStats(){
   // biggest collections: every descendant collection in scope, ranked by model count
   const bk=new Map();list.forEach(i=>{for(let x=byId.get(i.parentId);x&&x.id!==root;x=byId.get(x.parentId)){(bk.get(x.id)||bk.set(x.id,[]).get(x.id)).push(i)}});
   const top=[...bk.entries()].map(([id,arr])=>{const p=progress(arr);return{c:byId.get(id),t:p?p.total:0,pct:pctOf(p)}}).filter(x=>x.t>0).sort((a,b)=>b.t-a.t||byName(a.c,b.c)).slice(0,5);
-  const topH=top.length?`<ol aria-label="Biggest collections">${top.map((x,i)=>`<li><button class="strow sub" data-id="${esc(x.c.id)}" aria-label="${esc(relName(x.c))}: ${x.t} model${x.t===1?'':'s'}, ${x.pct} percent complete. Open"><div class="sth"><span><span aria-hidden="true">${i+1}. </span>${ic(x.c)}${esc(relName(x.c))}</span><small>${x.t} model${x.t===1?'':'s'} · ${x.pct}%</small></div><div class="trk mini" aria-hidden="true"><i class="ac" style="width:${x.pct}%"></i></div></button></li>`).join('')}</ol>`:(subs.length||cnt0()?none:'<p class="muted">No sub-collections here.</p>');
-  // recently added: newest createdAt first; records made before the field existed are simply left out
-  const rec=ul.filter(i=>okTime(i.createdAt)).sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
-  const recH=rec.length?`<ul class="rec" aria-label="Recently added">${rec.map(i=>{const d=new Date(i.createdAt),q=qtyOf(i);return`<li><span>${esc(i.name)}</span><small>${esc(stText(i))}${q>1?' · ×'+q:''} · <time datetime="${d.toISOString()}">${esc(d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}))}</time></small></li>`}).join('')}</ul>`:(nE?'<p class="muted">No creation dates yet. Models added from now on will appear here.</p>':none);
-  box.innerHTML=`<section aria-labelledby="sth-ov"><h3 id="sth-ov">Overview</h3><div class="kpis"><div class="kpi"><b>${tot}</b><small>Models</small></div><div class="kpi"><b>${tot?pctOf(P)+'%':'—'}</b><small>Completion</small></div><div class="kpi"><b>${nCols}</b><small>Collections</small></div><div class="kpi"><b>${nPh}</b><small>Photos</small></div><div class="kpi"><b>${cov}</b><small>Photo coverage</small></div></div></section>
+  const topH=top.length?`<ol aria-label="Biggest collections">${top.map((x,i)=>`<li><button class="strow sub rk" data-id="${esc(x.c.id)}" aria-label="${esc(relName(x.c))}: ${x.t} model${x.t===1?'':'s'}, ${x.pct} percent complete. Open"><div class="sth"><span><span class="rn" aria-hidden="true">${i+1}.</span>${ic(x.c)}<span class="rt">${esc(relName(x.c))}</span></span><small>${x.t} model${x.t===1?'':'s'} · ${x.pct}%</small></div><div class="trk mini" aria-hidden="true"><i class="ac" style="width:${x.pct}%"></i></div></button></li>`).join('')}</ol>`:(subs.length||cnt0()?none:'<p class="muted">No sub-collections here.</p>');
+  box.innerHTML=`<section aria-labelledby="sth-ov"><h3 id="sth-ov">Overview</h3><div class="kpis"><div class="kpi"><b>${tot}</b><small>Models</small></div><div class="kpi"><b>${tot?pctOf(P)+'%':'—'}</b><small>Completion</small></div><div class="kpi"><b>${nCols}</b><small>Collections</small></div><div class="kpi"><b>${nPh}</b><small>Photos</small></div></div></section>
   <section aria-labelledby="sth-st"><h3 id="sth-st">Status</h3>${stack}</section>
   <section aria-labelledby="sth-ca"><h3 id="sth-ca">Categories</h3><div>${cats.length&&tot?cats.map(([,c])=>row(c.name,c.n,tot,'ac')).join(''):none}</div></section>
   <section aria-labelledby="sth-co"><h3 id="sth-co">Collections</h3><div>${subs.length?subs.join(''):'<p class="muted">No sub-collections here.</p>'}</div></section>
   <section aria-labelledby="sth-bg"><h3 id="sth-bg">Biggest collections</h3>${topH}</section>
-  <section aria-labelledby="sth-rc"><h3 id="sth-rc">Recently added</h3>${recH}</section>
-  <section aria-labelledby="sth-ph"><h3 id="sth-ph">Photos</h3><div class="kpis"><div class="kpi"><b>${nPh}</b><small>Total photos</small></div><div class="kpi"><b>${withP}</b><small>Entries with photos</small></div><div class="kpi"><b>${nE-withP}</b><small>Entries without photos</small></div></div><p class="muted note">An entry is one record in the vault; it can be a unit of several models.</p></section>`;
+  <section aria-labelledby="sth-ph"><h3 id="sth-ph">Photos</h3><div class="kpis"><div class="kpi"><b>${withP}</b><small>Entries with photos</small></div><div class="kpi"><b>${nE-withP}</b><small>Entries without photos</small></div><div class="kpi"><b>${cov}</b><small>Photo coverage</small></div></div><p class="muted note">An entry is one record in the vault; it can be a unit of several models.</p></section>`;
   box.querySelectorAll('.sub').forEach(b=>b.onclick=guard(async()=>{close(false);await go(b.dataset.id,1)}))};
  const cnt0=()=>allC.some(c=>ids.has(c.id)&&c.id!==root);
  // scope chips are built once and updated in place so keyboard focus is not lost when toggling
@@ -773,14 +783,52 @@ async function menu(kind,rec,cardEl,v){const store=kind==='c'?'collections':'ite
   try{bin=await trash(kind,rec,sn);kind==='c'?await DB.delCollection(rec.id):await DB.delItem(rec.id)}catch(e){cardEl.getAnimations().forEach(x=>x.cancel());if(bin.length)await DB.binDrop(bin).catch(()=>{});throw e}
   toast(`Deleted “${rec.name}”`,false,()=>undoDel(sn,bin));await fill(v,{quiet:1})}}
 
+/* Add flow: a rounded card grows out of the + button, then flows up into the name card. Tap outside to close. */
+function addFlow(title,create){return new Promise(res=>{
+ const fab=$('#add'),bd=el('div','backdrop amenu'),d=el('div','dlg amcard');d.setAttribute('role','dialog');d.setAttribute('aria-label',title);
+ let fin=false,busy=false,phase='menu';const kids=()=>[...d.children];
+ const clip=()=>{const f=fab.getBoundingClientRect(),c=d.getBoundingClientRect();return `inset(${f.top-c.top}px ${c.right-f.right}px ${c.bottom-f.bottom}px ${f.left-c.left}px round 30px)`};
+ const full='inset(0px 0px 0px 0px round 22px)';
+ const done=()=>{bd.remove();fab.style.visibility='';M.fade(fab,0,1,'fast');res()};
+ const close=async()=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});
+  if(phase==='menu'){const bg=getComputedStyle(fab).backgroundColor,to=clip();
+   kids().forEach(k=>M.run(k,[{opacity:1},{opacity:0}],'fast',{fill:'forwards'}));
+   await M.run(d,[{clipPath:full,backgroundColor:getComputedStyle(d).backgroundColor},{clipPath:to,backgroundColor:bg}],'med',{fill:'forwards'})}
+  else await M.run(d,[{opacity:1,transform:'none'},{opacity:0,transform:`translateY(${M.px(12)}px) scale(${M.px(1)?.97:1})`}],'med',{fill:'forwards'});
+  done()};
+ const toName=async k=>{if(phase!=='menu'||fin||busy)return;busy=true;phase='name';
+  const r1=d.getBoundingClientRect();
+  await Promise.all(kids().map(x=>M.run(x,[{opacity:1},{opacity:0}],'fast',{fill:'forwards'})));
+  if(fin)return;
+  d.innerHTML=`<h2>${k==='c'?'New collection':'New model'}</h2><input maxlength="80" placeholder="Name" autocapitalize="words" autocomplete="off" aria-label="Name"><div class="row"></div>`;
+  const inp=$('input',d),row=$('.row',d);
+  inp.addEventListener('input',()=>{const v=inp.value,a=inp.selectionStart,b=inp.selectionEnd,nv=v.replace(/(^|\s)([a-z])/g,(m,p,c)=>p+c.toUpperCase());if(nv!==v){inp.value=nv;try{inp.setSelectionRange(a,b)}catch(e){}}});
+  const submit=async again=>{if(busy||fin)return;const n=inp.value.trim();if(!n)return inp.focus();busy=true;let ok=false;
+   try{ok=await create(k,n)}finally{busy=false}
+   if(!ok){inp.focus();return}
+   if(again){inp.value='';inp.focus()}else close()};
+  const go=el('button','btn','Create'),more=el('button','btn ghost','Create and add another');
+  go.onclick=guard(()=>submit(false));more.onclick=guard(()=>submit(true));row.append(go,more);
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go.click()}};
+  d.classList.add('nm');const r2=d.getBoundingClientRect();d.style.overflow='hidden';
+  kids().forEach(x=>M.run(x,[{opacity:0},{opacity:1}],'med',{delay:M.px(140)}));
+  inp.focus();
+  await M.run(d,[{top:r1.top+'px',height:r1.height+'px'},{top:r2.top+'px',height:r2.height+'px'}],'slow');
+  d.style.overflow='';busy=false};
+ d.innerHTML=`<h2>${esc(title)}</h2><div class="row"></div>`;const row0=$('.row',d);
+ [['New collection','c'],['New model','i']].forEach(([l,v])=>{const b=el('button','btn ghost',esc(l));b.onclick=()=>toName(v);row0.append(b)});
+ bd.onclick=e=>{if(e.target===bd)close()};bd.onkeydown=e=>{if(e.key==='Escape')close()};
+ bd.append(d);document.body.append(bd);
+ const bg0=getComputedStyle(d).backgroundColor,from=clip();fab.style.visibility='hidden';
+ M.fade(bd,0,1);kids().forEach(k=>M.run(k,[{opacity:0},{opacity:1}],'med',{delay:M.px(110)}));
+ M.run(d,[{clipPath:from,backgroundColor:getComputedStyle(fab).backgroundColor},{clipPath:full,backgroundColor:bg0}],'slow');
+ $('.btn',d).focus()})}
+
 $('#add').onclick=guard(async()=>{
- const k=await dlg({title:'Add here',choices:[{label:'New collection',value:'c'},{label:'New model',value:'i'}]});if(!k)return;
- for(let again=true;again;){
-  const r=await dlg({title:k==='c'?'New collection':'New model',input:'',ok:'Create',again:'Create + another',capWords:true});if(!r)return;
-  const n=typeof r==='string'?r:r.v;again=typeof r!=='string';
-  if(!await okName(n,cur,k)){if(again)continue;return}
+ const here=cur===ROOT?'Vault':((await DB.get('collections',cur))||{}).name||'here';
+ await addFlow('Add to '+here,async(k,n)=>{if(!await okName(n,cur,k))return false;
   const rec={id:uid(),name:n,parentId:cur};if(k==='i'){rec.notes='';rec.createdAt=Date.now()}
-  await DB.put(k==='c'?'collections':'items',rec);await fill(live(),{pop:rec.id})}});
+  await DB.put(k==='c'?'collections':'items',rec);await fill(live(),{pop:rec.id});return true})});
 
 /* ---------- item sheet & photos ---------- */
 const load=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>no(new Error('Could not read that image'));i.src=u});
@@ -1299,7 +1347,7 @@ async function openMissing(){if($('.sheet.miss'))return;
  const render=()=>{if(!data)return;const top=sh.scrollTop;drop();
   const mi=data.mi.filter(okSt),items=mi.filter(m=>m.gaps.some(g=>gaps.has(g))),cols=gaps.has('icon')?data.mc:[];
   const cnt={photo:mi.filter(m=>m.gaps.includes('photo')).length,cat:mi.filter(m=>m.gaps.includes('cat')).length,icon:data.mc.length};
-  gc.replaceChildren();GAPS.forEach(([k,l])=>{const b=el('button','chip'+(gaps.has(k)?' on':''),`${esc(l)} (${cnt[k]})`);b.setAttribute('aria-pressed',gaps.has(k));b.onclick=()=>{gaps.has(k)?gaps.delete(k):gaps.add(k);render()};gc.append(b)});
+  gc.replaceChildren();GAPS.forEach(([k,l])=>{const has=cnt[k]>0,b=el('button','chip'+(gaps.has(k)&&has?' on':''),`${esc(l)} (${cnt[k]})`);b.disabled=!has;b.setAttribute('aria-pressed',gaps.has(k)&&has);b.onclick=()=>{gaps.has(k)?gaps.delete(k):gaps.add(k);render()};gc.append(b)});
   sc.replaceChildren();STATUS.forEach(([k,l])=>{const b=el('button','chip'+(sts.has(k)?' on':''),esc(l));b.setAttribute('aria-pressed',sts.has(k));b.onclick=()=>{sts.has(k)?sts.delete(k):sts.add(k);render()};sc.append(b)});
   const pl=(n,w)=>n+' '+w+(n===1?'':'s');
   sum.textContent=items.length+cols.length?`${pl(items.length,'model')} and ${pl(cols.length,'collection')} with something missing.`:'';
@@ -1310,10 +1358,10 @@ async function openMissing(){if($('.sheet.miss'))return;
   [...groups.values()].sort((a,b)=>a.root?-1:b.root?1:a.name.localeCompare(b.name)).forEach(g=>{
    list.append(el('div','mgh',`<span>${esc(g.name)}</span><small>${g.cols.length+g.items.length}</small>`));
    g.cols.slice().sort((a,b)=>byName(a.rec,b.rec)).forEach(x=>{
-    const b=el('button','res-row',`<span class="rk">${ICON.folder}</span><span><b>${esc(x.rec.name)}</b><small>Collection · tap to choose an icon</small>${tags(x)}</span>`);
+    const b=el('button','res-row',`<span class="rk">${ICON.folder}</span><span><b>${esc(x.rec.name)}</b><span class="mline"><small>Collection · tap to choose an icon</small>${tags(x)}</span></span>`);
     b.onclick=()=>{inp._id=x.rec.id;inp.click()};list.append(b)});
    g.items.slice().sort((a,b)=>byName(a.rec,b.rec)).forEach(x=>{
-    const q=qtyOf(x.rec),b=el('button','res-row',`<span class="rk">${ICON.cube}</span><span><b>${esc(x.rec.name)}</b><small>${esc(stText(x.rec)+(q>1?' · ×'+q:''))}</small>${tags(x)}</span>`);
+    const q=qtyOf(x.rec),b=el('button','res-row',`<span class="rk">${ICON.cube}</span><span><b>${esc(x.rec.name)}</b><span class="mline"><small>${esc(stText(x.rec)+(q>1?' · ×'+q:''))}</small>${tags(x)}</span></span>`);
     const th=tm.get(x.rec.id);if(th instanceof Blob){const u=URL.createObjectURL(th);urls.push(u);$('.rk',b).innerHTML=`<img alt="" decoding="async" src="${u}">`}
     b.onclick=guard(async()=>{await openItem(x.rec.id);const s=[...document.querySelectorAll('.sheet')].pop();if(!s||s===sh)return;s.style.zIndex=28;
      const mo=new MutationObserver(()=>{if(!s.isConnected){mo.disconnect();if(sh.isConnected)refresh()}});mo.observe(document.body,{childList:true})});
@@ -1343,7 +1391,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  <section><h3>Storage health</h3><div class="shg"><div><b class="sv-db">…</b><small>Database size</small></div><div><b class="sv-ph">…</b><small>Photos</small></div><div><b class="sv-co">…</b><small>Collections</small></div><div><b class="sv-mo">…</b><small>Models</small></div></div><p class="muted usage" style="margin:0"></p></section>
  <section><h3>Your data</h3><p class="muted" style="margin:0">Export Data Only, Photos Only (a ZIP) or a Full Backup. Import can merge, replace or skip duplicates.</p>
   <div class="dbtn"><button class="btn ghost rep">Export .TXT file</button><button class="btn ghost exp">Export</button><button class="btn ghost imp">Import</button><button class="btn ghost chk">Check and repair</button></div>
-  <button class="btn danger del">Delete all data</button></section></div>`;
+  <div class="dz"><b>Danger zone</b><small class="muted" style="display:block">Permanently removes every collection, model and photo.</small><button class="btn danger del">Delete all data</button></div></section></div>`;
  const am=$('.r-amoled',sh),th=$('.r-theme',sh),mo=$('.r-motion',sh),sws=$('.sws',sh),phone=$('.phone',sh);
  const sync=()=>{const s=SET.get(),t=SET.theme();am.setAttribute('aria-checked',!!s.amoled);$('.am-h',sh).textContent=t==='dark'?'Pure black background in dark mode':'Only applies in dark mode';th.setAttribute('aria-checked',t==='dark');mo.setAttribute('aria-checked',s.motion);
   $('.hint',sh).textContent=s.theme?'Set by you':'Following your phone';phone.hidden=!s.theme;sws.replaceChildren();
@@ -1369,7 +1417,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   pi.value=a.path;pi.maxLength=120;pi.autocapitalize='off';pi.spellcheck=false;pi.setAttribute('aria-label','Backup folder');
   pi.onchange=()=>{pi.onchange=null;const c=abClean(pi.value);if(!c){toast('Enter a valid folder path, for example Documents/HobbyVault',true);abDraw();return}abSet({path:c});abDraw()};
   abBox.append(el('div','','<b>Backup folder</b><small class="muted" style="display:block">A path inside your phone storage. Missing folders are created.</small>'),pc,pi);
-  const fc=el('div','chips wrap');seg(fc,[[1,'Daily'],[7,'Weekly'],[30,'Monthly']],a.days,k=>abSet({days:k}),abDraw);abBox.append(fc);
+  const fl=el('div','','<b>Back up every</b>'),fc=el('div','chips wrap');seg(fc,[[1,'Daily'],[7,'Weekly'],[30,'Monthly']],a.days,k=>abSet({days:k}),abDraw);abBox.append(fl,fc);
   abBox.append(el('p','muted',(a.last?'Last automatic backup: '+ago(a.last)+'. ':'No automatic backup yet. ')+`Saved to ${(abTarget(a.path)||{path:'(invalid folder)'}).path}, newest ${AB_KEEP} kept. Old backups are not moved if you change folder. It runs when the app opens and a backup is due.`));
   const b=el('button','btn ghost sm','Back up now');b.disabled=abRun;b.onclick=runNow;abBox.append(b)}
  abDraw();
@@ -1412,7 +1460,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   const bp=(Array.isArray(d.binPhotos)?d.binPhotos:[]).filter(x=>x&&bid.has(x.binId)&&typeof x.blob==='string'&&x.blob.startsWith('data:')).map(x=>({...x,blob:d2b(x.blob),thumb:x.thumb?d2b(x.thumb):undefined}));
   await DB.replaceAll(d);await DB.binReplace(be,bp);await afterReplace();toast('Backup imported')});
  $('.imp',sh).onclick=()=>imp.click();
- $('.del',sh).onclick=guard(async()=>{if(!await dlg({title:'Delete all data?',msg:'Every collection, model and photo will be permanently removed. The recycling bin is emptied too. Export a backup first if you may want them back.',ok:'Delete everything',danger:true}))return;
+ $('.del',sh).onclick=guard(async()=>{if(!await dlg({title:'Delete all data?',msg:'Every collection, model and photo will be permanently removed. The recycling bin is emptied too. Export a backup first if you may want them back. Type DELETE to confirm.',input:'',ph:'Type DELETE',match:'DELETE',ok:'Delete everything',danger:true}))return;
   await DB.replaceAll({});await DB.binClear();await afterReplace();toast('All data deleted')});
  $('.back',sh).onclick=async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove()};
  document.body.append(sh);M.run(sh,[{transform:'translateY(100%)'},{transform:'none'}],'slow')}
@@ -1449,4 +1497,10 @@ function handleBack(){
 /* ---------- start ---------- */
 (async()=>{try{await DB.open()}catch(e){stage.innerHTML=`<div class="empty"><h2>Storage unavailable</h2><p>${esc(e.message)}</p></div>`;toast(e.message,true);return}
  await migrateSorts().catch(()=>{});go(ROOT,0);binPurge().catch(()=>{});setTimeout(abCheck,4000);setTimeout(()=>{let d='';try{d=localStorage.getItem('hv-th')}catch(_){}if(d!=='2')rebuildThumbs(false).catch(()=>{})},2500)})();
+/* soft edge fade on the filter chip rows when more chips are scrolled out of view */
+(()=>{const st=document.getElementById('stage');if(!st)return;let t=0;
+ const run=()=>document.querySelectorAll('.tools>.chips').forEach(c=>{const m=c.scrollWidth-c.clientWidth;c.classList.toggle('fr',m>2&&c.scrollLeft<m-2);c.classList.toggle('fl',c.scrollLeft>2)});
+ const soon=()=>{cancelAnimationFrame(t);t=requestAnimationFrame(run)};
+ document.addEventListener('scroll',e=>{const x=e.target;if(x&&x.classList&&x.classList.contains('chips'))soon()},true);
+ addEventListener('resize',soon);new MutationObserver(soon).observe(st,{childList:true,subtree:true});soon()})();
 </script></body></html>
