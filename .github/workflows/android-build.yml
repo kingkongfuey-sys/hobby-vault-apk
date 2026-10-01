@@ -1,13 +1,14 @@
 name: Build APK
 
 on:
-  workflow_dispatch:      # adds a manual "Run workflow" button
+  workflow_dispatch:
   push:
-    branches: [ main ]    # rebuilds on every change you make
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -27,52 +28,48 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Capacitor and plugins
-        run: npm install
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install -D @capacitor/assets
 
-      - name: Generate the Android project
+      - name: Generate Android project
         run: npx cap add android
 
-      - name: Register plugins (export, share, back button)
+      - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Swap in our MainActivity
+      - name: Swap in MainActivity
         run: |
           cp android-extra/MainActivity.java \
              android/app/src/main/java/com/hobbyvault/app/MainActivity.java
 
-      - name: Generate app icon from logo.png
+      - name: Prepare icon assets
         run: |
-          sudo apt-get update -q && sudo apt-get install -y -q imagemagick
-          sizes=(48 72 96 144 192)
-          dpis=(mdpi hdpi xhdpi xxhdpi xxxhdpi)
-          for i in "${!dpis[@]}"; do
-            dpi="${dpis[$i]}"; size="${sizes[$i]}"
-            dir="android/app/src/main/res/mipmap-$dpi"
-            mkdir -p "$dir"
-            convert logo.png -resize "${size}x${size}" "$dir/ic_launcher.png"
-          done
-          # Delete Capacitor's adaptive-icon XMLs so Android uses our PNGs
-          find android/app/src/main/res -name "ic_launcher.xml" -delete
-          find android/app/src/main/res -name "ic_launcher_round.xml" -delete
+          mkdir -p assets
+          cp logo.png assets/icon.png
 
-      - name: Use the fixed signing key (lets new builds update over old ones)
+      - name: Generate adaptive Android icons
+        run: |
+          npx capacitor-assets generate --android
+
+      - name: Use fixed signing key
         run: |
           if [ -f android-extra/debug.keystore ]; then
             mkdir -p ~/.android
             cp android-extra/debug.keystore ~/.android/debug.keystore
             echo "Using fixed signing key"
           else
-            echo "No android-extra/debug.keystore yet - this APK gets a random key and cannot update an existing install"
+            echo "No android-extra/debug.keystore found"
           fi
 
-      - name: Build the APK
+      - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Upload the APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: hobby-vault-apk
