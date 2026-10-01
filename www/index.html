@@ -943,7 +943,8 @@ async function openSearch(){if($('.sheet.srch'))return;
 function seg(box,opts,cur,fn,after){box.replaceChildren();opts.forEach(([k,l])=>{const b=el('button','chip'+(k===cur?' on':''),esc(l));b.onclick=()=>{fn(k);after()};box.append(b)})}
 const b2d=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(r.error);r.readAsDataURL(b)});
 const d2b=u=>{const[h,b]=u.split(','),bin=atob(b),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new Blob([a],{type:h.match(/:(.*?);/)[1]})};
-const afterReplace=async()=>{document.querySelectorAll('.sheet:not(.set)').forEach(x=>x.remove());await go(ROOT,0)};
+let setRefresh=null;
+const afterReplace=async()=>{document.querySelectorAll('.sheet:not(.set)').forEach(x=>x.remove());await go(ROOT,0);setRefresh&&setRefresh()};
 const plug=n=>(window.Capacitor&&window.Capacitor.Plugins||{})[n]||null;
 const isNative=()=>{const c=window.Capacitor;return !!(c&&(c.isNativePlatform?c.isNativePlatform():c.getPlatform&&c.getPlatform()!=='web'))};
 async function* exportChunks(stamp,withBin){
@@ -1275,7 +1276,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   abBox.append(el('p','muted',(a.last?'Last automatic backup: '+ago(a.last)+'. ':'No automatic backup yet. ')+`Saved to ${(abTarget(a.path)||{path:'(invalid folder)'}).path}, newest ${AB_KEEP} kept. Old backups are not moved if you change folder. It runs when the app opens and a backup is due.`));
   const b=el('button','btn ghost sm','Back up now');b.disabled=abRun;b.onclick=runNow;abBox.append(b)}
  abDraw();
- DB.usage().then(u=>{const u0=$('.usage',sh);if(!u0)return;let t=`Vault storage: ${fmtB(u.b)} across ${u.n} photo${u.n===1?'':'s'}.`;
+ const usageInfo=()=>DB.usage().then(u=>{const u0=$('.usage',sh);if(!u0)return;let t=`Vault storage: ${fmtB(u.b)} across ${u.n} photo${u.n===1?'':'s'}.`;
   return(navigator.storage&&navigator.storage.estimate?navigator.storage.estimate():Promise.resolve(null)).then(e=>{if(e&&e.quota)t+=` About ${fmtB(Math.max(0,e.quota-(e.usage||0)))} still available to the app.`}).catch(()=>{}).then(()=>{u0.textContent=t})}).catch(()=>{const u0=$('.usage',sh);if(u0)u0.textContent='Storage use unavailable.'});
  $('.mis',sh).onclick=guard(openMissing);
  const binh=$('.binh',sh),binc=$('.binc',sh);
@@ -1285,12 +1286,16 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
    if(hit&&!await dlg({title:k===0?'Turn off the recycling bin?':'Shorten the retention period?',msg:k===0?`All ${plu(hit,'item')} in the bin will be deleted for good.`:`${plu(hit,'item')} in the bin ${hit===1?'is':'are'} older than ${k} days and will be deleted for good.`,ok:'Delete and continue',danger:1}))return;
    SET.set('binDays',k);if(k===0)await DB.binClear();else await binPurge(k);
    binDraw();binInfo();toast(k===0?'Recycling bin turned off':k<0?'Deleted items are kept until you remove them':`Deleted items are kept for ${k} days`)}),()=>{});
- binDraw();binInfo();$('.binopen',sh).onclick=guard(async()=>{await openBin();binInfo()});
- scanMissing().then(d=>{const h=$('.mish',sh);if(!h)return;const n=d.mi.length+d.mc.length;h.textContent=n?`${n} item${n===1?'':'s'} with something missing.`:'Nothing is missing.'}).catch(()=>{const h=$('.mish',sh);if(h)h.textContent=''});
+ binDraw();$('.binopen',sh).onclick=guard(openBin);
+ /* the three summaries above are re-read whenever data may have changed: after a sheet or dialog closes, and after import, delete-all or repair */
+ const refresh=()=>{if(!sh.isConnected)return;usageInfo();missInfo();binInfo()};setRefresh=refresh;refresh();
+ let rt=0;const obs=new MutationObserver(m=>{if(!sh.isConnected){obs.disconnect();if(setRefresh===refresh)setRefresh=null;return}
+  if(m.some(x=>[...x.removedNodes].some(n=>n.classList&&(n.classList.contains('sheet')||n.classList.contains('backdrop')))))clearTimeout(rt),rt=setTimeout(refresh,250)});obs.observe(document.body,{childList:true});
+ const missInfo=()=>scanMissing().then(d=>{const h=$('.mish',sh);if(!h)return;const n=d.mi.length+d.mc.length;h.textContent=n?`${n} item${n===1?'':'s'} with something missing.`:'Nothing is missing.'}).catch(()=>{const h=$('.mish',sh);if(h)h.textContent=''});
  $('.exp',sh).onclick=guard(async()=>{let wb=false;const n=(await DB.all('bin')).length;
   if(n){const o=await dlg({title:'Export database',msg:`The recycling bin holds ${plu(n,'deleted item')}. Include ${n===1?'it':'them'} in this backup? The file gets larger.`,choices:[{label:'Include recycling bin',value:'y'},{label:'Vault only',value:'n'}]});if(!o)return;wb=o==='y'}
   await exportDB(wb)});$('.rep',sh).onclick=guard(exportReport);
- $('.rth',sh).onclick=guard(()=>rebuildThumbs(true));$('.chk',sh).onclick=guard(checkRepair);
+ $('.rth',sh).onclick=guard(async()=>{await rebuildThumbs(true);refresh()});$('.chk',sh).onclick=guard(async()=>{await checkRepair();refresh()});
  const imp=el('input');imp.type='file';imp.accept='application/json,.json';
  imp.onchange=guard(async()=>{const f=imp.files[0];imp.value='';if(!f)return;let d;
   try{d=JSON.parse(await f.text())}catch(e){throw new Error('That file is not a valid backup')}
