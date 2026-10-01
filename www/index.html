@@ -335,15 +335,19 @@ const flip=(g,fn)=>{const first=new Map([...g.children].map(c=>[c,c.getBoundingC
 return{run,px,enter,pop,out,fade,stagger,flip}})();
 
 /* ---------- toast, errors, dialog ---------- */
+let lastUndo=null,undoTimer=0;
+function setUndo(fn,label){clearTimeout(undoTimer);lastUndo={fn,label};undoTimer=setTimeout(()=>{lastUndo=null},6000)}
+async function runUndo(){const u=lastUndo;if(!u)return;lastUndo=null;clearTimeout(undoTimer);try{await u.fn()}catch(e){toast(e&&e.message||'Could not undo',true)}}
 function toast(m,err,undo){const t=el('div','toast'+(err?' err':'')),l=el('span');l.textContent=m;t.append(l);
- if(undo){const b=el('button','tundo','Undo');b.onclick=async()=>{b.disabled=true;t.remove();try{await undo()}catch(e){toast(e&&e.message||'Could not undo',true)}};t.append(b)}
+ if(undo){setUndo(undo,m);const b=el('button','tundo','Undo');b.onclick=async()=>{b.disabled=true;t.remove();await runUndo()};t.append(b)}
  $('#toasts').append(t);M.run(t,[{opacity:0,transform:'translateY(20px)'},{opacity:1,transform:'none'}]);
  setTimeout(async()=>{if(!t.isConnected)return;await M.fade(t,1,0,'slow',{fill:'forwards'});t.remove()},undo?6000:3000)}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!e.shiftKey&&!e.altKey&&!e.target.closest('input,textarea,[contenteditable=true]')){e.preventDefault();runUndo()}});
 const guard=fn=>async(...a)=>{try{return await fn(...a)}catch(e){console.error(e);toast(e&&e.message||'Something went wrong',true)}};
 
 function dlg({title,msg,input,ok='OK',danger,choices,again}){return new Promise(res=>{
  const bd=el('div','backdrop'),d=el('div','dlg');d.setAttribute('role','dialog');
- d.innerHTML=`<h2>${esc(title)}</h2>${msg?`<p>${esc(msg)}</p>`:''}${input!=null?`<input maxlength="80" placeholder="Name" autocapitalize="words" value="${esc(input)}">`:''}<div class="row${choices?'':' h'}"></div>`;
+ d.innerHTML=`<h2>${esc(title)}</h2>${msg?`<p>${esc(msg)}</p>`:''}${input!=null?`<input maxlength="80" placeholder="Name" value="${esc(input)}">`:''}<div class="row${choices?'':' h'}"></div>`;
  const row=$('.row',d),inp=$('input',d);let fin=false;
  const close=async v=>{if(fin)return;fin=true;M.fade(bd,1,0,'med',{fill:'forwards'});
   await M.run(d,[{opacity:1,transform:'none'},{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`}],'med',{fill:'forwards'});bd.remove();res(v)};
@@ -460,20 +464,21 @@ async function binRestore(e){
  const used=new Set((e.kind==='c'?C:I).filter(x=>x.parentId===pid).map(x=>(x.name||'').trim().toLowerCase()));
  const base=top.name;let name=base,n=1;
  while(used.has(name.trim().toLowerCase())){n++;name=`${base} (restored${n>2?' '+(n-1):''})`}
- top.parentId=pid;top.name=name;
- for(const c of e.cols)await DB.put('collections',c);
- for(const i of e.items)await DB.put('items',i);
+ const cols=e.cols.map(c=>c.id===e.rootId?{...c,parentId:pid,name}:c);
+ const items=e.items.map(i=>i.id===e.rootId?{...i,parentId:pid,name}:i);
+ for(const c of cols)await DB.put('collections',c);
+ for(const i of items)await DB.put('items',i);
  await DB.putPhotos(await DB.binPhotos(e.id));
  await DB.binDrop([e.id]);
  return{moved,name}}
 async function openBin(){if($('.sheet.bin'))return;
  const sh=el('div','sheet bin');sh.style.zIndex=26;sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-labelledby','bn-title');
- sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close recycling bin">${ICON.down}</button><h2 id="bn-title">Recycling bin</h2></div><div class="body"><p class="muted sum" aria-live="polite" style="margin:0"></p><button class="btn ghost sm danger emp">Empty bin</button><div class="mlist"></div></div>`;
- const sum=$('.sum',sh),box=$('.mlist',sh),emp=$('.emp',sh);
+ sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close recycling bin">${ICON.down}</button><h2 id="bn-title">Recycling bin</h2></div><div class="body"><p class="muted sum" aria-live="polite" style="margin:0"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm resall">Restore all</button><button class="btn ghost sm danger emp">Empty bin</button></div><div class="mlist"></div></div>`;
+ const sum=$('.sum',sh),box=$('.mlist',sh),emp=$('.emp',sh),resall=$('.resall',sh);
  const ago=t=>{const n=Math.floor((Date.now()-t)/864e5);return n<=0?'today':n===1?'yesterday':n+' days ago'};
  const render=async()=>{const top=sh.scrollTop,d=binDays();await binPurge();
   const list=(await DB.all('bin')).sort((a,b)=>b.deletedAt-a.deletedAt);if(!sh.isConnected)return;
-  box.replaceChildren();emp.hidden=!list.length;
+  box.replaceChildren();emp.hidden=!list.length;resall.hidden=list.length<2;
   sum.textContent=!list.length?'The bin is empty.':plu(list.length,'item')+' in the bin. '+(d>0?`Items are deleted for good ${d} days after you delete them.`:d<0?'Items stay here until you delete them.':'The bin is turned off in Settings.');
   list.forEach(e=>{
    const info=e.kind==='c'?`Collection · ${plu(e.nItems,'model')}${e.nCols>1?', '+plu(e.nCols-1,'sub-collection'):''} · ${plu(e.nPhotos,'photo')}`:`Model · ${plu(e.nPhotos,'photo')}`;
@@ -485,6 +490,7 @@ async function openBin(){if($('.sheet.bin'))return;
    xb.onclick=guard(async()=>{if(!await dlg({title:`Delete “${e.name}” for good?`,msg:'This cannot be undone.',ok:'Delete forever',danger:1}))return;await DB.binDrop([e.id]);toast('Deleted for good');await render()});
    a.append(xb,rb);r.append(a);box.append(r)});
   sh.scrollTop=top};
+ resall.onclick=guard(async()=>{const list=(await DB.all('bin')).sort((a,b)=>a.deletedAt-b.deletedAt);if(list.length<2)return;if(!await dlg({title:'Restore everything?',msg:`All ${plu(list.length,'deleted item')} will be restored. Items whose original collection is gone will return to the top level, and name conflicts will be renamed.`,ok:'Restore all'}))return;let restored=0;for(const e of list){try{await binRestore(e);restored++}catch(err){console.error(err)}}toast(`Restored ${plu(restored,'item')}`);await render()});
  emp.onclick=guard(async()=>{const n=(await DB.all('bin')).length;if(!n)return;if(!await dlg({title:'Empty the recycling bin?',msg:`${plu(n,'item')} will be deleted for good. This cannot be undone.`,ok:'Empty bin',danger:1}))return;await DB.binClear();toast('Bin emptied');await render()});
  const close=guard(async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove();const v=live();v&&fill(v,{quiet:1})});
  $('.back',sh).onclick=close;sh.onkeydown=e=>{if(e.key==='Escape'){e.stopPropagation();$('.back',sh).click()}};
@@ -514,9 +520,10 @@ async function bulk(a){
   const same=recs.every(r=>r.parentId===recs[0].parentId)?recs[0].parentId:null;
   const choices=[{label:'Vault (top level)',value:ROOT},...cols.map(c=>({label:nm(c),value:c.id})).sort((x,y)=>x.label.localeCompare(y.label))].filter(c=>c.value!==same);
   const d=await dlg({title:`Move ${word} to`,choices});if(!d)return;
+  const old=recs.map(r=>({id:r.id,parentId:r.parentId}));
   await Promise.all(cards().map(c=>M.out(c)));
   try{for(const r of recs){r.parentId=d;await DB.put('items',r)}}catch(e){undo();throw e}
-  toast(`Moved ${word}`);clearSel();await fill(v,{quiet:1});return}
+  toast(`Moved ${word}`,false,async()=>{for(const o of old){const r=await DB.get('items',o.id);if(r){r.parentId=o.parentId;await DB.put('items',r)}}const lv=live();lv&&await fill(lv,{quiet:1})});clearSel();await fill(v,{quiet:1});return}
  if(a==='del'){if(!await dlg({title:`Delete ${word}?`,msg:delMsg('This also deletes their photos.','Their photos go with them.'),ok:'Delete',danger:1}))return;
   await Promise.all(cards().map(c=>M.out(c)));
   const sn=await snapItems(recs);
@@ -761,9 +768,9 @@ async function menu(kind,rec,cardEl,v){const store=kind==='c'?'collections':'ite
   const d=await dlg({title:`Move “${rec.name}” to`,choices});
   if(d){const old=rec.parentId;await M.out(cardEl);rec.parentId=d;
    try{await DB.put(store,rec)}catch(e){rec.parentId=old;cardEl.getAnimations().forEach(x=>x.cancel());throw e}
-   toast('Moved');await fill(v,{quiet:1})}}
+   toast('Moved',false,async()=>{const r=await DB.get(store,rec.id);if(r){r.parentId=old;await DB.put(store,r)}const lv=live();lv&&await fill(lv,{quiet:1})});await fill(v,{quiet:1})}}
  if(a==='p'){const id=uid();await DB.put('items',{...rec,id,name:rec.name+' copy',createdAt:Date.now()});
-  await DB.putPhotos((await DB.photos(rec.id)).map(p=>({...p,id:uid(),itemId:id})));await fill(v,{pop:id});toast('Duplicated')}
+  await DB.putPhotos((await DB.photos(rec.id)).map(p=>({...p,id:uid(),itemId:id})));await fill(v,{pop:id});toast('Duplicated',false,async()=>{await DB.delItem(id);const lv=live();lv&&await fill(lv,{quiet:1})})}
  if(a==='d'){const ok=await dlg({title:`Delete “${rec.name}”?`,ok:'Delete',danger:1,
    msg:kind==='c'?delMsg('This also deletes every collection, model and photo inside it.','Every collection, model and photo inside goes with it.'):delMsg('This deletes the model and all its photos.','Its photos go with it.')});
   if(!ok)return;await M.out(cardEl);
@@ -955,6 +962,8 @@ async function openSearch(){if($('.sheet.srch'))return;
   hits.forEach(x=>{const b=el('button','res-row',`<span class="rk">${x.k==='c'?ICON.folder:ICON.cube}</span><span><b>${esc(x.r.name)}</b><small>${esc(x.k==='i'?[stText(x.r),qtyOf(x.r)>1?'×'+qtyOf(x.r):'',(x.r.category||'').trim(),x.w].filter(Boolean).join(' · '):x.w)}</small></span>`);
    const put=ib=>{if(!(ib instanceof Blob)||!b.isConnected)return;const u=URL.createObjectURL(ib);urls.push(u);$('.rk',b).innerHTML=`<img alt="" decoding="async" src="${u}">`};
    if(x.k==='c')put(x.r.icon);else b._put=put;
+   b.setAttribute('aria-label',`Open ${x.r.name}${x.w&&x.w!=='Vault'?` in ${x.w}`:''}`);
+   b.insertAdjacentHTML('beforeend',`<span class="res-go" aria-hidden="true">Open</span>`);
    b.onclick=guard(async()=>{await close();await go(x.k==='c'?x.r.id:x.r.parentId,1);if(x.k==='i')openItem(x.r.id)});box.append(b)});
   const rows=[...box.children].filter(b=>b._put),ids=hits.filter(x=>x.k==='i').map(x=>x.r.id);
   if(ids.length)DB.thumbs(ids).then(tm=>{if(my!==tk||!sh.isConnected)return;hits.filter(x=>x.k==='i').forEach((x,n)=>{const r=rows[n];r&&r._put(tm.get(x.r.id))})}).catch(()=>{})};
@@ -1339,6 +1348,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
  <section><h3>Missing information</h3><p class="muted mish" style="margin:0">Checking…</p><p class="muted" style="margin:0">Find models without a photo or category, and collections without an icon, and fix them from one list.</p><button class="btn ghost sm mis">Open missing information</button></section>
  <section><h3>Recycling bin</h3><p class="muted binh" style="margin:0">Checking…</p><div><b>Keep deleted items for</b><small class="muted" style="display:block">Deleted collections and models, with their photos, can be restored until this time is up. A change also applies to items already in the bin.</small><div class="chips wrap binc"></div></div><button class="btn ghost sm binopen">Open recycling bin</button></section>
  <section><h3>Automatic backup</h3><div class="ab"></div></section>
+ <section><h3>Data integrity</h3><p class="muted data-health" style="margin:0">Checking…</p><button class="btn ghost sm data-check">Review data check</button></section>
  <section><h3>Storage health</h3><div class="shg"><div><b class="sv-db">…</b><small>Database size</small></div><div><b class="sv-ph">…</b><small>Photos</small></div><div><b class="sv-co">…</b><small>Collections</small></div><div><b class="sv-mo">…</b><small>Models</small></div></div><p class="muted usage" style="margin:0"></p></section>
  <section><h3>Your data</h3><p class="muted" style="margin:0">Export Data Only, Photos Only (a ZIP) or a Full Backup. Import can merge, replace or skip duplicates.</p>
   <div class="dbtn"><button class="btn ghost rep">Export .TXT file</button><button class="btn ghost exp">Export</button><button class="btn ghost imp">Import</button><button class="btn ghost chk">Check and repair</button></div>
@@ -1377,7 +1387,7 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
   set('sv-db',fmtB(u.b+meta));set('sv-ph',String(u.n));set('sv-co',String(cs.length));set('sv-mo',String(is.length));
   return(navigator.storage&&navigator.storage.estimate?navigator.storage.estimate():Promise.resolve(null)).then(e=>{const u0=$('.usage',sh);if(u0&&e&&e.quota)u0.textContent=`About ${fmtB(Math.max(0,e.quota-(e.usage||0)))} still available to the app.`}).catch(()=>{})}).catch(()=>{['sv-db','sv-ph','sv-co','sv-mo'].forEach(c=>{const e=$('.'+c,sh);if(e)e.textContent='n/a'})});
  $('.mis',sh).onclick=guard(openMissing);
- const binh=$('.binh',sh),binc=$('.binc',sh);
+ const binh=$('.binh',sh),binc=$('.binc',sh),dh=$('.data-health',sh);
  const binInfo=async()=>{try{const n=(await DB.all('bin')).length,u=n?await DB.binUsage():null;if(binh.isConnected)binh.textContent=n?`${plu(n,'item')} in the bin, using ${fmtB(u.b)}.`:'The bin is empty.'}catch(_){if(binh.isConnected)binh.textContent=''}};
  const binDraw=()=>seg(binc,BIN_OPTS,binDays(),guard(async k=>{if(k===binDays())return;
    const all=await DB.all('bin'),hit=k===0?all.length:k>0?all.filter(e=>Date.now()-e.deletedAt>k*864e5).length:0;
@@ -1386,7 +1396,9 @@ function openSettings(){if($('.sheet.set'))return;const sh=el('div','sheet set')
    binDraw();binInfo();toast(k===0?'Recycling bin turned off':k<0?'Deleted items are kept until you remove them':`Deleted items are kept for ${k} days`)}),()=>{});
  binDraw();$('.binopen',sh).onclick=guard(openBin);
  /* the three summaries above are re-read whenever data may have changed: after a sheet or dialog closes, and after import, delete-all or repair */
- const refresh=()=>{if(!sh.isConnected)return;usageInfo();missInfo();binInfo()};setRefresh=refresh;refresh();
+ const dataHealth=()=>scanVault().then(R=>{if(!dh.isConnected)return;const n=R.orphan.length+R.damaged.length+R.noThumb.length+R.itemsLost.length+R.colsLost.length+R.colsLoop.length+R.badData.length+R.order.size;dh.textContent=n?`${plu(n,'issue')} found. Review the data check for details.`:`No data-integrity issues found.`}).catch(()=>{if(dh.isConnected)dh.textContent='Data check unavailable.'});
+ $('.data-check',sh).onclick=guard(async()=>{await checkRepair();dataHealth();refresh()});
+ const refresh=()=>{if(!sh.isConnected)return;usageInfo();missInfo();binInfo();dataHealth()};setRefresh=refresh;refresh();
  let rt=0;const obs=new MutationObserver(m=>{if(!sh.isConnected){obs.disconnect();if(setRefresh===refresh)setRefresh=null;return}
   if(m.some(x=>[...x.removedNodes].some(n=>n.classList&&(n.classList.contains('sheet')||n.classList.contains('backdrop')))))clearTimeout(rt),rt=setTimeout(refresh,250)});obs.observe(document.body,{childList:true});
  const missInfo=()=>scanMissing().then(d=>{const h=$('.mish',sh);if(!h)return;const n=d.mi.length+d.mc.length;h.textContent=n?`${n} item${n===1?'':'s'} with something missing.`:'Nothing is missing.'}).catch(()=>{const h=$('.mish',sh);if(h)h.textContent=''});
