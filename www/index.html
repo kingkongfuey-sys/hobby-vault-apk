@@ -484,6 +484,12 @@ body .swt:is(:active,.hv-press){box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--a
 .match-modal .mm-opts .chip:not(.alt){grid-column:1/-1;font-weight:600}
 .match-modal .mm-opts .chip.alt{text-align:center;color:var(--mu)}
 .match-modal .mm-row .chip:not(.alt).on{align-self:flex-start}
+.mfm-sug{margin-top:var(--sp-2);max-height:min(34vh,240px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--radius-control);background:var(--bg)}
+.mfm-sug[hidden],.mfm-note[hidden]{display:none}
+.mfm-opt{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;width:100%;min-height:48px;padding:var(--sp-2) var(--sp-3);background:none;border:0;border-bottom:1px solid var(--line);color:var(--tx);font:var(--t-md) var(--sans);text-align:left;cursor:pointer}
+.mfm-opt:last-child{border-bottom:0}.mfm-opt small{color:var(--mu);font:var(--t-sm) var(--sans)}
+.mfm-opt.on,.mfm-opt:active{background:var(--s1)}
+.mfm-note{margin-top:var(--sp-2);color:var(--mu);font:var(--t-sm) var(--sans)}
 .match-modal .mm-change{align-self:flex-start;min-height:44px;border-radius:var(--radius-control)}
 .match-modal .mm-list{padding-bottom:4px}
 .match-modal .mm-save:disabled{opacity:.45}
@@ -1428,7 +1434,7 @@ async function menu(kind,rec,cardEl,v){const store=kind==='c'?'collections':'ite
   toast(`Deleted “${rec.name}”`,false,()=>undoDel(sn,bin));await fill(v,{quiet:1})}}
 
 /* Add flow: a rounded card grows out of the + button, then flows up into the name card. Tap outside to close. */
-function addFlow(title,create){return new Promise(res=>{
+function addFlow(title,create,flowOpts){return new Promise(res=>{
  const fab=$('#add'),bd=el('div','backdrop amenu'),d=el('div','dlg amcard');d.setAttribute('role','dialog');d.setAttribute('aria-label',title);
  let fin=false,busy=false,phase='menu';const kids=()=>[...d.children];
  const clip=()=>{const f=fab.getBoundingClientRect(),c=d.getBoundingClientRect();return `inset(${f.top-c.top}px ${c.right-f.right}px ${c.bottom-f.bottom}px ${f.left-c.left}px round 30px)`};
@@ -1452,13 +1458,51 @@ function addFlow(title,create){return new Promise(res=>{
   d.innerHTML=`<h2>${k==='c'?'New collection':'New model'}</h2><input maxlength="80" placeholder="Name" autocapitalize="words" autocomplete="off" aria-label="Name"><div class="row"></div>`;
   const inp=$('input',d),row=$('.row',d);
   inp.addEventListener('input',()=>{const v=inp.value,a=inp.selectionStart,b=inp.selectionEnd,nv=v.replace(/(^|\s)([a-z])/g,(m,p,c)=>p+c.toUpperCase());if(nv!==v){inp.value=nv;try{inp.setSelectionRange(a,b)}catch(e){}}});
+  /* MFM model picker: only when the collection has a points profile. Typing filters the profile's models live;
+     choosing one fills in name, size and points. Anything typed and not chosen is saved as a custom model, as before. */
+  let picked=null,sugKey=null;
+  const mfm=k==='i'&&flowOpts&&flowOpts.mfm&&Array.isArray(flowOpts.mfm.units)?flowOpts.mfm:null;
+  if(mfm){
+   const box=el('div','mfm-sug'),note=el('div','mfm-note');box.hidden=true;note.hidden=true;
+   box.setAttribute('role','listbox');box.setAttribute('aria-label','Matching MFM models');
+   inp.setAttribute('autocomplete','off');inp.after(box);box.after(note);
+   const all=[];
+   mfm.units.forEach(u=>{if(!u||!u.name)return;
+    let keys=[];try{keys=pointsAliases(u)}catch(_){}
+    const lname=String(u.name).toLowerCase(),sizes=unitSizeOptions(u);
+    (sizes.length?sizes:[null]).forEach(size=>all.push({unit:u,size,lname,keys,pts:size?unitPointsFor(u,size):null}))});
+   const detail=o=>{const a=[];if(o.size)a.push(`${o.size} model${o.size===1?'':'s'}`);if(Number.isFinite(o.pts))a.push(`${o.pts} pts`);return a.join(' · ')};
+   let list=[],act=-1;
+   const hide=()=>{box.hidden=true;box.replaceChildren();list=[];act=-1};
+   const choose=o=>{picked={profileId:mfm.profileId,unitName:o.unit.name,size:o.size};inp.value=o.unit.name;hide();
+    note.textContent='MFM model selected'+(detail(o)?' · '+detail(o):'');note.hidden=false;inp.focus()};
+   const show=()=>{
+    const q=inp.value.trim().toLowerCase(),qn=pointsNorm(inp.value);
+    if(!q||picked){hide();return}
+    list=all.filter(o=>o.lname.includes(q)||(qn&&o.keys.some(x=>x.includes(qn)))).sort((a,b)=>(b.lname.startsWith(q)-a.lname.startsWith(q))||a.lname.localeCompare(b.lname)||((a.size||0)-(b.size||0)));
+    act=-1;box.replaceChildren();
+    if(!list.length){box.hidden=true;return}
+    list.forEach(o=>{const b=el('button','mfm-opt',`<span>${esc(o.unit.name)}</span>${detail(o)?`<small>${esc(detail(o))}</small>`:''}`);
+     b.type='button';b.setAttribute('role','option');
+     b.addEventListener('mousedown',e=>e.preventDefault());
+     b.onclick=()=>choose(o);box.append(b)});
+    box.hidden=false;box.scrollTop=0};
+   inp.addEventListener('input',()=>{if(picked&&inp.value!==picked.unitName){picked=null;note.hidden=true}show()});
+   sugKey=e=>{
+    if(box.hidden||!list.length)return false;
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const n=list.length;act=e.key==='ArrowDown'?(act+1)%n:(act<=0?n-1:act-1);
+     [...box.children].forEach((c,i)=>{c.classList.toggle('on',i===act);if(i===act)c.scrollIntoView({block:'nearest'})});return true}
+    if(e.key==='Enter'&&act>=0){e.preventDefault();choose(list[act]);return true}
+    if(e.key==='Escape'){e.stopPropagation();hide();return true}
+    return false};
+  }
   const submit=async again=>{if(busy||fin)return;const n=inp.value.trim();if(!n)return inp.focus();busy=true;let ok=false;
-   try{ok=await create(k,n)}finally{busy=false}
+   try{ok=await create(k,n,picked&&picked.unitName===n?picked:null)}finally{busy=false}
    if(!ok){inp.focus();return}
-   if(again){inp.value='';inp.focus()}else close()};
+   if(again){inp.value='';picked=null;if(mfm){const nt=$('.mfm-note',d),bx=$('.mfm-sug',d);nt&&(nt.hidden=true);bx&&(bx.hidden=true,bx.replaceChildren())}inp.focus()}else close()};
   const go=el('button','btn','Create'),more=el('button','btn ghost','Create and add another');
   go.onclick=guard(()=>submit(false));more.onclick=guard(()=>submit(true));row.append(go,more);
-  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go.click()}};
+  inp.onkeydown=e=>{if(sugKey&&sugKey(e))return;if(e.key==='Enter'){e.preventDefault();go.click()}};
   d.classList.add('nm');vv&&vv.addEventListener('resize',place);addEventListener('resize',place);const r2=d.getBoundingClientRect();d.style.overflow='hidden';
   kids().forEach(x=>M.run(x,[{opacity:0},{opacity:1}],'med',{delay:M.px(140)}));
   inp.focus();
@@ -1475,9 +1519,32 @@ function addFlow(title,create){return new Promise(res=>{
 
 $('#add').onclick=guard(async()=>{
  const here=cur===ROOT?'Vault':((await DB.get('collections',cur))||{}).name||'here';
- await addFlow('Add to '+here,async(k,n)=>{if(!await okName(n,cur,k))return false;
+ /* collections with an MFM points profile (own or inherited) get the model picker in the New model step */
+ let mfm=null,madeCol=false;
+ try{const prof=cur===ROOT?null:await getCollectionPointsProfile(cur,{inherit:true});
+  if(prof&&Array.isArray(prof.units)&&prof.units.length)mfm={profileId:prof.id,units:prof.units}}catch(_){mfm=null}
+ await addFlow('Add to '+here,async(k,n,pick)=>{if(!await okName(n,cur,k))return false;
   const rec={id:uid(),name:n,parentId:cur};if(k==='i'){rec.notes='';rec.createdAt=Date.now()}
-  await DB.put(k==='c'?'collections':'items',rec);await fill(live(),{pop:rec.id});return true})});
+  let prof=null,unit=null;
+  if(k==='i'&&pick&&mfm){
+   try{prof=await DB.get('pointsProfiles',pick.profileId);unit=prof&&Array.isArray(prof.units)?prof.units.find(u=>u&&u.name===pick.unitName):null}catch(_){prof=unit=null}
+   if(prof&&unit){rec.pointsProfileId=prof.id;if(sizeOk(pick.size))rec.qty=pick.size}}
+  await DB.put(k==='c'?'collections':'items',rec);
+  /* the mapping keeps the model linked to the profile unit, so a re-imported profile updates its points */
+  if(prof&&unit){try{await savePointMapping(prof,rec,unit,'manual',1,true);await persistUnitConfiguration(rec,prof,unit)}catch(e){console.error(e)}}
+  if(k==='c')madeCol=true;
+  await fill(live(),{pop:rec.id});return true},{mfm});
+ if(madeCol)setTimeout(()=>{showMfmTip().catch(()=>{})},250)});
+
+/* hint shown every time a collection is created (and only then) */
+async function showMfmTip(){
+ const bg=el('div','backdrop mfm-tip'),d=el('div','dlg');
+ d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','Points profile tip');
+ d.innerHTML='<h2>Tip: MFM points profiles</h2><p>You can add an MFM YAML file in Settings → Points Profiles.\nAssign the profile to a collection and points values are filled in automatically for models added from it, and the profile\'s models become available for quick selection when you add a model.</p><div class="row h"><button class="btn ghost mfm-close">Got it</button><button class="btn mfm-open">Points Profiles</button></div>';
+ let fin=false;const close=async()=>{if(fin)return;fin=true;M.fade(bg,1,0,'med',{fill:'forwards'});await M.run(d,[{opacity:1,transform:'none'},{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`}],'med',{fill:'forwards'});bg.remove()};
+ $('.mfm-close',d).onclick=close;$('.mfm-open',d).onclick=guard(async()=>{await close();await openPointsProfiles()});bg.onclick=e=>{if(e.target===bg)close()};bg.onkeydown=e=>{if(e.key==='Escape')close()};
+ bg.append(d);document.body.append(bg);M.fade(bg,0,1);M.run(d,[{opacity:0,transform:`scale(.94) translateY(${M.px(8)}px)`},{opacity:1,transform:'none'}],'slow');
+ $('.mfm-open',d).focus()}
 
 /* ---------- item sheet & photos ---------- */
 const load=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>no(new Error('Could not read that image'));i.src=u});
