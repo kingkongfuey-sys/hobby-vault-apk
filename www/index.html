@@ -2156,95 +2156,157 @@ function yamlStripComment(line){
     const c=line[i];
     if(esc){esc=false;continue}
     if(q==='double'&&c==='\\'){esc=true;continue}
-    if((q==='single'||q==='double')&&((q==='single'&&c==="'")||(q==='double'&&c==='"'))){q=null;continue}
+    if(q==='double'&&c==='"'){q=null;continue}
+    if(q==='single'&&c==="'"){if(line[i+1]==="'"){i++;continue}q=null;continue}
     if(!q&&(c==='"'||c==="'")){q=c==='double'?'double':'single';continue}
     if(!q&&c==='#'&&(i===0||/\s/.test(line[i-1])))return line.slice(0,i).trimEnd();
   }
   return line.trimEnd();
 }
+function yamlUnquote(v){
+  v=String(v==null?'':v).trim();
+  if(v.length>=2&&v[0]==='"'&&v[v.length-1]==='"'){
+    try{return JSON.parse(v)}catch(_){
+      return v.slice(1,-1).replace(/\\(["\\/bfnrt])/g,(_,c)=>({b:'\b',f:'\f',n:'\n',r:'\r',t:'\t'}[c]||c)).replace(/\\u([0-9a-f]{4})/gi,(_,h)=>String.fromCharCode(parseInt(h,16)));
+    }
+  }
+  if(v.length>=2&&v[0]==="'"&&v[v.length-1]==="'")return v.slice(1,-1).replace(/''/g,"'");
+  return v;
+}
 function yamlScalar(v){
   v=String(v==null?'':v).trim();
   if(!v)return null;
-  if(v[0]==='"'&&v[v.length-1]==='"'){try{return JSON.parse(v)}catch(_){}}
-  if(v[0]==="'"&&v[v.length-1]==="'")return v.slice(1,-1).replace(/''/g,"'");
+  if((v[0]==='"'&&v[v.length-1]==='"')||(v[0]==="'"&&v[v.length-1]==="'"))return yamlUnquote(v);
   if(/^null$/i.test(v)||v==='~')return null;
   if(/^(true|false)$/i.test(v))return /^true$/i.test(v);
-  if(/^-?\d+(?:\.\d+)?$/.test(v))return Number(v);
-  if(v[0]==='['&&v[v.length-1]===']')return yamlFlow(v.slice(1,-1),',');
+  if(/^(?:[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?)$/i.test(v))return Number(v);
+  if(/^\.(?:inf|nan)$/i.test(v)||/^[-+]\.inf$/i.test(v))return v.toLowerCase()==='.nan'?NaN:(v[0]==='-'?-Infinity:Infinity);
+  if(v[0]==='['&&v[v.length-1]===']')return yamlSplitFlow(v.slice(1,-1),',').map(yamlScalar);
   if(v[0]==='{'&&v[v.length-1]==='}')return yamlFlowMap(v.slice(1,-1));
   return v;
 }
 function yamlSplitFlow(s,sep=','){
-  const out=[];let q=null,depth=0,start=0,esc=false;
+  const out=[];let q=null,depth=0,start=0,esc=false,tokenStart=true;
   for(let i=0;i<s.length;i++){
     const c=s[i];
     if(esc){esc=false;continue}
     if(q==='double'&&c==='\\'){esc=true;continue}
-    if(q){if((q==='single'&&c==="'")||(q==='double'&&c==='"'))q=null;continue}
-    if(c==="'"||c==='"'){q=c==='double'?'double':'single';continue}
-    if(c==='['||c==='{')depth++;
-    else if(c===']'||c==='}')depth--;
-    else if(c===sep&&depth===0){out.push(s.slice(start,i).trim());start=i+1}
+    if(q==='double'){
+      if(c==='"')q=null;
+      continue;
+    }
+    if(q==='single'){
+      if(c==="'"&&s[i+1]==="'"){i++;continue}
+      if(c==="'")q=null;
+      continue;
+    }
+    if(!q&&(c==="'"||c==='"')&&tokenStart){q=c==='"'?'double':'single';tokenStart=false;continue}
+    if(c==='['||c==='{'){depth++;tokenStart=true;continue}
+    if(c===']'||c==='}'){depth--;tokenStart=false;continue}
+    if(c===':'){tokenStart=true;continue}
+    if(c===sep&&depth===0){out.push(s.slice(start,i).trim());start=i+1;tokenStart=true;continue}
+    if(!/\s/.test(c))tokenStart=false;
   }
   out.push(s.slice(start).trim());
   return out.filter(Boolean);
 }
-function yamlColon(s){
-  let q=null,depth=0,esc=false;
+function yamlColon(s,compact=false){
+  let q=null,depth=0,esc=false,tokenStart=true;
   for(let i=0;i<s.length;i++){
     const c=s[i];
     if(esc){esc=false;continue}
     if(q==='double'&&c==='\\'){esc=true;continue}
-    if(q){if((q==='single'&&c==="'")||(q==='double'&&c==='"'))q=null;continue}
-    if(c==="'"||c==='"'){q=c==='double'?'double':'single';continue}
-    if(c==='['||c==='{')depth++;
-    else if(c===']'||c==='}')depth--;
-    else if(c===':'&&depth===0&&(/\s|$/.test(s[i+1]||'')))return i;
+    if(q==='double'){
+      if(c==='"')q=null;
+      continue;
+    }
+    if(q==='single'){
+      if(c==="'"&&s[i+1]==="'"){i++;continue}
+      if(c==="'")q=null;
+      continue;
+    }
+    if(!q&&(c==="'"||c==='"')&&tokenStart){q=c==='"'?'double':'single';tokenStart=false;continue}
+    if(c==='['||c==='{'){depth++;tokenStart=false;continue}
+    if(c===']'||c==='}'){depth--;tokenStart=false;continue}
+    if(c===':'&&depth===0){
+      const next=s[i+1]||'';
+      if(/\s|$/.test(next)||compact&&next!=='/'&&next!==':'&&next!=='#')return i;
+    }
+    if(!/\s/.test(c))tokenStart=false;
   }
   return -1;
 }
-function yamlKey(s){return String(s).trim().replace(/^['"]|['"]$/g,'')}
+function yamlKey(s){return yamlUnquote(String(s).trim())}
 function yamlFlowMap(s){
   const o={};
   yamlSplitFlow(s).forEach(part=>{
-    const i=yamlColon(part);if(i<0)return;
+    const i=yamlColon(part,true);if(i<0)return;
     o[yamlKey(part.slice(0,i))]=yamlScalar(part.slice(i+1));
   });
   return o;
 }
 function yamlLines(text){
-  return String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').split('\n').map(raw=>{
-    const clean=yamlStripComment(raw);
-    if(!clean.trim()||/^\s*---\s*$/.test(clean)||/^\s*\.\.\.\s*$/.test(clean))return null;
+  return String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').split('\n').map((raw,n)=>{
+    /* YAML forbids tabs for indentation, but accepting them as two spaces makes
+       the importer tolerant of common editor/export variations. */
+    const normalized=raw.replace(/^\t+/m,m=>'  '.repeat(m.length));
+    const clean=yamlStripComment(normalized);
+    if(!clean.trim()||/^\s*(?:---|\.\.\.)\s*(?:#.*)?$/.test(clean))return null;
     const m=/^ */.exec(clean),indent=(m?m[0].length:0);
-    return{indent,text:clean.trim()};
+    return{indent,text:clean.trim(),line:n+1};
   }).filter(Boolean);
+}
+function yamlBlockScalar(lines,pos,parentIndent,style,chomp){
+  const vals=[];let contentIndent=null;
+  while(pos<lines.length&&lines[pos].indent>parentIndent){
+    const line=lines[pos];
+    if(contentIndent===null)contentIndent=line.indent;
+    vals.push(' '.repeat(Math.max(0,line.indent-contentIndent))+line.text);
+    pos++;
+  }
+  let value=style==='>'?vals.join(' ').replace(/[ \t]+/g,' '):vals.join('\n');
+  if(chomp==='+')value+='\n';
+  else if(chomp!=='-')value+='\n';
+  return[value,pos];
 }
 function yamlBlock(lines,pos,indent){
   if(pos>=lines.length||lines[pos].indent<indent)return[null,pos];
-  const array=lines[pos].indent===indent&&lines[pos].text==='-'||lines[pos].indent===indent&&lines[pos].text.startsWith('- ');
+  const array=lines[pos].indent===indent&&(lines[pos].text==='-'||lines[pos].text.startsWith('- '));
   const out=array?[]:{};
   while(pos<lines.length){
     const line=lines[pos];if(line.indent!==indent)break;
     if(array){
       if(!line.text.startsWith('-'))break;
       const rest=line.text.slice(1).trim();
-      if(!rest){const childIndent=lines[pos+1]&&lines[pos+1].indent>indent?lines[pos+1].indent:indent+2;let v;[v,pos]=yamlBlock(lines,pos+1,childIndent);out.push(v);continue}
-      const ci=yamlColon(rest);
+      if(!rest){
+        const childIndent=lines[pos+1]&&lines[pos+1].indent>indent?lines[pos+1].indent:indent+2;
+        let v;[v,pos]=yamlBlock(lines,pos+1,childIndent);out.push(v);continue;
+      }
+      const ci=yamlColon(rest,false);
       if(ci>0){
-        const obj={};obj[yamlKey(rest.slice(0,ci))]=yamlScalar(rest.slice(ci+1));
-        pos++;
+        const obj={},key=yamlKey(rest.slice(0,ci)),rv=rest.slice(ci+1).trim();
+        if(/^[|>][+-]?$/.test(rv)){
+          const m=/^([|>])([+-])?$/.exec(rv);let v;
+          [v,pos]=yamlBlockScalar(lines,pos+1,indent,m[1],m[2]||'');obj[key]=v;
+        }else{
+          obj[key]=rv?yamlScalar(rv):null;pos++;
+        }
         if(pos<lines.length&&lines[pos].indent>indent){
           const childIndent=lines[pos].indent;let more;[more,pos]=yamlBlock(lines,pos,childIndent);
           if(more&&typeof more==='object'&&!Array.isArray(more))Object.assign(obj,more);
-          else if(more!==null&&obj[Object.keys(obj)[0]]===null)obj[Object.keys(obj)[0]]=more;
+          else if(more!==null&&obj[key]===null)obj[key]=more;
         }
         out.push(obj);continue;
       }
       out.push(yamlScalar(rest));pos++;continue;
     }
-    const ci=yamlColon(line.text);if(ci<1)throw new Error(`Unsupported YAML near "${line.text}"`);
+    const ci=yamlColon(line.text,false);
+    if(ci<1)throw new Error(`Unsupported YAML near line ${line.line}: "${line.text}"`);
     const key=yamlKey(line.text.slice(0,ci)),rest=line.text.slice(ci+1).trim();pos++;
+    if(/^[|>][+-]?$/.test(rest)){
+      const m=/^([|>])([+-])?$/.exec(rest);let v;
+      [v,pos]=yamlBlockScalar(lines,pos,indent,m[1],m[2]||'');out[key]=v;continue;
+    }
     if(rest){out[key]=yamlScalar(rest);continue}
     if(pos<lines.length&&lines[pos].indent>indent){
       const childIndent=lines[pos].indent;let v;[v,pos]=yamlBlock(lines,pos,childIndent);out[key]=v;
@@ -2252,23 +2314,94 @@ function yamlBlock(lines,pos,indent){
   }
   return[out,pos];
 }
+function yamlNormKey(k){return String(k==null?'':k).toLowerCase().replace(/[^a-z0-9]/g,'')}
+function yamlField(obj,...names){
+  if(!obj||typeof obj!=='object'||Array.isArray(obj))return undefined;
+  const wanted=new Set(names.map(yamlNormKey));
+  for(const k of Object.keys(obj))if(wanted.has(yamlNormKey(k)))return obj[k];
+  return undefined;
+}
+function yamlArray(v,nameKey='name'){
+  if(Array.isArray(v))return v;
+  if(v&&typeof v==='object'){
+    return Object.entries(v).map(([k,x])=>{
+      if(x&&typeof x==='object'&&!Array.isArray(x))return{...x,[nameKey]:yamlField(x,nameKey,'title')??k};
+      return{[nameKey]:k,value:x};
+    });
+  }
+  return[];
+}
+function yamlNumber(v){
+  const n=Number(v);return Number.isFinite(n)?n:null;
+}
+function yamlNormalisePricing(u){
+  let raw=yamlField(u,'pricing','prices','pointCosts','costing');
+  let pricing=yamlArray(raw);
+  if(pricing.length&&pricing.every(p=>yamlField(p,'models','modelCount','count')!==undefined&&yamlField(p,'points','pts','cost','value')!==undefined)){
+    pricing=[{range:'[1,)',label:'Your Unit Costs',costs:pricing}];
+  }
+  if(!pricing.length){
+    const direct=yamlField(u,'costs','pointsCosts');
+    if(Array.isArray(direct)||direct&&typeof direct==='object'){
+      pricing=[{range:'[1,)',label:'Your Unit Costs',costs:direct}];
+    }else{
+      const points=yamlField(u,'points','pointCost','cost');
+      const n=yamlNumber(points);
+      if(n!==null)pricing=[{range:'[1,)',label:'Your Unit Costs',costs:[{models:1,points:n}]}];
+    }
+  }
+  return pricing.map(p=>{
+    p=p&&typeof p==='object'&&!Array.isArray(p)?p:{};
+    let costs=yamlArray(yamlField(p,'costs','prices'));
+    if(!costs.length&&yamlField(p,'models','modelCount','count')!==undefined&&yamlField(p,'points','pts','cost','value')!==undefined)costs=[p];
+    costs=costs.map(c=>{
+      c=c&&typeof c==='object'&&!Array.isArray(c)?c:{};
+      const models=yamlNumber(yamlField(c,'models','modelCount','count')),points=yamlNumber(yamlField(c,'points','pts','cost','value'));
+      return{...c,models,points};
+    }).filter(c=>c.models!==null&&c.points!==null);
+    return{...p,
+      range:String(yamlField(p,'range','unitRange','units')??'[1,)'),
+      label:String(yamlField(p,'label','name','title')??'Your Unit Costs'),
+      costs
+    };
+  }).filter(p=>p.costs.length);
+}
 function parseMfmYaml(text){
-  const lines=yamlLines(text);if(!lines.length)throw new Error('The YAML file is empty.');
-  let root,pos;[root,pos]=yamlBlock(lines,0,lines[0].indent);
+  const rawText=String(text||'').replace(/^\uFEFF/,'').trim();
+  if(!rawText)throw new Error('The YAML file is empty.');
+  let root,pos;
+  if(rawText[0]==='{'||rawText[0]==='['){
+    try{root=JSON.parse(rawText);pos=0}
+    catch(_){
+      const lines=yamlLines(rawText);if(!lines.length)throw new Error('The YAML file is empty.');
+      [root,pos]=yamlBlock(lines,0,lines[0].indent);
+    }
+  }else{
+    const lines=yamlLines(rawText);if(!lines.length)throw new Error('The YAML file is empty.');
+    [root,pos]=yamlBlock(lines,0,lines[0].indent);
+  }
   if(!root||typeof root!=='object'||Array.isArray(root))throw new Error('The YAML root is not a mapping.');
-  const units=Array.isArray(root.units)?root.units:[],detachments=Array.isArray(root.detachments)?root.detachments:[];
-  if(!String(root.name||'').trim())throw new Error('The YAML file has no faction name.');
-  if(!String(root.version??'').trim())throw new Error('The YAML file has no MFM version.');
+
+  const rootName=yamlField(root,'name','faction','factionName','profileName');
+  const rootVersion=yamlField(root,'version','mfmVersion','formatVersion');
+  const unitsRaw=yamlField(root,'units','unit','unitDefinitions','unitProfiles');
+  const detachRaw=yamlField(root,'detachments','detachment','detachmentsList');
+  const units=yamlArray(unitsRaw);
+  const detachments=yamlArray(detachRaw);
+
+  if(!String(rootName??'').trim())throw new Error('The YAML file has no faction name.');
+  if(rootVersion===undefined||rootVersion===null||!String(rootVersion).trim())throw new Error('The YAML file has no MFM version.');
   if(!units.length)throw new Error('The YAML file contains no units.');
-  const cleanUnits=units.filter(u=>u&&typeof u==='object'&&String(u.name||'').trim()).map(u=>({
-    ...u,name:String(u.name).trim(),
-    pricing:Array.isArray(u.pricing)?u.pricing.filter(p=>p&&typeof p==='object').map(p=>({
-      ...p,costs:Array.isArray(p.costs)?p.costs.filter(c=>c&&typeof c==='object'&&Number.isFinite(Number(c.models))&&Number.isFinite(Number(c.points))).map(c=>({...c,models:Number(c.models),points:Number(c.points)})):[]}))
-      :[]
-  }));
+
+  const cleanUnits=units.filter(u=>u&&typeof u==='object'&&!Array.isArray(u)).map(u=>{
+    const name=String(yamlField(u,'name','unitName','title')??'').trim();
+    const pricing=yamlNormalisePricing(u);
+    return{...u,name,pricing};
+  }).filter(u=>u.name);
   if(!cleanUnits.length)throw new Error('The YAML file contains no usable unit definitions.');
-  const name=String(root.name).trim(),slug=String(root.slug||slugify(name)).trim().toLowerCase();
-  return{yaml:root,name,slug,version:String(root.version).trim(),firstSeen:root.firstSeen?String(root.firstSeen).trim():null,units:cleanUnits,detachments};
+
+  const name=String(rootName).trim(),slug=String(yamlField(root,'slug','id')??slugify(name)).trim().toLowerCase();
+  return{yaml:root,name,slug,version:String(rootVersion).trim(),firstSeen:(yamlField(root,'firstSeen','first_seen','dateAdded')!=null?String(yamlField(root,'firstSeen','first_seen','dateAdded')).trim():null),units:cleanUnits,detachments};
 }
 const slugify=x=>String(x||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'profile';
 const ppDate=()=>new Date().toISOString().slice(0,10);
