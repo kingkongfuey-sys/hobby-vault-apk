@@ -13,6 +13,12 @@ UI TRIM (this revision)
 - Sort menu reduced to: Manual order, A to Z, Z to A, Highest quantity first (Newest, Oldest, Least finished and Most finished removed).
 - Existing saved sorts that used a removed option fall back to A to Z; previously saved manual order is still honoured.
 
+ONLINE PROFILE SOURCES (this revision)
+- Points Profiles now has Discover MFM Factions, Download From GitHub YAML (reads the saved Points database link, default BSData repo), Update Profile (per card) and Update All Downloaded Profiles. They are extra sources only: Import YAML, Re-import, Delete, matching, rename, mapping, statistics and summaries are unchanged.
+- Source order: MFM website, then the BSData GitHub YAML snapshot, then manual YAML. Downloads go through parseMfmYaml() and the existing match -> confirm -> save -> summary pipeline. Existing profiles are only replaced after a successful download and an explicit confirmation.
+- Profiles now record sourceType ('yaml' | 'mfm-web' | 'github-yaml'), sourceUrl, factionName and lastUpdated. A profile's website link now survives re-imports.
+- The website does not serve Legends units to plain requests; a website update keeps any Legends units already stored in the profile.
+
 PROFILE WEBSITE LINKS (this revision)
 - Each points profile card in the Points Profiles sheet now has a link row: type or paste a website address, it saves onto the profile record (on change/Enter), and an "Open" button takes you there in a new tab.
 - "https://" is added automatically if omitted; only http/https addresses are accepted, invalid input is rejected with a toast and the link survives re-imports of the profile.
@@ -413,6 +419,10 @@ body .swt:is(:active,.hv-press){box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--a
 .points-change-list li:last-child{border-bottom:0}
 .points-change-list b{font-weight:600}.points-change-list .pc-up{color:var(--ok)}.points-change-list .pc-down{color:var(--dgt)}
 .pp-meta{display:flex;flex-wrap:wrap;gap:var(--sp-2);font-size:var(--t-sm);color:var(--mu)}
+.pp-dbbox{display:grid;gap:var(--sp-2);margin-top:var(--sp-2)}.pp-online{display:grid;gap:var(--sp-2);margin-bottom:var(--sp-3)}.pp-orow{display:flex;flex-wrap:wrap;gap:var(--sp-2)}.pp-orow .btn{flex:1 1 150px}
+.mfm-flist{display:grid;gap:var(--sp-2);margin:var(--sp-3) 0}.mfm-frow{display:flex;align-items:center;gap:var(--sp-3);width:100%;min-height:48px;padding:var(--sp-2) var(--sp-3);text-align:left;border:1px solid var(--line);border-radius:var(--radius-control);background:var(--s1);color:var(--tx);font:var(--t-md) var(--sans);cursor:pointer}
+.mfm-frow.on{border-color:var(--ac);background:var(--ac-wash)}.mfm-box{flex:none;font-size:20px;line-height:1}.mfm-fn{display:grid;gap:2px;min-width:0}.mfm-fn b{font-weight:600;overflow-wrap:anywhere}.mfm-fn small{color:var(--mu);font-size:var(--t-sm)}
+.mfm-plist{display:grid;gap:var(--sp-2);margin:var(--sp-3) 0}.mfm-prow{display:grid;grid-template-columns:24px minmax(0,1fr);gap:2px var(--sp-2);align-items:baseline}.mfm-prow small{grid-column:2;color:var(--mu)}.mfm-prow[data-s=fail] .mfm-ic{color:var(--dgt)}.mfm-prow[data-s=ok] .mfm-ic,.mfm-prow[data-s=same] .mfm-ic{color:var(--ok)}
 .import-summary .kpis{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin:var(--sp-2) 0}
 .import-summary .kpi{background:var(--s2);border:1px solid var(--line);border-radius:var(--radius-control);padding:var(--sp-2) var(--sp-3);text-align:center}
 .import-summary .kpi b{display:block;font:600 var(--t-xl) var(--serif)}
@@ -2489,8 +2499,14 @@ async function savePointsProfile(parsed,existingId=null,newId=null){
     importDate:ppDate(),
     schema:POINTS_SCHEMA_VERSION,
     units:parsed.units,
-    detachments:parsed.detachments
+    detachments:parsed.detachments,
+    /* source metadata: manual imports are 'yaml'; downloads carry their own sourceType/sourceUrl */
+    sourceType:parsed.sourceMeta?parsed.sourceMeta.sourceType:'yaml',
+    sourceUrl:parsed.sourceMeta?parsed.sourceMeta.sourceUrl:null,
+    factionName:parsed.name,
+    lastUpdated:now
   };
+  if(old&&old.website)rec.website=old.website; /* the profile's website link survives re-imports */
   await DB.putList('pointsProfiles',[rec]);
   return{record:rec,replaced:!!old,previous:old||null};
 }
@@ -2846,12 +2862,299 @@ async function pickProfileCollection(record){
   await setCollectionPointsProfile(id,record.id);toast('Profile assigned to collection');return true;
 }
 
+/* ---------- Online profile sources (additional to manual YAML import, never a replacement) ----------
+   Source order: 1) MFM website  2) GitHub YAML snapshot  3) manual "Import YAML" (always available).
+   Every downloaded profile is converted into the exact structure parseMfmYaml() returns, then goes through the
+   same matching / rename / mapping / summary pipeline as a manual import. Nothing is written until the user confirms. */
+const MFM_BASE='https://mfm.warhammer-community.com/en';
+const MFM_GH_RAW='https://raw.githubusercontent.com/BSData/wh40k-11e-mfm/main/data';
+const MFM_GH_API='https://api.github.com/repos/BSData/wh40k-11e-mfm/contents/data';
+const MFM_NAMES={'tau-empire':"T'au Empire",'emperors-children':"Emperor's Children",'leagues-of-votann':'Leagues of Votann'};
+const MFM_DELTA=/[▲▼]\s*(?:\([+-]\d+\)\s*)?/g;
+const MFM_CARD='div.flex.flex-col.space-y-1.m-1';
+const MFM_BADGES=['UPDATED','FORCE DISPOSITION(S) CHANGED','REQUISITION THRESHOLDS REMOVED','UNIQUE TAG REMOVED'];
+const mfmClean=s=>String(s==null?'':s).replace(/\s+/g,' ').trim();
+const mfmTitle=s=>mfmClean(s).toLowerCase().replace(/(^|[\s'’(-])([a-z])/g,(_,a,b)=>a+b.toUpperCase());
+const mfmSlugName=s=>MFM_NAMES[s]||String(s).split('-').map(w=>w==='of'?w:w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+const mfmFaction=(slug,name)=>({slug,name:MFM_NAMES[slug]||name||mfmSlugName(slug),url:`${MFM_BASE}/${slug}`,match:null});
+/* GitHub source = the link saved in the "Points database link" field on this page; empty falls back to the default BSData repository */
+function mfmGhBase(){
+  const link=String(SET.get().pointsDatabaseLink||'').trim(),bad=m=>{const e=new Error(m);e.linkError=true;return e};
+  if(!link)return{raw:MFM_GH_RAW,api:MFM_GH_API};
+  let u;try{u=new URL(link)}catch(_){throw bad('The link on this page is not a valid address')}
+  const parts=u.pathname.split('/').filter(Boolean);let owner,repo,branch='main',dir=[];
+  if(u.hostname==='raw.githubusercontent.com'&&parts.length>=3){[owner,repo,branch]=parts;dir=parts.slice(3);if(/\.(ya?ml|md)$/i.test(dir[dir.length-1]||''))dir.pop()}
+  else if(/^(www\.)?github\.com$/i.test(u.hostname)&&parts.length>=2){owner=parts[0];repo=parts[1].replace(/\.git$/i,'');
+    if((parts[2]==='tree'||parts[2]==='blob')&&parts[3]){branch=parts[3];dir=parts.slice(4);if(parts[2]==='blob')dir.pop()}}
+  else throw bad('The link on this page is not a GitHub repository — set it to a GitHub address or clear it');
+  const path=dir.length?dir.join('/'):'data';
+  return{raw:`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`,api:`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`};
+}
+async function mfmFetchText(url,ms=25000){
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),ms);
+  try{const r=await fetch(url,{signal:ctl.signal,credentials:'omit'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}
+  finally{clearTimeout(t)}
+}
+/* ---- website: faction discovery ---- */
+function mfmFactionsFromHtml(html){
+  const doc=new DOMParser().parseFromString(html,'text/html'),seen=new Map();
+  doc.querySelectorAll('a[href]').forEach(a=>{
+    const m=/^(?:https?:\/\/mfm\.warhammer-community\.com)?\/en\/([a-z0-9-]+)\/?$/i.exec((a.getAttribute('href')||'').trim());
+    if(!m)return;const slug=m[1].toLowerCase(),txt=mfmClean(a.textContent);
+    if(txt&&!seen.has(slug))seen.set(slug,txt===txt.toUpperCase()?mfmTitle(txt):txt);
+  });
+  if(!seen.size)throw new Error('No faction links found on the MFM homepage');
+  return[...seen].map(([slug,name])=>mfmFaction(slug,name)).sort((a,b)=>a.name.localeCompare(b.name));
+}
+/* ---- website: faction page parser (port of the BSData scraper's selector contract; pure DOM, no network) ---- */
+function mfmHydrate(doc){
+  /* the page streams React Suspense chunks: <template id="P:N"> placeholders are filled from <div hidden id="S:N"> blocks */
+  const done=new Map();doc.querySelectorAll('div[hidden][id^="S:"]').forEach(e=>done.set(e.id.slice(2),e));
+  for(let g=0,ch=true;ch&&g<100;g++){ch=false;
+    doc.querySelectorAll('template[id]').forEach(t=>{const sfx=t.id.split(':')[1]||'',src=sfx&&done.get(sfx);
+      if(src){t.insertAdjacentHTML('afterend',src.innerHTML);t.remove();ch=true}});
+  }
+  doc.querySelectorAll('div[hidden][id^="S:"]').forEach(e=>e.remove());
+}
+function mfmDeannotate(doc){
+  [...doc.querySelectorAll('div')].forEach(d=>{if(d.isConnected&&MFM_BADGES.includes(mfmClean(d.textContent)))d.remove()});
+  doc.querySelectorAll('span').forEach(s=>{if(s.children.length)return;const t=s.textContent;if(/[▲▼]/.test(t))s.textContent=mfmClean(t.replace(MFM_DELTA,''))});
+}
+function mfmRange(label){
+  const ords=[...label.matchAll(/(\d+)(?:st|nd|rd|th)/gi)].map(m=>parseInt(m[1],10));
+  if(!ords.length)return'[1,)';const from=ords[0];
+  if(/\bto\b/i.test(label)&&ords.length>=2)return`[${from},${ords[1]}]`;
+  if(label.includes('+'))return`[${from},)`;
+  return`[${from},${from}]`;
+}
+function mfmCostRow(unit,raw){
+  const text=mfmClean(String(raw).replace(MFM_DELTA,'')),m=text.match(/([\d,]+)\s*pts\s*$/i),size=m?mfmClean(text.slice(0,m.index)):'';
+  if(!m||!size)throw new Error(`Unit "${unit}": unreadable cost row "${text}"`);
+  const points=parseInt(m[1].replace(/,/g,''),10),models=(size.match(/\d+/g)||[]).reduce((s,n)=>s+parseInt(n,10),0);
+  if(size.startsWith('+')){const item=mfmClean(size.replace(/^\+\s*\d*\s*/,''));return item?{models,points,desc:item,addon:true}:{models,points,addon:true}}
+  return/^\d+ models?$/i.test(size)?{models,points}:{models,points,desc:size};
+}
+function mfmNextSpan(el){for(let n=el&&el.nextElementSibling;n;n=n.nextElementSibling)if(n.tagName==='SPAN')return n;return null}
+function mfmNextLeaders(el){for(let n=el.nextElementSibling;n;n=n.nextElementSibling)if(n.matches('ul.leaders'))return n;return null}
+function mfmCardName(card){const h=card.firstElementChild;if(!h)return'';const sp=h.querySelector('span.text-xl');return mfmClean(sp?sp.textContent:h.textContent)}
+function mfmIsUnitCard(card){return[...card.querySelectorAll('div.bg-slate-200')].some(d=>/COST/i.test(d.textContent))}
+function mfmRole(card){
+  const out={};
+  card.querySelectorAll('img[src$="leader.svg"],img[src$="support.svg"]').forEach(img=>{
+    const key=(img.getAttribute('src')||'').includes('leader')?'leaderTo':'supportTo',sp=mfmNextSpan(img.parentElement);
+    const list=mfmClean(sp?sp.textContent:'').split(',').map(mfmTitle).filter(Boolean);
+    if(list.length&&!out[key])out[key]=list;
+  });
+  return out;
+}
+function mfmWargear(card){
+  const cog=card.querySelector('img[src$="cog.svg"]'),box=cog&&cog.parentElement&&cog.parentElement.parentElement;if(!box)return[];
+  return[...box.querySelectorAll('ul li')].map(li=>{const sp=li.querySelectorAll('span');if(!sp.length)return null;
+    const item=mfmClean(sp[0].textContent).replace(/^per\s+/i,''),pm=mfmClean(sp[sp.length-1].textContent).replace(MFM_DELTA,'').match(/-?\d+/);
+    return item&&pm?{item,points:parseInt(pm[0],10)}:null}).filter(Boolean);
+}
+function mfmUnit(card){
+  const name=mfmTitle(mfmCardName(card)),pricing=[];
+  card.querySelectorAll('div.bg-slate-200').forEach(l=>{
+    const label=mfmTitle(l.textContent),ul=mfmNextLeaders(l);if(!ul)return;
+    const costs=[...ul.querySelectorAll('li')].map(li=>mfmCostRow(name,mfmClean(li.textContent)));
+    if(costs.length)pricing.push({range:mfmRange(label),label,costs});
+  });
+  if(!pricing.length)throw new Error(`Unit "${name}" has no pricing tiers`);
+  const wg=mfmWargear(card);
+  return{name,pricing,...mfmRole(card),...(wg.length?{wargear:wg}:{})};
+}
+function mfmDetachment(card){
+  const header=card.firstElementChild,name=mfmTitle(mfmCardName(card)),ends=header?[...header.querySelectorAll('span.self-end')]:[];
+  const dpm=ends.length?mfmClean(ends[ends.length-1].textContent).match(/-?\d+/):null,kids=[...card.children];
+  const objectives=kids.filter(k=>k.tagName==='DIV'&&k.hasAttribute('style')).map(k=>mfmClean(k.textContent)).filter(Boolean);
+  const uq=kids.find(k=>k.matches('div.bg-slate-200')&&/^\s*unique:\s*/i.test(mfmClean(k.textContent)));
+  const unique=uq?mfmTitle(mfmClean(uq.textContent).replace(/^\s*unique:\s*/i,'')):'';
+  const grant=(li,kw)=>{const p=li.parentElement,s=p&&[...p.querySelectorAll('span')].find(x=>mfmClean(x.textContent)===kw),n=s?mfmNextSpan(s):null;
+    return n?mfmClean(n.textContent).split(',').map(mfmTitle).filter(Boolean):[]};
+  const enhancements=[...card.querySelectorAll('ul.leaders li')].map(li=>{
+    const divs=li.querySelectorAll('div'),last=divs.length?divs[divs.length-1]:null,sp=last?last.querySelectorAll('span'):[];
+    const en=sp.length?mfmClean(sp[0].textContent):'',pm=sp.length?mfmClean(sp[sp.length-1].textContent).match(/-?\d+/):null;
+    if(!en||!pm)return null;
+    const leaderTo=grant(li,'LEADER:'),supportTo=grant(li,'SUPPORT:');
+    return{name:en,points:parseInt(pm[0],10),...(leaderTo.length?{leaderTo}:{}),...(supportTo.length?{supportTo}:{})};
+  }).filter(Boolean);
+  return{name,dp:dpm?parseInt(dpm[0],10):null,objectives,...(unique?{unique}:{}),enhancements};
+}
+function mfmParseFactionHtml(html,slug,name){
+  const doc=new DOMParser().parseFromString(html,'text/html'),vm=(doc.body?doc.body.textContent:'').match(/v(\d+\.\d+)/);
+  if(!vm)throw new Error('Could not find the MFM version on the page');
+  mfmHydrate(doc);mfmDeannotate(doc);
+  const units=[],detachments=[];
+  [...doc.querySelectorAll(MFM_CARD)].filter(c=>!c.parentElement||!c.parentElement.closest(MFM_CARD)).forEach(c=>{
+    if(mfmIsUnitCard(c))units.push(mfmUnit(c));else detachments.push(mfmDetachment(c));
+  });
+  if(!units.length)throw new Error('No units found — the website layout may have changed');
+  return{name,slug,version:vm[1],units,detachments};
+}
+/* ---- GitHub YAML snapshot: faction list + files ---- */
+async function mfmGithubFactions(){
+  const gh=mfmGhBase();
+  try{
+    const meta=await mfmFetchText(`${gh.raw}/meta.yaml`),lines=meta.split(/\r?\n/),at=lines.findIndex(l=>/^factions:\s*$/.test(l)),slugs=[];
+    if(at>=0)for(let i=at+1;i<lines.length;i++){const m=/^\s+-\s+([a-z0-9-]+)\s*$/i.exec(lines[i]);if(m)slugs.push(m[1].toLowerCase());else if(lines[i].trim()&&!/^\s/.test(lines[i]))break}
+    if(slugs.length)return slugs.map(s=>mfmFaction(s)).sort((a,b)=>a.name.localeCompare(b.name));
+  }catch(e){console.warn('GitHub faction index unavailable, trying the directory listing',e)}
+  const list=JSON.parse(await mfmFetchText(gh.api)),out=(Array.isArray(list)?list:[]).map(x=>/^([a-z0-9-]+)\.ya?ml$/i.exec(x&&x.name||'')).filter(m=>m&&m[1].toLowerCase()!=='meta').map(m=>mfmFaction(m[1].toLowerCase()));
+  if(!out.length)throw new Error('No faction files found in the GitHub repository');
+  return out.sort((a,b)=>a.name.localeCompare(b.name));
+}
+/* ---- one faction -> the same parsed shape manual YAML imports produce, plus source metadata ---- */
+async function mfmDownloadFaction(f,via){
+  if(via==='github'){
+    const ghUrl=`${mfmGhBase().raw}/${f.slug}.yaml`,parsed=parseMfmYaml(await mfmFetchText(ghUrl));
+    parsed.sourceMeta={sourceType:'github-yaml',sourceUrl:ghUrl,factionName:parsed.name};return parsed;
+  }
+  const raw=mfmParseFactionHtml(await mfmFetchText(f.url),f.slug,f.name);
+  /* routing through parseMfmYaml validates the data and normalises pricing exactly like a YAML file would */
+  const parsed=parseMfmYaml(JSON.stringify(raw));
+  parsed.sourceMeta={sourceType:'mfm-web',sourceUrl:f.url,factionName:parsed.name};return parsed;
+}
+/* ---- collection <-> faction name matching (high confidence = pre-selected; the user still confirms) ---- */
+function mfmMatchCollections(factions,cols){
+  const paths=collectionPathMap(cols),cn=cols.map(c=>({c,n:pointsNorm(c.name)})).filter(x=>x.n),exact=new Set(),count=new Map();
+  factions.forEach(f=>{f.match=null;const fn=pointsNorm(f.name);cn.forEach(x=>{if(x.n===fn){exact.add(x.c.id);if(!f.match)f.match={id:x.c.id,name:x.c.name,path:paths.get(x.c.id),score:1}}})});
+  factions.forEach(f=>{if(f.match)return;const fn=pointsNorm(f.name);let best=null;
+    cn.forEach(x=>{if(exact.has(x.c.id))return;
+      const short=x.n.length<=fn.length?x.n:fn,long=x.n.length<=fn.length?fn:x.n;
+      if(short.length>=3&&(' '+long+' ').includes(' '+short+' ')&&!best)best={id:x.c.id,name:x.c.name,path:paths.get(x.c.id),score:.85}});
+    if(best){f.match=best;count.set(best.id,(count.get(best.id)||0)+1)}});
+  /* a collection that fits several factions only loosely is suggested, never pre-selected */
+  factions.forEach(f=>{if(f.match)f.match.high=f.match.score>=1||count.get(f.match.id)===1});
+}
+/* ---- UI: progress list ---- */
+function mfmProgress(title,names){
+  const bg=el('div','backdrop import-summary mfm-prog'),d=el('div','dlg');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
+  d.innerHTML='<div class="mm-head"><h2></h2></div><div class="mfm-plist"></div><div class="row mm-foot"></div>';
+  const h=$('h2',d),list=$('.mfm-plist',d),foot=$('.mm-foot',d),G={wait:'·',work:'…',dl:'↓',ok:'✓',same:'✓',skip:'–',fail:'✗'};h.textContent=title;
+  const rows=names.map(n=>{const r=el('div','mfm-prow','<span class="mfm-ic">·</span><span class="mfm-nm"></span><small class="mfm-nt"></small>');$('.mfm-nm',r).textContent=n;list.append(r);return r});
+  bg.append(d);document.body.append(bg);
+  return{set(i,s,note){const r=rows[i];if(!r)return;r.dataset.s=s;$('.mfm-ic',r).textContent=G[s]||'·';$('.mfm-nt',r).textContent=note||''},
+    finish(label='Completed'){h.textContent=label;foot.replaceChildren();const b=el('button','btn','Close');b.onclick=()=>bg.remove();foot.append(b)}};
+}
+/* ---- UI: faction picker -> resolves the chosen factions, or null on cancel ---- */
+function mfmFactionModal(o){
+  return new Promise(resolve=>{
+    const bg=el('div','backdrop import-summary match-modal'),d=el('div','dlg');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
+    const sel=new Set(o.factions.filter(f=>f.match&&f.match.high).map(f=>f.slug)),finish=v=>{bg.remove();resolve(v)};
+    const render=()=>{
+      const sc=d.scrollTop,all=sel.size===o.factions.length;
+      d.innerHTML='<div class="mm-head"><h2></h2><p class="mm-sub"></p></div><div class="mfm-flist"></div><div class="row mm-foot"><button class="btn ghost mf-all"></button><button class="btn ghost mf-cancel">Cancel</button><button class="btn mf-go"></button></div>';
+      $('h2',d).textContent=o.title||'Available Factions';$('.mm-sub',d).textContent=o.sub||'';
+      const list=$('.mfm-flist',d);
+      o.factions.forEach(f=>{
+        const on=sel.has(f.slug),have=o.existing.get(f.slug),tags=[];
+        if(have)tags.push(`Downloaded${have.version?' · v'+have.version:''}`);
+        if(f.match)tags.push(f.match.high?`Matches “${f.match.name}”`:`Possible match: “${f.match.name}”`);
+        const b=el('button','mfm-frow'+(on?' on':''),'<span class="mfm-box"></span><span class="mfm-fn"><b></b><small></small></span>');
+        b.setAttribute('role','checkbox');b.setAttribute('aria-checked',on?'true':'false');
+        $('.mfm-box',b).textContent=on?'☑':'☐';$('b',b).textContent=f.name;$('small',b).textContent=tags.join(' · ');
+        b.onclick=()=>{on?sel.delete(f.slug):sel.add(f.slug);render()};list.append(b);
+      });
+      const allB=$('.mf-all',d),go=$('.mf-go',d);
+      allB.textContent=all?'Clear All':'Select All';allB.onclick=()=>{all?sel.clear():o.factions.forEach(f=>sel.add(f.slug));render()};
+      go.textContent=sel.size?`Download Selected (${sel.size})`:'Download Selected';go.disabled=!sel.size;
+      go.onclick=()=>{if(sel.size)finish(o.factions.filter(f=>sel.has(f.slug)))};
+      $('.mf-cancel',d).onclick=()=>finish(null);d.scrollTop=sc;
+    };
+    bg.append(d);document.body.append(bg);render();
+  });
+}
+/* ---- comparison + confirmed import of one downloaded profile ---- */
+const mfmUnitSig=us=>(Array.isArray(us)?us:[]).map(u=>pointsNorm(u&&u.name)).sort().join('|');
+async function mfmDiff(parsed,existingId){
+  const all=await DB.all('pointsProfiles'),old=(existingId&&all.find(p=>p.id===existingId))||all.find(p=>p.slug===parsed.slug)||null,meta=parsed.sourceMeta||{};let carried=0;
+  /* Legends units only exist in the client-rendered page, so a website download cannot see them: keep the ones already in the stored profile */
+  if(old&&meta.sourceType==='mfm-web'){const have=new Set(parsed.units.map(u=>pointsNorm(u.name)));
+    (old.units||[]).forEach(u=>{if(u&&u.legends&&!have.has(pointsNorm(u.name))){parsed.units.push(u);have.add(pointsNorm(u.name));carried++}})}
+  const changes=old?profilePointChanges(old,{units:parsed.units}):[];
+  const same=!!old&&String(old.version)===String(parsed.version)&&!changes.length&&mfmUnitSig(old.units)===mfmUnitSig(parsed.units);
+  return{old,carried,changes,same};
+}
+/* never saves unless download + parse already succeeded and, for an existing profile, the user confirms the replacement */
+async function mfmApply(parsed,o={}){
+  const{old,carried,changes,same}=await mfmDiff(parsed,o.existingId);
+  if(same)return{status:'same',note:'Already up to date'};
+  if(old&&!o.confirmed){
+    const n=changes.length,msg=`${parsed.name}: version ${old.version||'unknown'} → ${parsed.version}\n${n} unit point change${n===1?'':'s'}.`+(carried?`\n${carried} Legends unit${carried===1?'':'s'} kept from the current profile (the website does not provide them).`:'')+'\nYour model mappings are kept.';
+    if(!await dlg({title:'Replace points profile?',msg,ok:'Replace'}))return{status:'skip',note:'Not replaced'};
+  }
+  const before=await snapshotItemPoints();
+  const colId=old?null:(o.collectionId||await chooseProfileCollection(`${parsed.name} MFM`));
+  const plan=await buildImportPlan(parsed,old?old.id:null,colId);
+  if(plan.rows.some(r=>r.state==='unmatched')&&!await showMatchingModal(plan))return{status:'skip',note:'Cancelled — nothing saved'};
+  const r=await commitImportPlan(plan);
+  const v=live();if(v&&v.isConnected)await fill(v,{quiet:1,keep:1});
+  setRefresh&&setRefresh();
+  if(o.summary!==false)await showImportSummary(await prepareImportSummary(r.previous,r.record,r.replaced),{before,after:await snapshotItemPoints()});
+  return{status:'ok',note:r.replaced?'Updated':'Imported'};
+}
+/* ---- batch runner: download every job, offer GitHub YAML for website failures, then import one by one ---- */
+async function mfmRunBatch(jobs,title,opt={}){
+  const ui=mfmProgress(title,jobs.map(j=>j.f.name));jobs.forEach((j,i)=>ui.set(i,'wait','Waiting'));
+  try{
+    for(let i=0;i<jobs.length;i++){const j=jobs[i];ui.set(i,'work','Downloading…');
+      try{j.parsed=await mfmDownloadFaction(j.f,j.via);j.err=null;ui.set(i,'dl','Downloaded')}
+      catch(e){console.warn('Faction download failed',j.f.slug,e);j.err=e;ui.set(i,'fail','Unable to download faction profile.')}}
+    const bad=jobs.map((j,i)=>({j,i})).filter(x=>x.j.err&&x.j.via==='web');
+    if(bad.length&&await dlg({title:'Website import unavailable',msg:'Website import unavailable.\nWould you like to download the YAML version instead?',ok:'Use GitHub YAML'})){
+      for(const{j,i}of bad){ui.set(i,'work','Downloading YAML…');
+        try{j.parsed=await mfmDownloadFaction(j.f,'github');j.via='github';j.err=null;ui.set(i,'dl','Downloaded (GitHub YAML)')}
+        catch(e){console.warn(e);ui.set(i,'fail','Unable to download faction profile.')}}}
+    let ready=jobs.map((j,i)=>({j,i})).filter(x=>x.j.parsed&&!x.j.err),confirmed=false;
+    if(opt.bulk&&ready.length){
+      const todo=[],lines=[];
+      for(const x of ready){const d=await mfmDiff(x.j.parsed,x.j.existing?x.j.existing.id:null);
+        if(d.same){ui.set(x.i,'same','Already up to date');continue}
+        todo.push(x);lines.push(`${x.j.parsed.name}: v${d.old?d.old.version:'?'} → v${x.j.parsed.version} (${d.changes.length} point change${d.changes.length===1?'':'s'})`)}
+      ready=[];
+      if(todo.length){
+        if(await dlg({title:'Replace these profiles?',msg:lines.join('\n')+'\n\nYour model mappings are kept.',ok:'Replace all'})){ready=todo;confirmed=true}
+        else todo.forEach(x=>ui.set(x.i,'skip','Not replaced'));
+      }
+    }
+    for(const x of ready){ui.set(x.i,'work','Importing…');
+      try{const r=await mfmApply(x.j.parsed,{existingId:x.j.existing?x.j.existing.id:null,collectionId:x.j.collectionId,confirmed,summary:!opt.bulk});ui.set(x.i,r.status,r.note)}
+      catch(e){console.warn(e);ui.set(x.i,'fail',e&&e.message||'Import failed')}}
+  }finally{ui.finish('Completed')}
+}
+/* ---- entry points used by the Points Profiles sheet ---- */
+async function mfmDiscover(){
+  try{toast('Contacting MFM website…');return{via:'web',factions:mfmFactionsFromHtml(await mfmFetchText(MFM_BASE))}}
+  catch(e){console.warn('MFM website unavailable',e)}
+  if(!await dlg({title:'Website import unavailable',msg:'Website import unavailable.\nWould you like to download the YAML version instead?',ok:'Use GitHub YAML'}))return null;
+  return await mfmDiscoverGithub();
+}
+async function mfmDiscoverGithub(){
+  try{toast('Contacting GitHub…');return{via:'github',factions:await mfmGithubFactions()}}
+  catch(e){console.warn(e);toast(e&&e.linkError?e.message:'GitHub YAML is unavailable — use Import YAML with a file instead',true);return null}
+}
+async function mfmChooseAndDownload(found,opt={}){
+  if(!found)return false;
+  const[profiles,cols]=await Promise.all([DB.all('pointsProfiles'),DB.all('collections')]);
+  mfmMatchCollections(found.factions,cols);
+  if(opt.matchedFirst)found.factions.sort((a,b)=>(b.match?1:0)-(a.match?1:0)||a.name.localeCompare(b.name));
+  if(opt.matchedFirst&&!found.factions.some(f=>f.match))toast('No collection names matched a faction — choose manually');
+  const existing=new Map(profiles.map(p=>[p.slug,p])),src=found.via==='web'?'MFM website':'GitHub YAML';
+  const picked=await mfmFactionModal({title:opt.title||'Available Factions',factions:found.factions,existing,sub:`${found.factions.length} factions found on the ${src}. Choose which to import.`});
+  if(!picked||!picked.length)return false;
+  await mfmRunBatch(picked.map(f=>({f,via:found.via,existing:existing.get(f.slug)||null,collectionId:(!existing.get(f.slug)&&f.match&&f.match.high)?f.match.id:null})),'Downloading Profiles');
+  return true;
+}
+const ppSrc=p=>p.sourceType==='mfm-web'?'MFM website':p.sourceType==='github-yaml'?'GitHub YAML':'Manual YAML';
+const mfmDownloadable=p=>p&&(p.sourceType==='mfm-web'||p.sourceType==='github-yaml');
+const mfmJobFor=p=>({f:mfmFaction(p.slug,p.factionName||p.name),via:p.sourceType==='github-yaml'?'github':'web',existing:p,collectionId:null});
+
 async function openPointsProfiles(){
   if($('.sheet.pp'))return;
   const sh=el('div','sheet pp');
   sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close Points Profiles">${ICON.down}</button><h2>Points Profiles</h2></div>
-  <div class="body"><section><div class="phead"><div><h3>Points database link</h3><small class="muted">Website for the points database. Click the saved link to open it.</small></div></div><div class="pp-db-link"><input type="url" class="pp-db-input" inputmode="url" spellcheck="false" aria-label="Points database link" placeholder="https://example.com"><button class="btn ghost sm pp-db-edit">Edit</button></div><p class="pp-db-note">https:// is added automatically when needed.</p></section>
-  <section><div class="phead"><div><h3>Profiles</h3><small class="muted">MFM YAML profiles stored in this vault.</small></div><button class="btn sm pp-import">Import YAML</button></div><div class="pp-list"></div></section>
+  <div class="body"><section><div class="phead"><div><h3>Profiles</h3><small class="muted">MFM YAML profiles stored in this vault.</small></div></div><div class="pp-online"><div class="pp-orow"><button class="btn ghost sm pp-import">Import YAML</button><button class="btn ghost sm pp-disc">Discover MFM Factions</button><button class="btn ghost sm pp-gh">Download From GitHub YAML</button><button class="btn ghost sm pp-updall">Update All Downloaded Profiles</button></div><div class="pp-dbbox"><div class="phead"><div><h3>Points database link</h3><small class="muted">Website for the points database. Download From GitHub YAML reads the GitHub address saved here (default: BSData/wh40k-11e-mfm).</small></div></div><div class="pp-db-link"><input type="url" class="pp-db-input" inputmode="url" spellcheck="false" aria-label="Points database link" placeholder="https://github.com/BSData/wh40k-11e-mfm"><button class="btn ghost sm pp-db-edit">Edit</button></div><p class="pp-db-note">https:// is added automatically when needed.</p></div><small class="muted">Online sources are optional extras. Import YAML always works.</small></div><div class="pp-list"></div></section>
   <section><div class="phead"><div><h3>Collection assignment</h3><small class="muted">Each collection can have one active profile.</small></div></div><div class="pp-assign"></div></section></div>`;
   const list=$('.pp-list',sh),assign=$('.pp-assign',sh);
   const dbLinkInput=$('.pp-db-input',sh),dbLinkEdit=$('.pp-db-edit',sh);
@@ -2919,6 +3222,8 @@ async function openPointsProfiles(){
     }
     catch(e){toast(e&&e.message||'Could not import YAML',true)}
   });
+  let onlineBusy=false;
+  const online=fn=>guard(async()=>{if(onlineBusy)return;onlineBusy=true;try{await fn()}finally{onlineBusy=false;try{await draw()}catch(_){}}});
   const draw=async()=>{
     const[profiles,cols]=await Promise.all([DB.all('pointsProfiles'),DB.all('collections')]),paths=collectionPathMap(cols);
     profiles.sort((a,b)=>String(a.profileName||a.name).localeCompare(String(b.profileName||b.name)));
@@ -2926,8 +3231,9 @@ async function openPointsProfiles(){
     if(!profiles.length)list.append(el('p','empty','No points profiles imported yet.'));
     profiles.forEach(p=>{
       const d=el('div','pp-card');
-      d.innerHTML=`<div class="pp-main"><b>${esc(p.profileName||p.name||'Unnamed profile')}</b><small>Version ${esc(p.version||'Unknown')} · Imported ${esc(p.importDate||String(p.importedAt||'').slice(0,10)||'Unknown')}</small><small>${esc(ppUnitsLabel(p))} · ${esc(ppDetLabel(p))}</small></div><div class="pp-actions"><button class="btn ghost sm re">Re-import</button><button class="btn danger sm de">Delete</button></div>`;
+      d.innerHTML=`<div class="pp-main"><b>${esc(p.profileName||p.name||'Unnamed profile')}</b><small>Version ${esc(p.version||'Unknown')} · Imported ${esc(p.importDate||String(p.importedAt||'').slice(0,10)||'Unknown')} · ${esc(ppSrc(p))}</small><small>${esc(ppUnitsLabel(p))} · ${esc(ppDetLabel(p))}</small></div><div class="pp-actions">${mfmDownloadable(p)?'<button class="btn ghost sm up">Update Profile</button>':''}<button class="btn ghost sm re">Re-import</button><button class="btn danger sm de">Delete</button></div>`;
       $('.re',d).onclick=()=>runImport(p.id);
+      const upb=$('.up',d);if(upb)upb.onclick=online(async()=>{await mfmRunBatch([mfmJobFor(p)],'Updating Profile')});
       /* website link row: type/paste a URL, saved on the profile record; "Open" visits it in a new tab */
       const lr=el('div','pp-link'),li=el('input');li.type='url';li.inputMode='url';li.spellcheck=false;
       li.placeholder='Paste a website link for this profile…';li.value=p.website||'';
@@ -2971,6 +3277,12 @@ async function openPointsProfiles(){
     });
   };
   $('.pp-import',sh).onclick=runImport;
+  /* online sources: each is optional and failure-tolerant; a failure never touches stored profiles */
+  $('.pp-disc',sh).onclick=online(async()=>{await mfmChooseAndDownload(await mfmDiscover(),{title:'Available Factions'})});
+  $('.pp-gh',sh).onclick=online(async()=>{await mfmChooseAndDownload(await mfmDiscoverGithub(),{title:'GitHub YAML Factions'})});
+  $('.pp-updall',sh).onclick=online(async()=>{const ps=(await DB.all('pointsProfiles')).filter(mfmDownloadable);
+    if(!ps.length){toast('No downloaded profiles to update yet');return}
+    await mfmRunBatch(ps.map(mfmJobFor),'Updating Profiles',{bulk:true})});
   $('.back',sh).onclick=async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove()};
   document.body.append(sh);M.run(sh,[{transform:'translateY(100%)'},{transform:'none'}],'slow');await draw();
 }
