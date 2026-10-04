@@ -2446,6 +2446,11 @@ function yamlNormalisePricing(u){
 function parseMfmYaml(text){
   const rawText=String(text||'').replace(/^\uFEFF/,'').trim();
   if(!rawText)throw new Error('The YAML file is empty.');
+  /* Robust import hardening:
+     - tolerate root arrays and wrapped payloads
+     - accept missing version fields
+     - discover units from common nested locations
+     - preserve import pipeline instead of failing early on minor schema drift */
   let root,pos;
   if(rawText[0]==='{'||rawText[0]==='['){
     try{root=JSON.parse(rawText);pos=0}
@@ -2457,17 +2462,24 @@ function parseMfmYaml(text){
     const lines=yamlLines(rawText);if(!lines.length)throw new Error('The YAML file is empty.');
     [root,pos]=yamlBlock(lines,0,lines[0].indent);
   }
+  if(Array.isArray(root)){
+    root={name:'Imported Profile',version:'Unknown',units:root};
+  }
+  if(root&&typeof root==='object'&&!Array.isArray(root)){
+    const wrapped=yamlField(root,'data','payload','profile');
+    if(wrapped&&typeof wrapped==='object'&&!Array.isArray(wrapped)) root={...wrapped,...root};
+  }
   if(!root||typeof root!=='object'||Array.isArray(root))throw new Error('The YAML root is not a mapping.');
 
-  const rootName=yamlField(root,'name','faction','factionName','profileName');
-  const rootVersion=yamlField(root,'version','mfmVersion','formatVersion');
-  const unitsRaw=yamlField(root,'units','unit','unitDefinitions','unitProfiles');
+  const rootName=yamlField(root,'name','faction','factionName','profileName','army','catalogueName');
+  const rootVersion=yamlField(root,'version','mfmVersion','formatVersion','published','release');
+  const unitsRaw=yamlField(root,'units','unit','unitDefinitions','unitProfiles','datasheets','entries');
   const detachRaw=yamlField(root,'detachments','detachment','detachmentsList');
   const units=yamlArray(unitsRaw);
   const detachments=yamlArray(detachRaw);
 
   if(!String(rootName??'').trim())throw new Error('The YAML file has no faction name.');
-  if(rootVersion===undefined||rootVersion===null||!String(rootVersion).trim())throw new Error('The YAML file has no MFM version.');
+  const safeVersion=(rootVersion===undefined||rootVersion===null||!String(rootVersion).trim())?'Unknown':String(rootVersion).trim();
   if(!units.length)throw new Error('The YAML file contains no units.');
 
   const cleanUnits=units.filter(u=>u&&typeof u==='object'&&!Array.isArray(u)).map(u=>{
@@ -2478,8 +2490,48 @@ function parseMfmYaml(text){
   if(!cleanUnits.length)throw new Error('The YAML file contains no usable unit definitions.');
 
   const name=String(rootName).trim(),slug=String(yamlField(root,'slug','id')??slugify(name)).trim().toLowerCase();
-  return{yaml:root,name,slug,version:String(rootVersion).trim(),firstSeen:(yamlField(root,'firstSeen','first_seen','dateAdded')!=null?String(yamlField(root,'firstSeen','first_seen','dateAdded')).trim():null),units:cleanUnits,detachments};
+  return{yaml:root,name,slug,version:safeVersion,firstSeen:(yamlField(root,'firstSeen','first_seen','dateAdded')!=null?String(yamlField(root,'firstSeen','first_seen','dateAdded')).trim():null),units:cleanUnits,detachments};
 }
+
+/* ===== Enhanced MFM Reliability Layer ===== */
+window.MFM_IMPORT_LOGS = window.MFM_IMPORT_LOGS || (()=>{try{const a=JSON.parse(localStorage.getItem('mfmImportLogs')||'[]');return Array.isArray(a)?a:[]}catch(_){return[]}})();
+
+function detectBSDataSchema(root){
+  if(!root||typeof root!=='object') return 'unknown';
+  if(root.gameSystemId||root.catalogueLinks) return 'BSData-Catalogue';
+  if(root.units||root.unitDefinitions) return 'MFM-Native';
+  return 'generic-yaml';
+}
+function normalizeUnitNameAdvanced(name){
+  return String(name||'')
+   .replace(/\([^)]*\)/g,'')
+   .replace(/\[[^\]]*\]/g,'')
+   .replace(/tau empire|adeptus astartes|space marines/ig,'')
+   .replace(/w\/|with .*/ig,'')
+   .replace(/[’']/g,'')
+   .replace(/[^a-z0-9 ]/ig,' ')
+   .replace(/\s+/g,' ')
+   .trim()
+   .toLowerCase();
+}
+function validateImportedProfile(profile){
+  const warnings=[];
+  const seen=new Set();
+  (profile.units||[]).forEach(u=>{
+    const n=(u.name||'').toLowerCase();
+    if(seen.has(n)) warnings.push('Duplicate unit: '+u.name);
+    seen.add(n);
+    if(!u.pricing || !Object.keys(u.pricing).length) warnings.push('Empty points table: '+u.name);
+  });
+  return warnings;
+}
+function addImportLog(entry){
+  window.MFM_IMPORT_LOGS.push({...entry,timestamp:new Date().toISOString()});
+  if(window.MFM_IMPORT_LOGS.length>300)window.MFM_IMPORT_LOGS.splice(0,window.MFM_IMPORT_LOGS.length-300);
+  try{ localStorage.setItem('mfmImportLogs',JSON.stringify(window.MFM_IMPORT_LOGS)); }catch(e){}
+}
+/* ===== End Reliability Layer ===== */
+
 const slugify=x=>String(x||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'profile';
 const ppDate=()=>new Date().toISOString().slice(0,10);
 const ppId=()=>`pp-${slugify(uid())}-${Date.now().toString(36)}`;
@@ -2690,7 +2742,7 @@ function showMatchingModal(plan){
   });
 }
 /* the only place the import writes: profile, collection assignment, mappings, renames and unit configurations */
-async function commitImportPlan(plan){
+async function commitImportPlanCore(plan){
   const saved=await savePointsProfile(plan.parsed,plan.old?plan.old.id:null,plan.profile.id),profile=saved.record;
   if(!plan.old&&plan.newCollectionId){const c=await DB.get('collections',plan.newCollectionId);if(c){c.pointsProfileId=profile.id;await DB.put('collections',c)}}
   let renameSkipped=0;
@@ -2866,6 +2918,84 @@ async function pickProfileCollection(record){
    Source order: 1) MFM website  2) GitHub YAML snapshot  3) manual "Import YAML" (always available).
    Every downloaded profile is converted into the exact structure parseMfmYaml() returns, then goes through the
    same matching / rename / mapping / summary pipeline as a manual import. Nothing is written until the user confirms. */
+/* ===== Phase 7: import reliability ===== */
+const mfmLog=(level,msg)=>{try{addImportLog({level,msg:String(msg)})}catch(_){}};
+const MFM_CACHE='hv-mfm-cache:',MFM_PREV='hv-mfm-prev:',MFM_TXN=['pointsProfiles','collections','items','pointsMappings','unitConfigurations'];
+/* last successful download per source, used when the network or the page layout fails */
+function mfmCacheSet(url,p){try{const s=JSON.stringify({at:new Date().toISOString(),parsed:{name:p.name,slug:p.slug,version:p.version,firstSeen:p.firstSeen,units:p.units,detachments:p.detachments,sourceMeta:p.sourceMeta,warnings:p.warnings||[]}});if(s.length<1.5e6)localStorage.setItem(MFM_CACHE+url,s)}catch(_){}}
+function mfmCacheGet(url){try{const c=JSON.parse(localStorage.getItem(MFM_CACHE+url)||'null');if(!c||!c.parsed||!Array.isArray(c.parsed.units))return null;c.parsed.yaml={};return c}catch(_){return null}}
+async function mfmDownloadFaction(f,via){
+  try{const p=await mfmDownloadFactionCore(f,via);mfmCacheSet(p.sourceMeta.sourceUrl,p);mfmLog('info',`Downloaded ${p.name} v${p.version} via ${via} (${p.units.length} units${p.warnings&&p.warnings.length?', '+p.warnings.length+' warnings':''})`);return p}
+  catch(e){
+    mfmLog('error',`Download failed: ${f.slug} via ${via}: ${e&&e.message}`);
+    let c=null;try{c=mfmCacheGet(via==='github'?`${mfmGhBase().raw}/${f.slug}.yaml`:f.url)}catch(_){}
+    if(c){c.parsed.fromCache=c.at;mfmLog('warn',`Using saved copy of ${f.slug} from ${c.at}`);return c.parsed}
+    throw e}
+}
+/* integrity checks: errors block the save, warnings are shown first */
+function mfmValidate(parsed,all,existingId){
+  const errors=[],warnings=[],units=parsed.units||[],web=!!parsed.sourceMeta;
+  const old=(existingId&&all.find(p=>p.id===existingId))||all.find(p=>p.slug===parsed.slug)||null;
+  const seen=new Set();let bad=0;
+  units.forEach(u=>{
+    const base=(u.pricing||[]).flatMap(t=>t.costs||[]).filter(c=>!c.addon);
+    if(!base.length||base.some(c=>!(c.points>0)||!(c.models>0)||c.points>5000)){bad++;if(warnings.length<40)warnings.push('Suspicious pricing: '+u.name)}
+    const k=pointsNorm(u.name);if(seen.has(k)&&warnings.length<40)warnings.push('Duplicate unit: '+u.name);seen.add(k)});
+  if(bad&&bad>=units.length*.3)errors.push(`${bad} of ${units.length} units have invalid pricing. Not imported.`);
+  if(all.some(p=>p.slug===parsed.slug&&(!old||p.id!==old.id)))errors.push('Another profile already uses this faction identifier.');
+  if(old){const prev=(old.units||[]).filter(u=>!u.legends).length,now=units.filter(u=>!u.legends).length;
+    if(prev>=10&&now<prev*.6)(web?errors:warnings).push(`Only ${now} units found; the current profile has ${prev}. The source may be incomplete.`+(web?' Not replaced.':''))}
+  (parsed.warnings||[]).slice(0,10).forEach(w=>warnings.push(w));
+  if(parsed.fromCache)warnings.push('Offline: using the saved copy from '+String(parsed.fromCache).slice(0,10));
+  let raw=0;try{raw=yamlArray(yamlField(parsed.yaml||{},'units','unit','unitDefinitions','unitProfiles','datasheets','entries')).length}catch(_){}
+  return{errors,warnings,old,discovered:units.length,ignored:Math.max(0,raw-units.length)};
+}
+function mfmValText(parsed,v){
+  const sch=parsed.sourceMeta&&parsed.sourceMeta.sourceType==='mfm-web'?'MFM website':detectBSDataSchema(parsed.yaml);
+  return `Schema: ${sch}\nVersion: ${parsed.version}\nUnits found: ${v.discovered}\nUnits ignored: ${v.ignored}\nWarnings: ${v.warnings.length}`+(v.warnings.length?'\n'+v.warnings.slice(0,5).map(w=>'• '+w).join('\n')+(v.warnings.length>5?`\n…and ${v.warnings.length-5} more (see Import Log)`:''):'');
+}
+/* all-or-nothing: every store the import can touch is snapshotted; any failure restores them */
+async function commitImportPlan(plan){
+  const snap={};
+  try{for(const s of MFM_TXN)snap[s]=structuredClone(await DB.all(s))}
+  catch(e){mfmLog('error','Pre-import backup failed: '+(e&&e.message));throw new Error('Import stopped: could not back up current data first')}
+  try{
+    const r=await commitImportPlanCore(plan);
+    if(r.previous)mfmPrevSave(r.previous);
+    mfmLog('info',`Saved ${r.record.name} v${r.record.version} (${r.replaced?'replaced':'new'})`);return r;
+  }catch(e){
+    mfmLog('error','Import failed, rolling back: '+(e&&e.message));
+    try{for(const s of MFM_TXN)await DB.setList(s,snap[s]);mfmLog('warn','Rollback complete')}
+    catch(re){mfmLog('error','Rollback FAILED: '+(re&&re.message));throw new Error('Import failed and the automatic rollback also failed. See Import Log.')}
+    throw new Error('Import failed. Nothing was changed. ('+(e&&e.message||'error')+')');
+  }
+}
+/* previous version of a replaced profile, kept for one-tap restore */
+function mfmPrevSave(old){try{const s=JSON.stringify({at:new Date().toISOString(),record:old});if(s.length<1.5e6)localStorage.setItem(MFM_PREV+old.id,s)}catch(_){}}
+const mfmPrevHas=id=>{try{return!!localStorage.getItem(MFM_PREV+id)}catch(_){return false}};
+async function mfmRestorePrevious(p){
+  let prev;try{prev=JSON.parse(localStorage.getItem(MFM_PREV+p.id)).record}catch(_){toast('No previous version saved',true);return}
+  if(!await dlg({title:'Restore previous version?',msg:`${p.name}: v${p.version} → v${prev.version}\nModel mappings are kept where models still match. The current version stays available to restore back.`,ok:'Restore'}))return;
+  const parsed={name:prev.name,slug:prev.slug,version:prev.version,firstSeen:prev.firstSeen,units:prev.units,detachments:prev.detachments||[],yaml:{}};
+  if(prev.sourceType&&prev.sourceType!=='yaml')parsed.sourceMeta={sourceType:prev.sourceType,sourceUrl:prev.sourceUrl||null,factionName:prev.name};
+  const plan=await buildImportPlan(parsed,p.id,null);
+  if(plan.rows.some(r=>r.state==='unmatched')&&!await showMatchingModal(plan)){toast('Restore cancelled — nothing was changed');return}
+  const r=await commitImportPlan(plan);toast(`Restored v${r.record.version}`);
+  const v=live();if(v&&v.isConnected)await fill(v,{quiet:1,keep:1});setRefresh&&setRefresh();
+}
+function openImportLog(){
+  const bg=el('div','backdrop import-summary'),d=el('div','dlg');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
+  const fmt=()=>window.MFM_IMPORT_LOGS.map(l=>`${l.timestamp} [${l.level||'info'}] ${l.msg}`).join('\n');
+  d.innerHTML='<div class="mm-head"><h2>Import Log</h2><p class="mm-sub"></p></div><pre class="il-box" style="white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto;font-size:12px"></pre><div class="row mm-foot"><button class="btn ghost il-clear">Clear</button><button class="btn ghost il-exp">Export</button><button class="btn il-x">Close</button></div>';
+  const paint=()=>{$('.mm-sub',d).textContent=window.MFM_IMPORT_LOGS.length+' entries';$('.il-box',d).textContent=fmt()||'No import activity yet.'};paint();
+  $('.il-clear',d).onclick=()=>{window.MFM_IMPORT_LOGS.length=0;try{localStorage.removeItem('mfmImportLogs')}catch(_){}paint()};
+  $('.il-exp',d).onclick=async()=>{const t=fmt()||'(empty)';
+    try{const f=new File([t],'hobby-vault-import-log.txt',{type:'text/plain'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(_){}
+    try{await navigator.clipboard.writeText(t);toast('Log copied to clipboard');return}catch(_){}
+    const a=el('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));a.download='hobby-vault-import-log.txt';document.body.append(a);a.click();a.remove()};
+  $('.il-x',d).onclick=()=>bg.remove();bg.append(d);document.body.append(bg);
+}
+/* ===== End Phase 7 ===== */
 const MFM_BASE='https://mfm.warhammer-community.com/en';
 const MFM_GH_RAW='https://raw.githubusercontent.com/BSData/wh40k-11e-mfm/main/data';
 const MFM_GH_API='https://api.github.com/repos/BSData/wh40k-11e-mfm/contents/data';
@@ -2890,10 +3020,21 @@ function mfmGhBase(){
   const path=dir.length?dir.join('/'):'data';
   return{raw:`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`,api:`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`};
 }
-async function mfmFetchText(url,ms=25000){
-  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),ms);
-  try{const r=await fetch(url,{signal:ctl.signal,credentials:'omit'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}
-  finally{clearTimeout(t)}
+/* retries network errors, timeouts, 5xx and 429 with exponential backoff (0.8s, 2.4s); other 4xx fail at once */
+async function mfmFetchText(url,ms=25000,tries=3){
+  if(typeof navigator!=='undefined'&&navigator.onLine===false)throw new Error('No internet connection');
+  let last;
+  for(let i=0;i<tries;i++){
+    const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),ms);
+    try{const r=await fetch(url,{signal:ctl.signal,credentials:'omit'});
+      if(r.ok)return await r.text();
+      const e=new Error('HTTP '+r.status);last=e;
+      if(r.status<500&&r.status!==429&&r.status!==408){e.final=true;throw e}}
+    catch(e){if(e.final)throw e;last=e}
+    finally{clearTimeout(t)}
+    if(i<tries-1){const w=800*Math.pow(3,i);mfmLog('warn',`Retry ${i+1} in ${w}ms: ${url} (${last&&last.message})`);await new Promise(r=>setTimeout(r,w))}
+  }
+  throw last||new Error('Download failed');
 }
 /* ---- website: faction discovery ---- */
 function mfmFactionsFromHtml(html){
@@ -2982,15 +3123,21 @@ function mfmDetachment(card){
   return{name,dp:dpm?parseInt(dpm[0],10):null,objectives,...(unique?{unique}:{}),enhancements};
 }
 function mfmParseFactionHtml(html,slug,name){
-  const doc=new DOMParser().parseFromString(html,'text/html'),vm=(doc.body?doc.body.textContent:'').match(/v(\d+\.\d+)/);
-  if(!vm)throw new Error('Could not find the MFM version on the page');
+  const doc=new DOMParser().parseFromString(html,'text/html'),text=doc.body?doc.body.textContent:'',warnings=[];
+  const vm=text.match(/v(\d+\.\d+)/)||text.match(/(?:version|mfm)\D{0,12}(\d+(?:\.\d+)+)/i);
+  if(!vm)warnings.push('Version not found on the page');
   mfmHydrate(doc);mfmDeannotate(doc);
-  const units=[],detachments=[];
-  [...doc.querySelectorAll(MFM_CARD)].filter(c=>!c.parentElement||!c.parentElement.closest(MFM_CARD)).forEach(c=>{
-    if(mfmIsUnitCard(c))units.push(mfmUnit(c));else detachments.push(mfmDetachment(c));
-  });
+  let cards=[...doc.querySelectorAll(MFM_CARD)].filter(c=>!c.parentElement||!c.parentElement.closest(MFM_CARD));
+  if(!cards.some(mfmIsUnitCard)){/* class list drifted: rebuild cards from the COST labels, which sit directly inside each card */
+    const set=new Set();doc.querySelectorAll('div.bg-slate-200').forEach(l=>{if(/COST/i.test(l.textContent)&&l.parentElement)set.add(l.parentElement)});
+    if(set.size){cards=[...set];warnings.push('Page layout changed: fallback card detection used')}}
+  const units=[],detachments=[];let skipped=0;
+  cards.forEach(c=>{let isUnit=false;/* one unreadable card is skipped and reported, not fatal */
+    try{isUnit=mfmIsUnitCard(c);if(isUnit)units.push(mfmUnit(c));else detachments.push(mfmDetachment(c))}
+    catch(e){if(isUnit)skipped++;warnings.push(String(e&&e.message||e))}});
   if(!units.length)throw new Error('No units found — the website layout may have changed');
-  return{name,slug,version:vm[1],units,detachments};
+  if(skipped>Math.max(2,units.length*.25))throw new Error(`Too many unreadable units (${skipped} skipped) — the website layout may have changed`);
+  return{name,slug,version:vm?vm[1]:'Unknown',units,detachments,warnings};
 }
 /* ---- GitHub YAML snapshot: faction list + files ---- */
 async function mfmGithubFactions(){
@@ -3005,14 +3152,14 @@ async function mfmGithubFactions(){
   return out.sort((a,b)=>a.name.localeCompare(b.name));
 }
 /* ---- one faction -> the same parsed shape manual YAML imports produce, plus source metadata ---- */
-async function mfmDownloadFaction(f,via){
+async function mfmDownloadFactionCore(f,via){
   if(via==='github'){
     const ghUrl=`${mfmGhBase().raw}/${f.slug}.yaml`,parsed=parseMfmYaml(await mfmFetchText(ghUrl));
     parsed.sourceMeta={sourceType:'github-yaml',sourceUrl:ghUrl,factionName:parsed.name};return parsed;
   }
   const raw=mfmParseFactionHtml(await mfmFetchText(f.url),f.slug,f.name);
   /* routing through parseMfmYaml validates the data and normalises pricing exactly like a YAML file would */
-  const parsed=parseMfmYaml(JSON.stringify(raw));
+  const parsed=parseMfmYaml(JSON.stringify(raw));parsed.warnings=raw.warnings||[];
   parsed.sourceMeta={sourceType:'mfm-web',sourceUrl:f.url,factionName:parsed.name};return parsed;
 }
 /* ---- collection <-> faction name matching (high confidence = pre-selected; the user still confirms) ---- */
@@ -3080,9 +3227,12 @@ async function mfmDiff(parsed,existingId){
 async function mfmApply(parsed,o={}){
   const{old,carried,changes,same}=await mfmDiff(parsed,o.existingId);
   if(same)return{status:'same',note:'Already up to date'};
+  const val=mfmValidate(parsed,await DB.all('pointsProfiles'),o.existingId),vtxt=mfmValText(parsed,val);
+  if(val.errors.length){mfmLog('error',`Blocked ${parsed.name}: ${val.errors.join('; ')}`);return{status:'fail',note:val.errors[0]}}
+  if(!old&&!o.confirmed&&(val.warnings.length||parsed.fromCache)&&!await dlg({title:'Import validation',msg:vtxt,ok:'Continue'}))return{status:'skip',note:'Cancelled — nothing saved'};
   if(old&&!o.confirmed){
     const n=changes.length,msg=`${parsed.name}: version ${old.version||'unknown'} → ${parsed.version}\n${n} unit point change${n===1?'':'s'}.`+(carried?`\n${carried} Legends unit${carried===1?'':'s'} kept from the current profile (the website does not provide them).`:'')+'\nYour model mappings are kept.';
-    if(!await dlg({title:'Replace points profile?',msg,ok:'Replace'}))return{status:'skip',note:'Not replaced'};
+    if(!await dlg({title:'Replace points profile?',msg:msg+'\n\n'+vtxt,ok:'Replace'}))return{status:'skip',note:'Not replaced'};
   }
   const before=await snapshotItemPoints();
   const colId=old?null:(o.collectionId||await chooseProfileCollection(`${parsed.name} MFM`));
@@ -3099,7 +3249,7 @@ async function mfmRunBatch(jobs,title,opt={}){
   const ui=mfmProgress(title,jobs.map(j=>j.f.name));jobs.forEach((j,i)=>ui.set(i,'wait','Waiting'));
   try{
     for(let i=0;i<jobs.length;i++){const j=jobs[i];ui.set(i,'work','Downloading…');
-      try{j.parsed=await mfmDownloadFaction(j.f,j.via);j.err=null;ui.set(i,'dl','Downloaded')}
+      try{j.parsed=await mfmDownloadFaction(j.f,j.via);j.err=null;ui.set(i,'dl',j.parsed.fromCache?'Offline: using saved copy':'Downloaded')}
       catch(e){console.warn('Faction download failed',j.f.slug,e);j.err=e;ui.set(i,'fail','Unable to download faction profile.')}}
     const bad=jobs.map((j,i)=>({j,i})).filter(x=>x.j.err&&x.j.via==='web');
     if(bad.length&&await dlg({title:'Website import unavailable',msg:'Website import unavailable.\nWould you like to download the YAML version instead?',ok:'Use GitHub YAML'})){
@@ -3210,6 +3360,9 @@ async function openPointsProfiles(){
     try{
       toast(existingId?'Reading profile…':'Reading YAML…');
       const parsed=parseMfmYaml(await f.text());
+      const val=mfmValidate(parsed,await DB.all('pointsProfiles'),existingId);
+      if(val.errors.length){mfmLog('error','Manual import blocked: '+val.errors.join('; '));toast(val.errors[0],true);return}
+      if(val.warnings.length&&!await dlg({title:'Import validation',msg:mfmValText(parsed,val),ok:'Continue'})){toast('Import cancelled — nothing was saved');return}
       const known=(await DB.all('pointsProfiles')).find(p=>(existingId&&p.id===existingId)||p.slug===parsed.slug);
       const collectionId=known?null:await chooseProfileCollection(`${parsed.name} MFM`);
       const plan=await buildImportPlan(parsed,existingId,collectionId);
@@ -3233,6 +3386,7 @@ async function openPointsProfiles(){
       const d=el('div','pp-card');
       d.innerHTML=`<div class="pp-main"><b>${esc(p.profileName||p.name||'Unnamed profile')}</b><small>Version ${esc(p.version||'Unknown')} · Imported ${esc(p.importDate||String(p.importedAt||'').slice(0,10)||'Unknown')} · ${esc(ppSrc(p))}</small><small>${esc(ppUnitsLabel(p))} · ${esc(ppDetLabel(p))}</small></div><div class="pp-actions">${mfmDownloadable(p)?'<button class="btn ghost sm up">Update Profile</button>':''}<button class="btn ghost sm re">Re-import</button><button class="btn danger sm de">Delete</button></div>`;
       $('.re',d).onclick=()=>runImport(p.id);
+      if(mfmPrevHas(p.id)){const rb=el('button','btn ghost sm','Restore Previous');rb.onclick=online(()=>mfmRestorePrevious(p));const ac=$('.pp-actions',d);if(ac)ac.append(rb)}
       const upb=$('.up',d);if(upb)upb.onclick=online(async()=>{await mfmRunBatch([mfmJobFor(p)],'Updating Profile')});
       /* website link row: type/paste a URL, saved on the profile record; "Open" visits it in a new tab */
       const lr=el('div','pp-link'),li=el('input');li.type='url';li.inputMode='url';li.spellcheck=false;
@@ -3277,6 +3431,7 @@ async function openPointsProfiles(){
     });
   };
   $('.pp-import',sh).onclick=runImport;
+  {const lb=el('button','btn ghost sm','Import Log');lb.onclick=openImportLog;const row=$('.pp-orow',sh);if(row)row.append(lb)}
   /* online sources: each is optional and failure-tolerant; a failure never touches stored profiles */
   $('.pp-disc',sh).onclick=online(async()=>{await mfmChooseAndDownload(await mfmDiscover(),{title:'Available Factions'})});
   $('.pp-gh',sh).onclick=online(async()=>{await mfmChooseAndDownload(await mfmDiscoverGithub(),{title:'GitHub YAML Factions'})});
@@ -3411,4 +3566,118 @@ function handleBack(){
  const soon=()=>{cancelAnimationFrame(t);t=requestAnimationFrame(run)};
  document.addEventListener('scroll',e=>{const x=e.target;if(x&&x.classList&&x.classList.contains('chips'))soon()},true);
  addEventListener('resize',soon);new MutationObserver(soon).observe(st,{childList:true,subtree:true});soon()})();
-</script></body></html>
+</script>
+<script id="mfm-reliability-phase3">
+window.MFMReliability=window.MFMReliability||{};
+MFMReliability.detectSchema=function(data){
+ if(data && (data.gameSystemId||data.catalogueLinks)) return {schema:'BSData',version:'auto'};
+ if(data && (data.units||data.factions)) return {schema:'MFM',version:data.version||'Unknown'};
+ return {schema:'Generic YAML',version:(data&&data.version)||'Unknown'};
+};
+MFMReliability.validateProfile=function(profile){
+ const warnings=[],fatal=[];
+ const units=profile?.units||[];
+ const names=new Set();
+ units.forEach(u=>{
+   const n=(u.name||'').trim().toLowerCase();
+   if(names.has(n)) warnings.push('Duplicate unit: '+u.name);
+   names.add(n);
+   if(!u.points||!u.points.length) fatal.push('Empty points table: '+u.name);
+   if(u.size && !/^\d+(\s*-\s*\d+)?$/.test(String(u.size))) warnings.push('Malformed size bracket: '+u.name);
+ });
+ return {warnings,fatal};
+};
+MFMReliability.transactionalImport=function(profile){
+ const result=MFMReliability.validateProfile(profile);
+ if(result.fatal.length){
+   alert('Import aborted\n\n'+result.fatal.join('\n'));
+   return false;
+ }
+ return true;
+};
+MFMReliability.log=function(entry){
+ const logs=JSON.parse(localStorage.getItem('hvImportLogs')||'[]');
+ logs.unshift({...entry,time:new Date().toISOString()});
+ localStorage.setItem('hvImportLogs',JSON.stringify(logs.slice(0,100)));
+};
+MFMReliability.showImportValidation=function(summary){
+ const msg=[
+ 'Schema: '+summary.schema,
+ 'Version: '+summary.version,
+ 'Units discovered: '+summary.discovered,
+ 'Units ignored: '+summary.ignored,
+ '',
+ 'Warnings:',
+ ...(summary.warnings||['None'])
+ ].join('\n');
+ return confirm(msg+'\n\nContinue import?');
+};
+</script>
+
+
+<script id="mfm-reliability-phase4">
+window.HV_MFM_RELIABILITY=window.HV_MFM_RELIABILITY||{};
+HV_MFM_RELIABILITY.normalizeUnitName=function(name){
+ return String(name||'').toLowerCase()
+ .replace(/\([^)]*\)|\[[^\]]*\]/g,' ')
+ .replace(/tau empire|adeptus astartes|astra militarum|chaos space marines/gi,' ')
+ .replace(/with .*$/i,' ')
+ .replace(/[’']/g,'')
+ .replace(/[^a-z0-9 ]+/g,' ')
+ .replace(/\s+/g,' ').trim();
+};
+HV_MFM_RELIABILITY.validateProfile=function(profile, allProfiles){
+ const warnings=[],errors=[];
+ const units=Array.isArray(profile?.units)?profile.units:[];
+ const names=new Set();
+ units.forEach(u=>{
+   const n=(u.name||'').trim();
+   if(names.has(n)) warnings.push('Duplicate unit: '+n);
+   names.add(n);
+   if(!u.points||!u.points.length) errors.push('Empty points table: '+n);
+ });
+ return {warnings,errors,unitsDiscovered:units.length};
+};
+HV_MFM_RELIABILITY.log=function(entry){
+ const logs=JSON.parse(localStorage.getItem('hvImportLogs')||'[]');
+ logs.unshift({...entry,timestamp:new Date().toISOString()});
+ localStorage.setItem('hvImportLogs',JSON.stringify(logs.slice(0,200)));
+};
+HV_MFM_RELIABILITY.cacheYaml=function(key,data){
+ localStorage.setItem('mfm-cache-'+key,JSON.stringify({saved:Date.now(),data}));
+};
+</script>
+
+<script>
+(function(){
+window.HV_MFM_RELIABILITY=window.HV_MFM_RELIABILITY||{};
+HV_MFM_RELIABILITY.detectSchema=function(y){if(y&&y.catalogue)return 'BSData'; if(y&&y.units)return 'MFM'; return 'Generic YAML';};
+HV_MFM_RELIABILITY.validateProfile=function(profile){
+ const warnings=[],errors=[];
+ const units=(profile&&profile.units)||[];
+ const names=new Set();
+ units.forEach(u=>{
+  const n=(u.name||'').trim().toLowerCase();
+  if(names.has(n)) errors.push('Duplicate unit: '+u.name); names.add(n);
+  const pts=u.points||u.costs||[];
+  if(!pts||pts.length===0) errors.push('Missing tier-1 cost: '+u.name);
+ });
+ return {warnings,errors,unitsDiscovered:units.length,unitsIgnored:0};
+};
+HV_MFM_RELIABILITY.showValidation=function(r){
+ alert('Import Validation\nSchema: '+(r.schema||'Unknown')+'\nVersion: '+(r.version||'Unknown')+'\nUnits discovered: '+(r.unitsDiscovered||0)+'\nUnits ignored: '+(r.unitsIgnored||0)+'\nWarnings: '+((r.warnings||[]).length)+'\nErrors: '+((r.errors||[]).length));
+};
+HV_MFM_RELIABILITY.retryFetch=async function(url,max=3){
+ let e;
+ for(let i=0;i<max;i++){
+   try{return await fetch(url);}catch(err){e=err; await new Promise(r=>setTimeout(r,1000*(2**i)));}
+ }
+ throw e;
+};
+window.showImportLogs=function(){
+ const logs=JSON.parse(localStorage.getItem('hvImportLogs')||'[]');
+ alert(logs.map(x=>`${x.timestamp} - ${x.source||'import'}`).join('\n')||'No logs');
+};
+})();
+</script>
+<script>window.HV_PHASE6=true;</script></body></html>
