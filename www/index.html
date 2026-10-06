@@ -1582,7 +1582,7 @@ function pointsProfileMapData(items,cols,maps,profiles){
   const data=new Map();
   items.forEach(item=>{
     const profile=profileForParent(item.parentId),mapping=profile&&pm.get(pointsMapId(profile.id,item.id)),unit=findUnitByMapping(profile,mapping);
-    if(!profile||!mapping||!unit){data.set(item.id,{profile,mapping,unit:null,models:sq0(item),units:0,points:null,spare:sq0(item),unitPoints:[],priced:false});return}
+    if(!profile||!mapping||!unit){data.set(item.id,{profile,mapping,unit:null,models:sq0(item),units:sq0(item)>0?1:0,points:null,spare:sq0(item),unitPoints:[],priced:false});return}
     const cfg=getUnitConfiguration(item,unit,profile),priced=priceUnitConfiguration(item,unit,1,profile),unitPoints=cfg.map((c,i)=>unitPointsFor(unit,c.size,1+i));
     const complete=!priced.unpriced.length&&unitPoints.every(Number.isFinite);
     data.set(item.id,{profile,mapping,unit,models:sq0(item),units:cfg.length,points:complete?priced.points:null,spare:getSpareModels(item,unit,profile),unitPoints,configuration:cfg,priced:complete});
