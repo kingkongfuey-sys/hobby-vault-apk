@@ -1,5 +1,11 @@
 <meta charset="utf-8">
 <!--
+PHOTO EDITING (this revision): every photo that enters the app now goes through one crop editor.
+Model photos: the card photo button and the item sheet's "Add photos" ask "Take photo / Choose photos" (Capacitor Camera on a device, capture input as fallback), then each photo is cropped with zoom/pan, rotate left/right and shape chips (Square 1:1, Landscape 4:3, Portrait 3:4, Wide 16:9, Tall 9:16, Original). Collection photos (icons, including the Missing information picker) use the same editor locked to square so icons keep rendering correctly at any size. "Keep original" skips cropping in a multi-photo batch; Cancel keeps the photos already accepted. Nothing is written to IndexedDB until a photo is confirmed, and the saved photo still runs through the existing compression/duplicate pipeline. No schema or backup changes.
+-->
+<!--
+PHOTO EDITING (this revision): every photo that enters the app now goes through one crop editor.
+Model photos: the card photo button and the item sheet's "Add photos" ask "Take photo / Choose photos" (Capacitor Camera on a device, capture input as fallback), then each photo is cropped with zoom/pan, rotate left/right and shape chips (Square 1:1, Landscape 4:3, Portrait 3:4, Wide 16:9, Tall 9:16, Original). Collection photos (icons, including the Missing information picker) use the same editor locked to square so icons keep rendering correctly at any size. "Keep original" skips cropping in a multi-photo batch; Cancel keeps the photos already accepted. Nothing is written to IndexedDB until a photo is confirmed, and the saved photo still runs through the existing compression/duplicate pipeline. No schema or backup changes.
 AUDIT PASS 3: Undo of a status delete/reset restores the target's ORIGINAL status (the snapshot is a copy); the last-backup time is only recorded when the export really completed (a cancelled share sheet no longer counts).
 
 AUDIT PASS 2 (this revision)
@@ -414,6 +420,10 @@ body.selmode #selbar{display:flex}
 .toast{display:flex;align-items:center;gap:var(--sp-3)}.tundo{pointer-events:auto;min-height:44px;margin:-12px -8px -12px 0;padding:0 var(--sp-3);border:0;background:none;color:var(--ac);font:600 var(--t-md) var(--sans);cursor:pointer}
 .cropv{position:relative;overflow:hidden;border-radius:var(--radius-card);border:1px solid var(--line);margin:10px auto;touch-action:none;background:var(--s2);cursor:grab}
 .cropv img{position:absolute;left:50%;top:50%;max-width:none;user-select:none;-webkit-user-drag:none}
+/* photo crop dialog: aspect chips + rotate row */
+.aspectrow{margin-top:10px}.aspectrow .chip{min-height:36px;padding:0 10px;font-size:var(--t-xs)}
+.rotrow{margin-top:10px;flex-direction:row}.rotrow .btn{flex:1;font-size:var(--t-sm);min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.rotrow .btn svg{width:16px}
 .dlg input.cz{min-height:44px;padding:0;border:0;background:none;accent-color:var(--ac)}
 
 .pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}.phint{margin:-8px 0 0;color:var(--mu);font-size:var(--t-sm)}
@@ -1522,10 +1532,8 @@ function card(kind,rec,sub,thumb,v,photo,pointtxt=''){const c=el('div','card'+(k
  c.onclick=guard(async e=>{if(c._lp){c._lp=false;return}if(SEL.size){if(kind==='i')toggleSel(rec.id,c);return}
   if(kind==='i'&&e.target.closest('.ph')){
    if(photo)return viewer(await DB.photos(rec.id),0,$('.ph img',c)||$('.ph',c),()=>{const lv=live();lv&&fill(lv,{quiet:1})});
-   const inp=el('input');inp.type='file';inp.accept='image/*';inp.multiple=true;
-   inp.onchange=guard(async()=>{const fs=[...inp.files];if(!fs.length)return;toast(`Adding ${fs.length} photo${fs.length>1?'s':''}`);
-    const n=await importFiles(rec.id,fs);if(n){toast(`Added ${n} photo${n>1?'s':''}`);await fill(v,{quiet:1})}});
-   inp.click();return}
+   guard(async()=>{const fs=await acquirePhotos();if(!fs.length)return;toast(`Adding ${fs.length} photo${fs.length>1?'s':''}`);
+    const n=await importFiles(rec.id,fs);if(n){toast(`Added ${n} photo${n>1?'s':''}`);await fill(v,{quiet:1})}})();return}
   kind==='c'?go(rec.id,1):openItem(rec.id)});
  if(kind==='i'){let t,x0=0,y0=0,sw=false,dx=0;const stop=()=>clearTimeout(t);
   const reset=()=>{c.style.transition='';c.style.transform='';c.removeAttribute('data-sw');c.removeAttribute('data-lab');c.style.removeProperty('--sw')};
@@ -2011,7 +2019,7 @@ function paint(v,anim){const D=v._d,q=S.q.trim().toLowerCase(),dir=S.sort==='za'
 
 async function menu(kind,rec,cardEl,v){const store=kind==='c'?'collections':'items';
  const a=await dlg({title:rec.name,choices:[{label:'Rename',value:'r'},...(kind==='c'?[{label:rec.icon?'Change photo':'Set photo',pick:1},...(rec.icon?[{label:'Remove photo',value:'ri'}]:[]),{label:'Set colour',value:'col'},...(S.sort==='manual'?[{label:'Move up',value:'mu'},{label:'Move down',value:'md'}]:[])]:[]),{label:'Move',value:'m'},...(kind==='i'?[{label:'Duplicate',value:'p'}]:[]),{label:'Send to another vault\u2026',value:'sv'},{label:'Delete',value:'d',danger:1}]});
- if(a&&a.file){const b=await cropSquare(a.file);if(b){rec.icon=b;await DB.put(store,rec);await fill(v,{quiet:1});toast('Photo updated')}}
+ if(a&&a.file){const b=await cropPhoto(a.file,{square:true});if(b){rec.icon=b;await DB.put(store,rec);await fill(v,{quiet:1});toast('Photo updated')}}
  if(a==='col'){const k=await pickColour(rec.color);if(k!==undefined){if(k)rec.color=k;else delete rec.color;await DB.put(store,rec);await fill(v,{quiet:1});toast(k?'Colour set':'Colour removed')}}
  if(a==='ri'){delete rec.icon;await DB.put(store,rec);await fill(v,{quiet:1});toast('Photo removed')}
  if(a==='r'){const n=await dlg({title:`Rename ${kind==='c'?W.c1:W.s1}`,input:rec.name,ok:'Save'});
@@ -2201,7 +2209,7 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
  const sh=el('div','sheet');
  sh.innerHTML=`<div class="bar"><button class="ib back" aria-label="Close">${ICON.down}</button><h2 class="ttl">${esc(it.name)}</h2><button class="ib ren" aria-label="Rename">${ICON.edit}</button><button class="ib cog" aria-label="Settings">${ICON.cog}</button></div>
  <div class="body"><div class="qrow"><div><b>Quantity</b><small class="muted" style="display:block">How many ${W.items} you own</small></div><span class="qslot"></span></div><div class="item-points"></div><label>Category<input class="cat" maxlength="40" placeholder="e.g. Sci-fi, Expansions or Special editions"></label><div class="chips sug"></div><div class="cfs" hidden></div><div><b>Status</b><div class="chips wrap stc"></div></div><label>Notes<textarea maxlength="2000" placeholder="Anything worth remembering: condition, edition, what is left to do"></textarea></label>
- <div class="phead"><h3>Photos</h3><button class="btn add">Add photos</button></div><p class="phint">Hold and drag a photo to reorder. The first photo is the cover.</p><div class="pgrid"></div><input type="file" accept="image/*" multiple hidden></div>`;
+ <div class="phead"><h3>Photos</h3><button class="btn add">Add photos</button></div><p class="phint">Hold and drag a photo to reorder. The first photo is the cover. New photos can be cropped, rotated and reshaped.</p><div class="pgrid"></div><input type="file" accept="image/*" multiple hidden></div>`;
  let cnt=null;$('.qslot',sh).replaceWith(qtyCtl(it,()=>{cnt=null;drawSt();drawItemPointsPanel(sh,it)}));drawItemPointsPanel(sh,it);const ta=$('textarea',sh),grid=$('.pgrid',sh),file=$('input[type=file]',sh),tiles=new Map();ta.value=it.notes||'';
  const known=new Map();(await DB.by('items','parentId',it.parentId)).forEach(x=>{const c=(x.category||'').trim();if(c&&x.id!==id&&!known.has(c.toLowerCase()))known.set(c.toLowerCase(),c)});
  const ci=$('.cat',sh),sug=$('.sug',sh);ci.value=it.category||'';
@@ -2276,8 +2284,7 @@ async function openItem(id){const it=await DB.get('items',id);if(!it)return;let 
    toast('Photo deleted',false,async()=>{await DB.putPhotos([p]);if(!sh.isConnected)return;ph.push(p);ph.sort((a,b)=>a.sortOrder-b.sortOrder);const nt=mk(p);layout();M.pop(nt)})});
   lp(t,p);tiles.set(p.id,t);return t};
  ph.forEach(mk);layout();
- $('.add',sh).onclick=()=>file.click();
- file.onchange=guard(async()=>{const fs=[...file.files];file.value='';if(!fs.length)return;toast(`Adding ${fs.length} photo${fs.length>1?'s':''}`);let n=0;
+ $('.add',sh).onclick=guard(async()=>{const fs=await acquirePhotos();if(!fs.length)return;toast(`Adding ${fs.length} photo${fs.length>1?'s':''}`);let n=0;
   for(const x of await prepPhotos(id,fs)){try{
    const p={id:uid(),itemId:id,blob:x.blob,thumb:x.thumb,sortOrder:ph.length?ph[ph.length-1].sortOrder+1:0,th:2,sh:x.sh,bh:x.bh};
    await DB.putPhotos([p]);ph.push(p);const t=mk(p);layout();M.pop(t);n++}catch(e){toast(e.message||'Could not add photo',true)}}
@@ -2344,6 +2351,86 @@ function cropSquare(file){return new Promise(res=>{
  $('.ok',d).onclick=()=>{const s=k*z,side=V/s,cx=im.naturalWidth/2-ox/s,cy=im.naturalHeight/2-oy/s,c=document.createElement('canvas');c.width=c.height=512;
   {const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(im,cx-side/2,cy-side/2,side,side,0,0,512,512)}c.toBlob(b=>done(b),'image/jpeg',.88)};
  bd.append(d);document.body.append(bd);M.fade(bd,0,1);M.run(d,[{opacity:0,transform:'scale(.94)'},{opacity:1,transform:'none'}],'slow')})}
+
+/* ---------- photo crop + camera (model photos) ---------- */
+const ASPECTS=[['Square',1],['Landscape',4/3],['Portrait',3/4],['Wide',16/9],['Tall',9/16],['Original',null]];
+function rotCanvasSrc(src,q){if(!(q%4))return src;const w=src.naturalWidth||src.width,h=src.naturalHeight||src.height,c=document.createElement('canvas');
+ c.width=(q%2)?h:w;c.height=(q%2)?w:h;const x=c.getContext('2d');x.imageSmoothingQuality='high';
+ x.translate(c.width/2,c.height/2);x.rotate(q*Math.PI/2);x.drawImage(src,-w/2,-h/2);return c}
+/* cropPhoto(file,{index,total}): zoom + pan + rotate + aspect chips; resolves a cropped JPEG Blob,
+   the ORIGINAL file when "Keep original" is used, or null on Cancel (multi-batch: cancel stops the run) */
+function cropPhoto(file,o={}){return new Promise(res=>{
+ const u=URL.createObjectURL(file),bd=el('div','backdrop'),d=el('div','dlg crop');
+ const multi=(o.total||1)>1,sq=!!o.square,base=Math.min(280,innerWidth-80);
+ d.innerHTML=`<h2>Crop photo${multi?` <span class="muted">(${(o.index||0)+1} of ${o.total})</span>`:''}</h2>
+<div class="cropv"><img alt="" draggable="false"></div>
+${sq?'':'<div class="chips wrap aspectrow" role="group" aria-label="Crop shape"></div>'}
+<div class="row h rotrow"><button class="btn ghost rl">${ICON.rot} Rotate left</button><button class="btn ghost rr">${ICON.rot} Rotate right</button></div>
+<input type="range" class="cz" min="1" max="4" step="0.01" value="1" aria-label="Zoom">
+<div class="row h"><button class="btn ghost no">Cancel</button>${multi?'<button class="btn plain keep">Keep original</button>':''}<button class="btn ok">Use photo</button></div>`;
+ const im=$('img',d),zr=$('.cz',d),box=$('.cropv',d),ar=$('.aspectrow',d);
+ let baseImg=null,src=null,q=0,k=1,z=1,ox=0,oy=0,fin=false,p0=null,a=1; /* a=1: square is the default (icons always stay square) */
+ const done=v=>{if(fin)return;fin=true;URL.revokeObjectURL(u);M.fade(bd,1,0,'med',{fill:'forwards'});setTimeout(()=>bd.remove(),260);res(v)};
+ const dims=()=>({iw:src.naturalWidth||src.width,ih:src.naturalHeight||src.height});
+ const place=()=>{if(!src)return;const{iw,ih}=dims();let W,H;
+  if(a==null){W=base;H=Math.max(80,Math.round(base*ih/iw))}
+  else if(a>=1){W=base;H=Math.round(base/a)}else{H=base;W=Math.round(base*a)}
+  box.style.width=W+'px';box.style.height=H+'px';
+  k=Math.max(W/iw,H/ih);const w=iw*k*z,h=ih*k*z;
+  ox=Math.max(-(w-W)/2,Math.min((w-W)/2,ox));oy=Math.max(-(h-H)/2,Math.min((h-H)/2,oy));
+  im.style.width=w+'px';im.style.height=h+'px';im.style.transform=`translate(calc(-50% + ${ox}px),calc(-50% + ${oy}px))`};
+ if(!sq)ASPECTS.forEach(([lab,va])=>{const b=el('button','chip'+((a==null&&va==null)||(a!=null&&va===a)?' on':''),lab);
+  b.setAttribute('aria-pressed',b.classList.contains('on'));
+  b.onclick=()=>{a=va;z=1;ox=oy=0;zr.value=1;[...ar.children].forEach(c=>{c.classList.remove('on');c.setAttribute('aria-pressed','false')});b.classList.add('on');b.setAttribute('aria-pressed','true');place()};ar.append(b)});
+ const spin=dirn=>{if(!baseImg)return;q=(q+(dirn>0?1:3))%4;const c=rotCanvasSrc(baseImg,q);im.src=(q%4)?c.toDataURL('image/png'):u;src=(q%4)?c:baseImg;z=1;ox=oy=0;zr.value=1;place()};
+ im.onload=()=>place();im.onerror=()=>done(null);im.src=u;
+ baseImg=new Image();baseImg.onload=()=>{src=baseImg;place()};baseImg.onerror=()=>done(null);baseImg.src=u;
+ zr.oninput=()=>{z=+zr.value;place()};
+ box.onpointerdown=e=>{box.setPointerCapture(e.pointerId);p0=[e.clientX-ox,e.clientY-oy]};
+ box.onpointermove=e=>{if(!p0)return;ox=e.clientX-p0[0];oy=e.clientY-p0[1];place()};
+ box.onpointerup=box.onpointercancel=()=>{p0=null};
+ $('.no',d).onclick=()=>done(null);bd.onclick=e=>{if(e.target===bd)done(null)};
+ bd.onkeydown=e=>{if(e.key==='Escape')done(null)};
+ $('.rl',d).onclick=()=>spin(-1);$('.rr',d).onclick=()=>spin(1);
+ const keepB=$('.keep',d);if(keepB)keepB.onclick=()=>done(file);
+ $('.ok',d).onclick=()=>{if(!src)return;const{iw,ih}=dims(),W=box.clientWidth,H=box.clientHeight,s=k*z,cw=W/s,ch=H/s,
+  sx=iw/2-ox/s-cw/2,sy=ih/2-oy/s-ch/2,c=document.createElement('canvas');
+  const kk=Math.min(1,1600/Math.max(cw,ch));c.width=Math.max(1,Math.round(cw*kk));c.height=Math.max(1,Math.round(ch*kk));
+  {const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(src,sx,sy,cw,ch,0,0,c.width,c.height)}
+  c.toBlob(b=>done(b),'image/jpeg',.9)};
+ bd.append(d);document.body.append(bd);M.fade(bd,0,1);M.run(d,[{opacity:0,transform:'scale(.94)'},{opacity:1,transform:'none'}],'slow')})}
+/* file input with a best-effort cancel detection so a dismissed picker never hangs the flow */
+function filePick({accept='image/*',multiple=false,capture=false}){return new Promise(ok=>{const f=el('input');
+ f.type='file';f.accept=accept;if(multiple)f.multiple=true;if(capture)f.setAttribute('capture','environment');
+ f.style.display='none';document.body.append(f);let fin=false;
+ const end=v=>{if(fin)return;fin=true;f.remove();ok(v)};
+ f.onchange=()=>end(multiple?[...f.files]:(f.files[0]||null));
+ f.addEventListener('cancel',()=>end(null));
+ window.addEventListener('focus',()=>{setTimeout(()=>{if(!fin&&!f.files.length)end(null)},400)},{once:true});
+ f.click()})}
+/* take a photo: Capacitor Camera on a device, the capture input as a fallback */
+async function nativeTakePhoto(){
+ if(isNative()){const Cam=plug('Camera');
+  if(Cam&&Cam.getPhoto){try{const r=await Cam.getPhoto({resultType:'dataUrl',quality:92,source:'CAMERA',width:2400,height:2400,preserveAspectRatio:true,correctOrientation:true});
+    if(r&&r.dataUrl)return d2b(r.dataUrl)}
+   catch(e){if(e&&(e.code==='userCancelled'||/cancel/i.test(e.message||'')))return null;
+    toast('Camera unavailable: '+(e&&e.message||'error'),true)}}}
+ const f=await filePick({capture:true});return f||null}
+/* the shared "add photos" flow: pick the source, then crop/rotate each photo before it is saved */
+async function acquirePhotos(){
+ const src=await dlg({title:'Add photos',msg:'Take a new photo or choose existing pictures. Each photo can be cropped, rotated and reshaped before it is added.',
+  choices:[{label:'Take photo',value:'take'},{label:'Choose photos',value:'pick'}]});
+ if(!src)return[];
+ let files=null;
+ if(src==='take'){const f=await nativeTakePhoto();files=f?[f]:[]}
+ else files=await filePick({multiple:true});
+ if(!files||!files.length)return[];
+ const out=[];
+ for(let i=0;i<files.length;i++){
+  const r=await cropPhoto(files[i],{index:i,total:files.length});
+  if(r===null)break; /* Cancel stops the batch; photos already accepted are kept */
+  out.push(r instanceof File?r:new File([r],(files[i]&&files[i].name)||('photo-'+(i+1)+'.jpg'),{type:r.type||'image/jpeg'}))}
+ return out}
 
 /* ---------- search everything ---------- */
 async function openSearch(){if($('.sheet.srch'))return;
@@ -3332,7 +3419,7 @@ async function openMissing(){if($('.sheet.miss'))return;
     list.append(b)})});
   sh.scrollTop=top};
  const refresh=guard(async()=>{const v0=VAULT.id;data=await scanMissing();if(VAULT.id!==v0)data=await scanMissing();tm=await DB.thumbs(data.mi.map(m=>m.rec.id));if(!sh.isConnected)return;render()});
- inp.onchange=guard(async()=>{const f=inp.files[0],id=inp._id;inp.value='';if(!f||!id)return;const b=await cropSquare(f);if(!b)return;
+ inp.onchange=guard(async()=>{const f=inp.files[0],id=inp._id;inp.value='';if(!f||!id)return;const b=await cropPhoto(f,{square:true});if(!b)return;
   const r=await DB.get('collections',id);if(!r)return;r.icon=b;await DB.put('collections',r);toast('Photo updated');await refresh();const v=live();v&&fill(v,{quiet:1})});
  const close=guard(async()=>{await M.run(sh,[{transform:'none'},{transform:'translateY(100%)'}],'slow',{fill:'forwards'});sh.remove();drop();const v=live();v&&fill(v,{quiet:1})});
  $('.back',sh).onclick=close;sh.onkeydown=e=>{if(e.key==='Escape'){e.stopPropagation();$('.back',sh).click()}};
