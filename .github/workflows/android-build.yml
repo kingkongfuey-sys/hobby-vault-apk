@@ -38,11 +38,34 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
-
-      - name: Swap in MainActivity
+        
+      - name: Swap in MainActivity and widget files
         run: |
           cp android-extra/MainActivity.java \
              android/app/src/main/java/com/hobbyvault/app/MainActivity.java
+          cp android-extra/WidgetProvider.java \
+             android/app/src/main/java/com/hobbyvault/app/WidgetProvider.java
+          cp -r android-extra/res/xml android/app/src/main/res/
+          cp -r android-extra/res/layout android/app/src/main/res/
+          cp -r android-extra/res/drawable android/app/src/main/res/
+
+      - name: Patch manifest (camera permission + widget receiver)
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA"/>\
+          <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>\
+          <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>\
+          <uses-feature android:name="android.hardware.camera" android:required="false"/>\
+          <application|' $M
+          sed -i 's|</application>|  <receiver android:name=".WidgetProvider" android:exported="false">\
+              <intent-filter>\
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>\
+              </intent-filter>\
+              <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_quick_add"/>\
+            </receiver>\
+          </application>|' $M
+          grep -q 'CAMERA' $M || { echo "manifest patch failed"; exit 1; }
+          grep -q 'APPWIDGET_UPDATE' $M || { echo "receiver patch failed"; exit 1; }
 
       - name: Prepare icon assets
         run: |
